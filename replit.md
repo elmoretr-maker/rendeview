@@ -51,11 +51,17 @@ The application runs automatically via the configured workflow. To manually rest
 cd create-anything/_/apps/web && npm run dev
 ```
 
+## How to Use
+1. Visit `/account/signin` to sign in with the admin account (or create a new account at `/account/signup`)
+2. The root path `/` redirects to the signin page
+3. After signing in, you'll have access to the full application features
+
 ## Known Issues / Notes
 - The app expects some Create.xyz specific environment variables but works without them
 - Stripe is configured with a placeholder key - payment features will use fallback mode
 - Daily.co video features require a valid API key to function
 - The auth session endpoint returns 400 errors when not logged in (this is expected behavior)
+- LSP shows TypeScript module resolution warnings but these are false positives - the app compiles and runs correctly
 
 ## Recent Changes (October 29, 2025)
 - Imported from GitHub
