@@ -48,15 +48,12 @@ export default function Welcome() {
         {/* Header/Title Section */}
         <div className="text-center mb-12">
           <img
-            src="https://ucarecdn.com/7e6175a0-5279-4da8-8e24-c6a129f1821f/-/format/auto/"
+            src={new URL("@/assets/logo-centered.png", import.meta.url).href}
             alt="Rende-View Logo"
-            className="w-36 h-36 mx-auto mb-4 rounded-2xl bg-white"
+            className="w-48 h-48 mx-auto mb-6 object-contain"
           />
-          <h1 className="text-4xl font-bold mb-2" style={{ color: COLORS.primary }}>
-            Rende-View
-          </h1>
-          <p className="text-lg" style={{ color: COLORS.text }}>
-            Rende-View: Date Smarter, Not Harder. No Catfishing. Know who they are before you meet. 
+          <p className="text-lg mt-4" style={{ color: COLORS.text }}>
+            Date Smarter, Not Harder. No Catfishing. Know who they are before you meet. 
             Your time is valuable—only pay for connections that matter.
           </p>
         </div>

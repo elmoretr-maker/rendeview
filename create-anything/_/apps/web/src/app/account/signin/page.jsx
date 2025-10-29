@@ -76,9 +76,16 @@ export default function SignInPage() {
         onSubmit={onSubmit}
         className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl"
       >
-        <h1 className="mb-8 text-center text-3xl font-bold text-gray-800">
-          Welcome Back
-        </h1>
+        <div className="mb-8 text-center">
+          <img
+            src={new URL("@/assets/logo-centered.png", import.meta.url).href}
+            alt="Rende-View Logo"
+            className="w-32 h-32 mx-auto mb-4 object-contain"
+          />
+          <h1 className="text-3xl font-bold text-gray-800">
+            Welcome Back
+          </h1>
+        </div>
 
         <div className="space-y-6">
           <div className="space-y-2">
