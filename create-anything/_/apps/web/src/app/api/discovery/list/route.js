@@ -1,10 +1,9 @@
 import sql from "@/app/api/utils/sql";
-import { auth } from "@/auth";
+import { getAuthenticatedUserId } from "@/app/api/utils/auth";
 
 export async function GET() {
   try {
-    const session = await auth();
-    const userId = session?.user?.id || null;
+    const userId = await getAuthenticatedUserId();
 
     // Require authentication for discovery to avoid anonymous browsing
     if (!userId) {

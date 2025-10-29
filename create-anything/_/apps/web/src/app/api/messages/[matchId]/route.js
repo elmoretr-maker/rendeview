@@ -1,15 +1,14 @@
 import sql from "@/app/api/utils/sql";
-import { auth } from "@/auth";
+import { getAuthenticatedUserId } from "@/app/api/utils/auth";
 
 export async function GET(request, { params: { matchId } }) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const uid = await getAuthenticatedUserId();
+    if (!uid) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Ensure the user is part of the match
-    const uid = session.user.id;
     const matchRows = await sql`SELECT id FROM matches WHERE id = ${matchId} AND (user_a_id = ${uid} OR user_b_id = ${uid})`;
     if (!matchRows?.length) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
@@ -30,11 +29,10 @@ export async function GET(request, { params: { matchId } }) {
 
 export async function POST(request, { params: { matchId } }) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const uid = await getAuthenticatedUserId();
+    if (!uid) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const uid = session.user.id;
     const { body } = await request.json();
 
     if (typeof body !== "string" || body.trim().length === 0 || body.length > 50) {

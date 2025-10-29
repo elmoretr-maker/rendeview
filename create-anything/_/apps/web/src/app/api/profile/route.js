@@ -1,13 +1,12 @@
 import sql from "@/app/api/utils/sql";
-import { auth } from "@/auth";
+import { getAuthenticatedUserId } from "@/app/api/utils/auth";
 
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const userId = session.user.id;
     const rows = await sql`
       SELECT id, name, email, image, role, consent_accepted, consent_at,
              immediate_available, availability_override, timezone, typical_availability,
@@ -27,8 +26,8 @@ export async function GET() {
 // It does not persist anything; callers should subsequently save via PUT /api/profile.
 export async function POST(request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -60,11 +59,10 @@ export async function POST(request) {
 
 export async function PUT(request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const userId = session.user.id;
     const body = await request.json();
 
     const setClauses = [];
