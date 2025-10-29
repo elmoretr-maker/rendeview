@@ -39,7 +39,7 @@ export default function AppHeader() {
             <img
               src={new URL("@/assets/logo-centered.png", import.meta.url).href}
               alt="Rende-VIEW"
-              className="h-10 w-10 object-contain"
+              className="h-8 w-8 object-contain"
             />
             <span 
               className="font-playfair text-xl font-bold hidden sm:block"

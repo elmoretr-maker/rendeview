@@ -80,7 +80,7 @@ export default function SignInPage() {
           <img
             src={new URL("@/assets/logo-centered.png", import.meta.url).href}
             alt="Rende-View Logo"
-            className="w-32 h-32 mx-auto mb-4 object-contain"
+            className="w-24 h-24 mx-auto mb-3 object-contain"
           />
           <h1 className="text-3xl font-playfair font-bold text-gray-800">
             Welcome Back
