@@ -89,7 +89,7 @@ cd create-anything/_/apps/web && npm run dev
 - Route groups like `(app)` are now omitted from URLs but preserved in file structure
 - Verified page loads correctly and handles unauthenticated users
 
-### Core User Pages Implementation (October 29, 2025 - Latest)
+### Core User Pages Implementation (October 29, 2025)
 - **Matches page** at `/matches` (file: `(app)/matches/page.jsx`)
   - Lists all user matches with profile photos and chat status
   - "View Likers" button navigates to likers subpage
@@ -114,3 +114,39 @@ cd create-anything/_/apps/web && npm run dev
 - All pages adapted from React Native mobile app to web with consistent styling
 - Converted Expo Router → React Router, Alert.alert → toast notifications
 - Complete authentication flow with 401 error handling on all pages
+
+### Complete UI Restoration (October 29, 2025 - Latest)
+**All 12 missing pages created** - Full onboarding and feature pages adapted from mobile app:
+
+**Onboarding Flow** (5-step progress indicators):
+1. `/onboarding/welcome` - Landing page with value propositions, Get Started/Sign In CTAs
+2. `/onboarding/membership` - Membership tier selection (Casual/Active/Dating/Business)
+3. `/onboarding/profile` - Display name setup
+4. `/onboarding/photos` - Photo upload (simplified placeholder for QA)
+5. `/onboarding/media` - Photos & video upload combined (simplified placeholder)
+6. `/onboarding/video` - Profile video upload (simplified placeholder)
+7. `/onboarding/consent` - Data consent acceptance (final step)
+8. `/onboarding/data-consent-required` - Consent required gate
+
+**Additional Feature Pages**:
+9. `/profile/[userId]` - View other user's full profile with photos, video, availability, Like/Discard/Schedule actions
+10. `/stripe` - Stripe checkout handler (opens popup, returns after payment)
+11. `/video/call` - Video call interface (Daily.co iframe integration, requires DAILY_API_KEY)
+12. `/settings/blockers` - Manage blocked users with unblock functionality
+
+**File Upload Pages**: Photos, media, and video pages use simplified UI placeholders noting file upload integration is needed - allows QA flow testing with Skip buttons.
+
+### Temporary Security Bypass for QA Testing (October 29, 2025)
+**⚠️ WARNING: ALL AUTHENTICATION DISABLED FOR QA FLOW TESTING**
+
+**Modified Files**:
+- `src/app/page.jsx` - Root now redirects to `/discovery` instead of signin
+- `src/utils/useUser.js` - Returns mock authenticated user to bypass all auth checks
+- All changes clearly marked with `QA_BYPASS` comments for easy restoration
+
+**Documentation**:
+- `SECURITY_BYPASS_QA.md` - Complete guide for re-enabling authentication before production
+
+**Purpose**: Allows complete UI/UX flow testing without authentication barriers. All pages are directly accessible for QA review.
+
+**CRITICAL**: Must restore authentication before any production deployment. See SECURITY_BYPASS_QA.md for restoration steps.
