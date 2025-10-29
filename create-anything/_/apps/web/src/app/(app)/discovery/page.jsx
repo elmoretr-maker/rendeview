@@ -4,6 +4,7 @@ import { X, Heart } from "lucide-react";
 import { useNavigate } from "react-router";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
+import AppHeader from "@/components/AppHeader";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -145,17 +146,19 @@ export default function Discovery() {
 
   return (
     <div
-      className="min-h-screen pt-12 px-4"
+      className="min-h-screen"
       style={{ backgroundColor: COLORS.bg }}
     >
-      <h1
-        className="text-2xl font-bold mb-3"
-        style={{ color: COLORS.text }}
-      >
-        Discover
-      </h1>
+      <AppHeader />
+      <div className="pt-8 px-4">
+        <h1
+          className="text-4xl font-playfair font-bold mb-6 text-center"
+          style={{ color: COLORS.text }}
+        >
+          Discover Your Match
+        </h1>
       {current ? (
-        <div className="flex flex-col items-center max-w-md mx-auto">
+        <div className="flex flex-col items-center max-w-md mx-auto pb-8">
           {/* Profile Card */}
           <div 
             className="w-full rounded-3xl shadow-2xl overflow-hidden relative mb-6"
@@ -259,6 +262,7 @@ export default function Discovery() {
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 }

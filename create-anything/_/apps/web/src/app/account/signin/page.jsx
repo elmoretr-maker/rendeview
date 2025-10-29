@@ -82,7 +82,7 @@ export default function SignInPage() {
             alt="Rende-View Logo"
             className="w-32 h-32 mx-auto mb-4 object-contain"
           />
-          <h1 className="text-3xl font-bold text-gray-800">
+          <h1 className="text-3xl font-playfair font-bold text-gray-800">
             Welcome Back
           </h1>
         </div>

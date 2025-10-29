@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@/utils/useUser";
 import { toast } from "sonner";
+import AppHeader from "@/components/AppHeader";
 
 const COLORS = {
   primary: "#5B3BAF",

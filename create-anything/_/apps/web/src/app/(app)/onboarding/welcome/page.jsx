@@ -52,9 +52,11 @@ export default function Welcome() {
             alt="Rende-View Logo"
             className="w-48 h-48 mx-auto mb-6 object-contain"
           />
-          <p className="text-lg mt-4" style={{ color: COLORS.text }}>
-            Date Smarter, Not Harder. No Catfishing. Know who they are before you meet. 
-            Your time is valuable—only pay for connections that matter.
+          <h2 className="text-3xl font-playfair font-bold mb-3" style={{ color: COLORS.primary }}>
+            Date Smarter, Not Harder
+          </h2>
+          <p className="text-lg opacity-80" style={{ color: COLORS.text }}>
+            No Catfishing. Know who they are before you meet. Your time is valuable—only pay for connections that matter.
           </p>
         </div>
 
