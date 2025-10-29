@@ -79,7 +79,7 @@ cd create-anything/_/apps/web && npm run dev
 - Verified authentication endpoint returns HTTP 200
 - Successfully tested login flow with HTTP 302 redirect and session token creation
 
-### Discovery Page Implementation (October 29, 2025 - Latest)
+### Discovery Page Implementation (October 29, 2025)
 - Created web-based Discovery page at `/discovery` (file: `(app)/discovery/page.jsx`)
 - Adapted from React Native mobile app to React Router web app
 - Converted React Native components to HTML with TailwindCSS styling
@@ -88,3 +88,29 @@ cd create-anything/_/apps/web && npm run dev
 - Updated routing system to support Next.js-style route groups (parentheses-wrapped folders)
 - Route groups like `(app)` are now omitted from URLs but preserved in file structure
 - Verified page loads correctly and handles unauthenticated users
+
+### Core User Pages Implementation (October 29, 2025 - Latest)
+- **Matches page** at `/matches` (file: `(app)/matches/page.jsx`)
+  - Lists all user matches with profile photos and chat status
+  - "View Likers" button navigates to likers subpage
+  - Click on match navigates to message thread
+- **Likers subpage** at `/matches/likers` (file: `(app)/matches/likers/page.jsx`)
+  - Shows users who have liked the current user
+  - Full 401 authentication error handling with toast notifications
+- **Messages page** at `/messages` (file: `(app)/messages/page.jsx`)
+  - Lists all conversation threads with matches
+  - Click on conversation opens chat detail page
+- **Chat detail page** at `/messages/[matchId]` (file: `(app)/messages/[matchId]/page.jsx`)
+  - Full conversation view with message history
+  - Real-time message polling (5-second intervals)
+  - Send messages with 50-character limit
+  - Keyboard Enter key support for sending
+- **Profile page** at `/profile` (file: `(app)/profile/page.jsx`)
+  - User profile management with name, timezone, availability settings
+  - Photo gallery with primary photo selection
+  - Video preview (if uploaded)
+  - Immediate availability and offline mode toggles
+  - Save profile, delete account, and sign out actions
+- All pages adapted from React Native mobile app to web with consistent styling
+- Converted Expo Router → React Router, Alert.alert → toast notifications
+- Complete authentication flow with 401 error handling on all pages
