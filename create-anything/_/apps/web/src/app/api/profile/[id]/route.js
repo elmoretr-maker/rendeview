@@ -1,10 +1,10 @@
 import sql from "@/app/api/utils/sql";
-import { auth } from "@/auth";
+import { getAuthenticatedUserId } from "@/app/api/utils/auth";
 
 export async function GET(request, { params }) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const currentUserId = await getAuthenticatedUserId();
+    if (!currentUserId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
     const userId = Number(params?.id);
