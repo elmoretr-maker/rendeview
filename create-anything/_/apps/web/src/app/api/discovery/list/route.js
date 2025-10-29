@@ -15,8 +15,10 @@ export async function GET() {
     // - users the current user has blocked (discarded)
     // - users who have blocked the current user
     // - users the current user has already liked
+    // IMPROVEMENT: Added bio and membership_tier for better Discovery UX
     const q = `
-      SELECT u.id, u.name, u.image, u.immediate_available, u.typical_availability, u.primary_photo_url
+      SELECT u.id, u.name, u.image, u.immediate_available, u.typical_availability, 
+             u.primary_photo_url, u.bio, u.membership_tier
       FROM auth_users u
       WHERE u.id <> $1
         AND NOT EXISTS (
@@ -50,6 +52,8 @@ export async function GET() {
         image: c.image,
         immediate_available: c.immediate_available,
         typical_availability: c.typical_availability,
+        membership_tier: c.membership_tier,
+        bio: c.bio,
         photo,
       });
     }
