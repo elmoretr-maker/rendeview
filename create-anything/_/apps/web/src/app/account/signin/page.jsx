@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { Navigate } from "react-router";
 import useAuth from "@/utils/useAuth";
+import useUser from "@/utils/useUser";
 
 export default function SignInPage() {
   const [error, setError] = useState(null);
@@ -8,6 +10,19 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
 
   const { signInWithCredentials } = useAuth();
+  const { data: user, loading: userLoading } = useUser();
+
+  if (userLoading) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="text-lg text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   const onSubmit = async (e) => {
     e.preventDefault();
