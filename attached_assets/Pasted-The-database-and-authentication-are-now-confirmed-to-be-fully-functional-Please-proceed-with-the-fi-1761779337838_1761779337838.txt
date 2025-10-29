@@ -1,0 +1,18 @@
+The database and authentication are now confirmed to be fully functional. Please proceed with the final phase of development and optimization, ensuring all existing pages are fully functional and connected according to the dating app's core value proposition.
+
+PART 1: UX/UI BEAUTIFICATION AND PROFILE DISPLAY
+1. Review the styling and components across the entire application and apply aesthetic improvements to "beautify" the app.
+2. Crucially, ensure the Profile View page (the one a potential match sees) displays ALL user information correctly: Profile Bio, All Pictures, and the User's Video.
+3. Ensure the Discovery/Matching cards clearly display the necessary information for a user to decide whether to view a full profile.
+
+PART 2: CORE APPLICATION FLOW IMPLEMENTATION
+Implement and ensure the complete, sequential user flow is working end-to-end using the built-in database tables and API endpoints:
+1. **Matching:** User views potential match profiles, watches their video, sees pictures, and can perform a "Like" action (using the /api/matches/like endpoint).
+2. **Scheduling (Proposer):** After a successful match (or a successful 'Like'), the proposer must be able to set up a video date using a simple scheduler, suggesting a specific **Day and Time** (using the schedule_proposals table).
+3. **Scheduling (Receiver):** The receiver of the date proposal must be able to view the proposal and either:
+    * **Confirm/Accept** the suggested Day and Time.
+    * **Offer an Alternate Option** (a different suggested day/time) along with a text note to communicate with the proposer.
+4. **Video Date:** When the date is confirmed, the system must enable the **Video Date Interface** (using the video/call page and DAILY_API_KEY) and provide controls for the users to **Continue, End Immediately, or Report** the session.
+
+PART 3: APPLICATION IMPROVEMENTS AND FINDINGS
+Find and implement two significant, non-breaking code improvements that enhance the app's stability or user experience (e.g., better error handling, front-end validation, or performance optimization). Report on these improvements.
