@@ -155,46 +155,95 @@ export default function Discovery() {
         Discover
       </h1>
       {current ? (
-        <div className="flex flex-col items-center">
-          <button
-            onClick={() => navigate(`/profile/${current.id}`)}
-            className="w-full max-w-md"
+        <div className="flex flex-col items-center max-w-md mx-auto">
+          {/* Profile Card */}
+          <div 
+            className="w-full rounded-3xl shadow-2xl overflow-hidden relative mb-6"
+            style={{ backgroundColor: "white" }}
           >
-            {current.photo ? (
-              <img
-                src={current.photo}
-                alt={current.name || `User ${current.id}`}
-                className="w-full h-96 rounded-2xl object-cover"
-                style={{ backgroundColor: COLORS.cardBg }}
-              />
-            ) : (
-              <div
-                className="w-full h-96 rounded-2xl flex items-center justify-center"
-                style={{ backgroundColor: COLORS.cardBg }}
-              >
-                <span className="text-gray-600">View Profile</span>
+            <button
+              onClick={() => navigate(`/profile/${current.id}`)}
+              className="w-full relative"
+            >
+              {current.photo ? (
+                <div className="relative">
+                  <img
+                    src={current.photo}
+                    alt={current.name || `User ${current.id}`}
+                    className="w-full h-[500px] object-cover"
+                    style={{ backgroundColor: COLORS.cardBg }}
+                  />
+                  {/* Gradient overlay for text readability */}
+                  <div 
+                    className="absolute bottom-0 left-0 right-0 h-32"
+                    style={{ 
+                      background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" 
+                    }}
+                  />
+                </div>
+              ) : (
+                <div
+                  className="w-full h-[500px] flex items-center justify-center"
+                  style={{ backgroundColor: COLORS.cardBg }}
+                >
+                  <span className="text-gray-600">View Profile</span>
+                </div>
+              )}
+              
+              {/* Profile info overlay */}
+              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-3xl font-bold">
+                    {current.name || "User " + current.id}
+                  </h2>
+                  {current.immediate_available && (
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-500">
+                      <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                      <span className="text-xs font-semibold">Online</span>
+                    </div>
+                  )}
+                </div>
+                {current.membership_tier && (
+                  <span 
+                    className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold mb-2"
+                    style={{ backgroundColor: "rgba(255,255,255,0.2)", color: "white" }}
+                  >
+                    {current.membership_tier.charAt(0).toUpperCase() + current.membership_tier.slice(1)}
+                  </span>
+                )}
+                {current.bio && (
+                  <p className="text-sm opacity-90 line-clamp-2 mt-2">
+                    {current.bio}
+                  </p>
+                )}
               </div>
-            )}
-          </button>
-          <h2 className="text-lg font-semibold mt-3" style={{ color: COLORS.text }}>
-            {current.name || "User " + current.id}
-          </h2>
-          <div className="flex gap-4 mt-5">
+            </button>
+
+            {/* Tap to view full profile hint */}
+            <div className="px-6 py-4 text-center border-t border-gray-100">
+              <p className="text-sm opacity-60" style={{ color: COLORS.text }}>
+                Tap photo to view full profile
+              </p>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex gap-6 items-center justify-center">
             <button
               onClick={() => discardMutation.mutate(current.id)}
               disabled={discardMutation.isPending}
-              className="w-16 h-16 rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-shadow disabled:opacity-50"
-              style={{ backgroundColor: COLORS.cardBg }}
+              className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+              style={{ backgroundColor: "white" }}
             >
-              <X color={COLORS.error} size={28} />
+              <X color={COLORS.error} size={32} strokeWidth={2.5} />
             </button>
             <button
               onClick={() => likeMutation.mutate(current.id)}
               disabled={likeMutation.isPending}
-              className="w-16 h-16 rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-shadow disabled:opacity-50"
-              style={{ backgroundColor: "#EDE7FF" }}
+              className="w-24 h-24 rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl transition-all disabled:opacity-50"
+              style={{ backgroundColor: COLORS.primary }}
             >
-              <Heart color={COLORS.primary} size={28} />
+              <Heart color="white" size={36} fill="white" strokeWidth={2.5} />
             </button>
           </div>
         </div>

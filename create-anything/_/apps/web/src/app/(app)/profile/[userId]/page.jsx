@@ -118,86 +118,140 @@ export default function RemoteProfile() {
   return (
     <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4" style={{ color: COLORS.text }}>
-          {user?.name || `User ${user?.id}`}
-        </h1>
+        {/* Header with name and membership tier */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2" style={{ color: COLORS.text }}>
+            {user?.name || `User ${user?.id}`}
+          </h1>
+          {user?.membership_tier && (
+            <span 
+              className="inline-block px-3 py-1 rounded-full text-sm font-semibold"
+              style={{ 
+                backgroundColor: COLORS.primary + "20", 
+                color: COLORS.primary 
+              }}
+            >
+              {user.membership_tier.charAt(0).toUpperCase() + user.membership_tier.slice(1)} Member
+            </span>
+          )}
+        </div>
 
         {/* Primary photo */}
         {user?.primary_photo_url && (
-          <img
-            src={user.primary_photo_url}
-            alt={user.name}
-            className="w-full h-64 rounded-2xl object-cover mb-4"
-            style={{ backgroundColor: COLORS.cardBg }}
-          />
+          <div className="mb-6 shadow-lg rounded-2xl overflow-hidden">
+            <img
+              src={user.primary_photo_url}
+              alt={user.name}
+              className="w-full h-96 object-cover"
+              style={{ backgroundColor: COLORS.cardBg }}
+            />
+          </div>
+        )}
+
+        {/* About section - prominently displayed */}
+        {user?.bio && (
+          <div className="mb-6 p-6 rounded-2xl shadow-md" style={{ backgroundColor: "white" }}>
+            <h3 className="font-bold text-xl mb-3" style={{ color: COLORS.text }}>About</h3>
+            <p className="text-base leading-relaxed" style={{ color: COLORS.text }}>
+              {user.bio}
+            </p>
+          </div>
         )}
 
         {/* Video */}
         {video?.url && (
-          <div className="rounded-xl overflow-hidden bg-black mb-4">
-            <video src={video.url} controls loop className="w-full" style={{ height: "220px" }} />
+          <div className="mb-6">
+            <h3 className="font-bold text-xl mb-3" style={{ color: COLORS.text }}>Video Introduction</h3>
+            <div className="rounded-2xl overflow-hidden bg-black shadow-lg">
+              <video src={video.url} controls loop className="w-full" style={{ maxHeight: "400px" }} />
+            </div>
           </div>
         )}
 
-        {/* Photos */}
-        <h3 className="font-bold mt-4 mb-2" style={{ color: COLORS.text }}>Photos</h3>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {media
-            .filter((m) => m.type === "photo")
-            .map((m, idx) => (
-              <img
-                key={idx}
-                src={m.url}
-                alt="Profile"
-                className="w-24 h-24 rounded-lg object-cover"
-                style={{ backgroundColor: COLORS.cardBg }}
-              />
-            ))}
-        </div>
-
-        {/* About */}
-        <h3 className="font-bold mt-4 mb-2" style={{ color: COLORS.text }}>About</h3>
-        <p className="opacity-80 mb-4" style={{ color: COLORS.text }}>No bio provided.</p>
+        {/* Photo gallery */}
+        {media.filter((m) => m.type === "photo").length > 0 && (
+          <div className="mb-6">
+            <h3 className="font-bold text-xl mb-3" style={{ color: COLORS.text }}>
+              Photos ({media.filter((m) => m.type === "photo").length})
+            </h3>
+            <div className="grid grid-cols-3 gap-3">
+              {media
+                .filter((m) => m.type === "photo")
+                .map((m, idx) => (
+                  <img
+                    key={idx}
+                    src={m.url}
+                    alt="Profile"
+                    className="w-full h-32 rounded-xl object-cover shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                    style={{ backgroundColor: COLORS.cardBg }}
+                  />
+                ))}
+            </div>
+          </div>
+        )}
 
         {/* Availability */}
-        <h3 className="font-bold mb-2" style={{ color: COLORS.text }}>Typical Availability</h3>
-        {typical.length > 0 ? (
-          typical.map((slot, i) => (
-            <p key={i} style={{ color: COLORS.text }}>
-              {(slot.days || []).join(", ")} • {slot.start} - {slot.end}
+        <div className="mb-6 p-6 rounded-2xl shadow-md" style={{ backgroundColor: "white" }}>
+          <h3 className="font-bold text-xl mb-3" style={{ color: COLORS.text }}>Availability</h3>
+          {typical.length > 0 ? (
+            <div className="space-y-2">
+              {typical.map((slot, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span 
+                    className="w-2 h-2 rounded-full" 
+                    style={{ backgroundColor: COLORS.secondary }}
+                  ></span>
+                  <p style={{ color: COLORS.text }}>
+                    {(slot.days || []).join(", ")} • {slot.start} - {slot.end}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="opacity-60" style={{ color: COLORS.text }}>Availability not shared</p>
+          )}
+          {timezone && (
+            <p className="opacity-60 mt-3 text-sm" style={{ color: COLORS.text }}>
+              Timezone: {timezone}
             </p>
-          ))
-        ) : (
-          <p className="opacity-60" style={{ color: COLORS.text }}>Not shared</p>
-        )}
-        {timezone && (
-          <p className="opacity-60 mt-1" style={{ color: COLORS.text }}>Timezone: {timezone}</p>
-        )}
+          )}
+          {user?.immediate_available && (
+            <div 
+              className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold"
+              style={{ backgroundColor: COLORS.secondary + "20", color: COLORS.secondary }}
+            >
+              <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: COLORS.secondary }}></span>
+              Available now
+            </div>
+          )}
+        </div>
 
-        {/* Action buttons */}
-        <div className="flex gap-3 mt-6 justify-center">
+        {/* Action buttons - improved styling */}
+        <div className="flex gap-4 mt-8 justify-center sticky bottom-8">
           <button
             onClick={() => discardMutation.mutate()}
-            className="flex items-center gap-2 px-4 py-3 rounded-lg font-bold shadow-md"
-            style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
+            disabled={discardMutation.isPending}
+            className="flex items-center gap-2 px-6 py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+            style={{ backgroundColor: "white", color: COLORS.text }}
           >
-            <X size={20} style={{ color: COLORS.error }} />
-            Discard
+            <X size={24} style={{ color: COLORS.error }} />
+            Pass
           </button>
           <button
             onClick={() => likeMutation.mutate()}
-            className="flex items-center gap-2 px-4 py-3 rounded-lg font-bold shadow-md"
+            disabled={likeMutation.isPending}
+            className="flex items-center gap-2 px-6 py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
             style={{ backgroundColor: "#EDE7FF", color: COLORS.primary }}
           >
-            <Heart size={20} style={{ color: COLORS.primary }} />
+            <Heart size={24} style={{ color: COLORS.primary }} />
             Like
           </button>
           <button
-            onClick={() => toast.info("Scheduling requires video chat setup")}
-            className="flex items-center gap-2 px-4 py-3 rounded-lg font-bold text-white shadow-md"
+            onClick={() => navigate(`/schedule/propose/${targetId}`)}
+            className="flex items-center gap-2 px-6 py-4 rounded-2xl font-bold text-white shadow-lg hover:shadow-xl transition-all"
             style={{ backgroundColor: COLORS.primary }}
           >
-            <Video size={20} />
+            <Video size={24} />
             Schedule
           </button>
         </div>
