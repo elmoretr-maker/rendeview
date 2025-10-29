@@ -9,3 +9,10 @@
     @apply outline-none focus:outline-none;
   }
 }
+
+/* Logo override: ensure logos use their specified size, not 100% width */
+.logo-image {
+  width: auto !important;
+  max-width: 100%;
+  height: auto;
+}

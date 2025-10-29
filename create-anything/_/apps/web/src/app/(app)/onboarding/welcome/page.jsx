@@ -50,7 +50,8 @@ export default function Welcome() {
           <img
             src={new URL("@/assets/logo-centered.png", import.meta.url).href}
             alt="Rende-View Logo"
-            className="w-16 h-16 mx-auto mb-3 object-contain"
+            className="w-16 h-16 mx-auto mb-3 object-contain logo-image"
+            style={{ width: '48px', height: '48px' }}
           />
           <h2 className="text-3xl font-playfair font-bold mb-3" style={{ color: COLORS.primary }}>
             Date Smarter, Not Harder

@@ -65,7 +65,8 @@ export default function SignUpPage() {
           <img
             src={new URL("@/assets/logo-centered.png", import.meta.url).href}
             alt="Rende-View Logo"
-            className="w-16 h-16 mx-auto mb-2 object-contain"
+            className="w-16 h-16 mx-auto mb-2 object-contain logo-image"
+            style={{ width: '48px', height: '48px' }}
           />
           <h1 className="text-3xl font-playfair font-bold text-gray-800">
             Create Account

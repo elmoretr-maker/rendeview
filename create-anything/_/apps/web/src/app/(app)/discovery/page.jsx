@@ -150,9 +150,9 @@ export default function Discovery() {
       style={{ backgroundColor: COLORS.bg }}
     >
       <AppHeader />
-      <div className="pt-8 px-4">
+      <div className="pt-4 px-4">
         <h1
-          className="text-4xl font-playfair font-bold mb-6 text-center"
+          className="text-2xl font-playfair font-bold mb-3 text-center"
           style={{ color: COLORS.text }}
         >
           Discover Your Match
