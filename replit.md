@@ -60,15 +60,21 @@ cd create-anything/_/apps/web && npm run dev
 - The app expects some Create.xyz specific environment variables but works without them
 - Stripe is configured with a placeholder key - payment features will use fallback mode
 - Daily.co video features require a valid API key to function
-- The auth session endpoint returns 400 errors when not logged in (this is expected behavior)
+- React hydration warnings appear in browser console (SSR/client mismatch) - these are cosmetic and don't affect functionality
 - LSP shows TypeScript module resolution warnings but these are false positives - the app compiles and runs correctly
 
 ## Recent Changes (October 29, 2025)
+### Initial Setup
 - Imported from GitHub
 - Installed Node.js 22 and dependencies
-- Created complete database schema
 - Configured port to 5000 for Replit
-- Generated AUTH_SECRET
-- Added placeholder Stripe key
-- Seeded admin user and default settings
 - Configured deployment for VM target
+
+### Database Reset (October 29, 2025 - Latest)
+- Created brand new Neon PostgreSQL database to resolve authentication issues
+- Dropped all existing tables and recreated complete schema with 12 tables
+- Fixed Auth.js configuration by adding `basePath: '/api/auth'` to initAuthConfig
+- Generated new AUTH_SECRET and configured AUTH_URL in environment
+- Seeded database with admin user (trelmore.staff@gmail.com / ADMIN) and 2 test users
+- Verified authentication endpoint returns HTTP 200
+- Successfully tested login flow with HTTP 302 redirect and session token creation
