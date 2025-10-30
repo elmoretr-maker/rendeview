@@ -16,5 +16,9 @@
     "url": "https://github.com/elmoretr-maker/rendeview/issues"
   },
   "homepage": "https://github.com/elmoretr-maker/rendeview#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "@stripe/react-stripe-js": "^5.3.0",
+    "@stripe/stripe-js": "^8.2.0"
+  }
 }

@@ -56,6 +56,13 @@ export async function POST(request, context) {
       );
     }
 
+    if (extension.stripe_payment_intent_id !== paymentIntentId) {
+      return Response.json(
+        { error: "Payment Intent ID mismatch" },
+        { status: 403 }
+      );
+    }
+
     let paymentIntent;
     try {
       paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
@@ -64,6 +71,20 @@ export async function POST(request, context) {
       return Response.json(
         { error: "Invalid Payment Intent" },
         { status: 400 }
+      );
+    }
+
+    if (paymentIntent.amount !== extension.amount_cents) {
+      return Response.json(
+        { error: "Payment amount mismatch" },
+        { status: 403 }
+      );
+    }
+
+    if (paymentIntent.metadata.extensionId !== String(extId)) {
+      return Response.json(
+        { error: "Payment Intent metadata mismatch" },
+        { status: 403 }
       );
     }
 
