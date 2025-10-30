@@ -111,3 +111,33 @@ The application follows a client-server architecture. The frontend is a React 18
     - Report Button: ✓ Working (Video Call page)
     - End Call Button: ✓ Working (Video Call page)
     - Stop Chat Button: Not implemented (confirmed)
+
+- **Safety Moderation System (4-Strike Logic)** (October 30, 2025): Comprehensive user safety implementation
+  - **Database Schema**: Added three columns to auth_users table
+    - block_count (integer, default 0): Tracks how many times a user has been blocked by others
+    - flagged_for_admin (boolean, default false): Marks users for admin review
+    - account_status (varchar, default 'active'): Tracks account status ('active', 'under_review')
+  - **3-Strike Warning**: When a user receives their 3rd block
+    - Automatically flags user for admin review (flagged_for_admin = true)
+    - Shows warning to blocker: "This user has been blocked by 3 people and has been flagged for admin review"
+    - Alerts moderators to potential problematic behavior
+  - **4-Strike Account Review**: When a user receives their 4th block (or more)
+    - Account status automatically set to 'under_review'
+    - User remains flagged for admin review
+    - Warning message includes total block count
+  - **Frontend Integration**: Discovery and Profile pages display safety warnings
+    - Toast notifications appear when blocking triggers 3+ strike thresholds
+    - Warnings include blocked user's name and current block count
+    - 6-second display duration for visibility
+
+- **Video Call End Functionality** (October 30, 2025): CRITICAL missing endpoint implemented
+  - **PATCH Endpoint**: Created /api/video/sessions/[id] endpoint
+    - Handles video session state updates (active, ended, grace_period)
+    - Validates user is a participant before allowing changes
+    - Sets ended_at timestamp when call is terminated
+    - Returns error if session not found or user not authorized
+  - **Frontend Integration**: End Call button now fully functional
+    - Calls PATCH endpoint to mark session as 'ended'
+    - Invalidates video-sessions query cache
+    - Routes user back to their profile page
+    - Both parties can end the call independently
