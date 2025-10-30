@@ -1,5 +1,5 @@
 import { neon } from "@neondatabase/serverless";
-import { getUser } from "../../utils/auth";
+import { getUser } from "../utils/auth";
 
 export async function GET(request) {
   try {

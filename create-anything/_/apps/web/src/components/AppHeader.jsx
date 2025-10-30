@@ -13,15 +13,21 @@ const COLORS = {
 export default function AppHeader() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const { data: newMatchesData } = useQuery({
     queryKey: ["newMatches"],
     queryFn: async () => {
-      const res = await fetch("/api/matches/new");
+      const res = await fetch("/api/new-matches");
       if (!res.ok) return { matches: [] };
       return res.json();
     },
     refetchInterval: 30000,
+    enabled: isMounted,
   });
 
   const newMatchCount = newMatchesData?.matches?.length || 0;

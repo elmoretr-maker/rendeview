@@ -24,7 +24,7 @@ export default function NewMatches() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["newMatches"],
     queryFn: async () => {
-      const res = await fetch("/api/matches/new");
+      const res = await fetch("/api/new-matches");
       if (res.status === 401) {
         const err = new Error("AUTH_401");
         err.code = 401;
@@ -41,7 +41,7 @@ export default function NewMatches() {
 
   const markViewedMutation = useMutation({
     mutationFn: async (matchId) => {
-      const res = await fetch("/api/matches/mark-viewed", {
+      const res = await fetch("/api/mark-match-viewed", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ matchId }),

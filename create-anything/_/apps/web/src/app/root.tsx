@@ -29,6 +29,7 @@ import { SessionProvider } from '@auth/create/react';
 import { useNavigate } from 'react-router';
 import { serializeError } from 'serialize-error';
 import { Toaster } from 'sonner';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // @ts-ignore
 import { LoadFonts } from 'virtual:load-fonts.jsx';
 import { HotReloadIndicator } from '../__create/HotReload';
@@ -400,9 +401,20 @@ export function Layout({ children }: { children: ReactNode }) {
 }
 
 export default function App() {
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 60,
+        refetchOnWindowFocus: false,
+      },
+    },
+  }));
+
   return (
     <SessionProvider>
-      <Outlet />
+      <QueryClientProvider client={queryClient}>
+        <Outlet />
+      </QueryClientProvider>
     </SessionProvider>
   );
 }
