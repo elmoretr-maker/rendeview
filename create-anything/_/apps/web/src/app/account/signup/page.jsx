@@ -73,7 +73,7 @@ export default function SignUpPage() {
         </a>
         <div className="mb-8 text-center mt-8">
           <img
-            src={new URL("@/assets/logo-centered.png", import.meta.url).href}
+            src="/src/assets/logo-centered.png"
             alt="Rende-View Logo"
             className="w-16 h-16 mx-auto mb-2 object-contain logo-image"
             style={{ width: '48px', height: '48px' }}
