@@ -1,14 +1,12 @@
 import { neon } from "@neondatabase/serverless";
-import { getUser } from "../utils/auth";
+import { getAuthenticatedUserId } from "../utils/auth";
 
 export async function POST(request) {
   try {
-    const user = await getUser(request);
-    if (!user) {
+    const uid = await getAuthenticatedUserId();
+    if (!uid) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const uid = user.id;
     const sql = neon(process.env.DATABASE_URL);
     const { matchId } = await request.json();
 

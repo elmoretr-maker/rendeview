@@ -22,6 +22,22 @@ The application employs a client-server architecture. The frontend, located at `
 - **Backend Framework**: Hono (Node.js)
 ## Recent Changes (October 30, 2025 - Latest)
 
+- **New Matches Celebration Feature** (October 30, 2025): Implemented celebratory new matches experience with dedicated page and notifications
+  - Added database columns `viewed_by_user_a` and `viewed_by_user_b` to matches table for tracking viewed state per user
+  - Created /api/new-matches endpoint returning unviewed matches for current user
+  - Created /api/mark-match-viewed endpoint to mark matches as viewed when user navigates to chat
+  - Built celebratory New Matches page (/new-matches) showing all unviewed matches with animated entry
+  - Added MatchCelebration modal component with confetti animation, sparkles, and profile display
+  - Modal triggers automatically when mutual like creates a match in Discovery
+  - Navigation bar includes new "New Matches" link with Heart icon and badge showing unviewed count
+  - Badge updates in real-time via React Query (30s polling) and query invalidation after actions
+  - Existing Matches page now filters to show only viewed matches (user has interacted with them)
+  - Fixed QueryClient security issue: moved from module-scoped to per-request instance using useState
+  - Resolved routing conflicts by moving endpoints outside /api/matches/* namespace
+  - Files updated: root.tsx (QueryClientProvider), AppHeader.jsx, new-matches/page.jsx, MatchCelebration.jsx, discovery/page.jsx, matches/all/route.js, new-matches/route.js, mark-match-viewed/route.js
+
+## Recent Changes (Continued)
+
 - **Card Carousel Discovery UI** (October 30, 2025): Replaced static discovery page with dynamic swipeable card carousel
   - Implemented Tinder-style swipeable cards using Framer Motion
   - Cards support drag gestures (swipe left to pass, swipe right to like)
