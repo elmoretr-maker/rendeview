@@ -93,3 +93,21 @@ The application follows a client-server architecture. The frontend is a React 18
     - Optional Upgrade button navigating to membership page
     - Only shows once per session
   - All nudges target Free tier users only and use encouraging, non-pushy messaging
+
+- **Critical UX Fixes** (October 30, 2025): Resolved navigation and empty state issues
+  - **Navigation Bar Fix**: AppHeader now displays consistently on ALL authenticated pages in ALL states
+    - Present on: Discovery, Matches, Messages, Profile, Settings/Blocked pages
+    - Renders during: Loading, error, and success states
+    - Correctly hidden on: Video Call page only
+  - **Matches Page Empty State**: Updated message to "You have no matches yet. Start exploring the Discovery feed!"
+  - **Blocked Users Management**: New dedicated page at /settings/blocked
+    - Database: Added notes column to blockers table
+    - API: PATCH endpoint for updating notes, GET includes notes field
+    - Features: Block dates display, private notes with save functionality, unblock button
+  - **Button Functionality Audit**: Verified all action buttons working correctly
+    - Like Button: ✓ Working (Discovery + Profile pages)
+    - Pass Button: ✓ Working (Discovery + Profile pages)  
+    - Schedule Button: ✓ Working (Profile page)
+    - Report Button: ✓ Working (Video Call page)
+    - End Call Button: ✓ Working (Video Call page)
+    - Stop Chat Button: Not implemented (confirmed)
