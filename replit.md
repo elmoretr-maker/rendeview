@@ -22,6 +22,25 @@ The application employs a client-server architecture. The frontend, located at `
 - **Backend Framework**: Hono (Node.js)
 ## Recent Changes (October 30, 2025 - Latest)
 
+- **Card Carousel Discovery UI** (October 30, 2025): Replaced static discovery page with dynamic swipeable card carousel
+  - Implemented Tinder-style swipeable cards using Framer Motion
+  - Cards support drag gestures (swipe left to pass, swipe right to like)
+  - Stacked card view showing up to 3 profiles at once with depth effect
+  - Smooth entrance/exit animations with rotation and opacity transitions
+  - Preserved all existing functionality: tap to view profile, Pass/Like buttons, mutations
+  - Cards only removed from view after successful API mutation (prevents data loss on errors)
+  - Added Reset button to restore all swiped cards in current session
+  - Profile counter shows current position (X of Y)
+  - Files updated: discovery/page.jsx
+
+- **Test Profile Seeding** (October 30, 2025): Created comprehensive test data for development
+  - Added /api/admin/seed-profiles endpoint generating 6 diverse profiles
+  - Each profile includes complete bio, primary photo, 3 additional photos, and working video
+  - Profiles span different membership tiers (Dating, Casual, Business)
+  - All test users accessible with password "testpass123"
+  - Proper data persistence to auth_users and profile_media tables
+  - Files updated: api/admin/seed-profiles/route.js
+
 - **Onboarding Flow Fix** (October 30, 2025): Fixed new user routing and onboarding flow
   - Root page (/) now properly checks user onboarding status before routing
   - Unauthenticated users → /onboarding/welcome (landing page)

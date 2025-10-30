@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Heart, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -14,6 +15,129 @@ const COLORS = {
   error: "#E74C3C",
   cardBg: "#F3F4F6",
 };
+
+// Swipeable Card Component
+function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, totalCards, isLocked }) {
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-200, 0, 200], [-25, 0, 25]);
+  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
+  const [exitX, setExitX] = React.useState(0);
+
+  const handleDragEnd = (event, info) => {
+    if (isLocked) return;
+    
+    if (Math.abs(info.offset.x) > 100) {
+      setExitX(info.offset.x > 0 ? 300 : -300);
+      if (info.offset.x > 0) {
+        onSwipeRight();
+      } else {
+        onSwipeLeft();
+      }
+    }
+  };
+
+  return (
+    <motion.div
+      style={{
+        x,
+        rotate,
+        opacity,
+        position: 'absolute',
+        width: '100%',
+        cursor: isLocked ? 'not-allowed' : 'grab',
+      }}
+      drag={isLocked ? false : "x"}
+      dragConstraints={{ left: -1000, right: 1000, top: 0, bottom: 0 }}
+      dragElastic={0.7}
+      onDragEnd={handleDragEnd}
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={{ 
+        scale: 1, 
+        opacity: 1,
+        y: index * 10,
+        zIndex: totalCards - index,
+      }}
+      exit={{
+        x: exitX,
+        opacity: 0,
+        rotate: exitX > 0 ? 25 : -25,
+        transition: { duration: 0.3 }
+      }}
+      whileDrag={isLocked ? {} : { cursor: 'grabbing', scale: 1.05 }}
+      className="touch-none"
+    >
+      <div 
+        className="w-full rounded-3xl shadow-2xl overflow-hidden relative"
+        style={{ backgroundColor: "white" }}
+      >
+        <button
+          onClick={onTap}
+          className="w-full relative"
+        >
+          {profile.photo ? (
+            <div className="relative">
+              <img
+                src={profile.photo}
+                alt={profile.name || `User ${profile.id}`}
+                className="w-full h-[500px] object-cover"
+                style={{ backgroundColor: COLORS.cardBg }}
+              />
+              {/* Gradient overlay for text readability */}
+              <div 
+                className="absolute bottom-0 left-0 right-0 h-32"
+                style={{ 
+                  background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" 
+                }}
+              />
+            </div>
+          ) : (
+            <div
+              className="w-full h-[500px] flex items-center justify-center"
+              style={{ backgroundColor: COLORS.cardBg }}
+            >
+              <span className="text-gray-600">View Profile</span>
+            </div>
+          )}
+          
+          {/* Profile info overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-3xl font-bold">
+                {profile.name || "User " + profile.id}
+              </h2>
+              {profile.immediate_available && (
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-500">
+                  <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                  <span className="text-xs font-semibold">Online</span>
+                </div>
+              )}
+            </div>
+            {profile.membership_tier && (
+              <span 
+                className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold mb-2"
+                style={{ backgroundColor: "rgba(255,255,255,0.2)", color: "white" }}
+              >
+                {profile.membership_tier.charAt(0).toUpperCase() + profile.membership_tier.slice(1)}
+              </span>
+            )}
+            {profile.bio && (
+              <p className="text-sm opacity-90 line-clamp-2 mt-2">
+                {profile.bio}
+              </p>
+            )}
+          </div>
+        </button>
+
+        {/* Tap to view full profile hint */}
+        <div className="px-6 py-4 text-center border-t border-gray-100">
+          <p className="text-sm opacity-60" style={{ color: COLORS.text }}>
+            Swipe or tap photo to interact
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 export default function Discovery() {
   const queryClient = useQueryClient();
@@ -39,8 +163,11 @@ export default function Discovery() {
   });
 
   const [index, setIndex] = useState(0);
+  const [removedCards, setRemovedCards] = useState([]);
+  
   useEffect(() => {
     setIndex(0);
+    setRemovedCards([]);
   }, [data]);
 
   const likeMutation = useMutation({
@@ -58,7 +185,9 @@ export default function Discovery() {
       if (!res.ok) throw new Error("Failed to like");
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data, likedId) => {
+      const profileIndex = profiles.findIndex(p => p.id === likedId);
+      setRemovedCards(prev => [...prev, profileIndex]);
       setIndex((i) => i + 1);
       queryClient.invalidateQueries({ queryKey: ["matches"] });
       queryClient.invalidateQueries({ queryKey: ["discovery"] });
@@ -91,7 +220,9 @@ export default function Discovery() {
       if (!res.ok) throw new Error("Failed to discard");
       return res.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data, blockedId) => {
+      const profileIndex = profiles.findIndex(p => p.id === blockedId);
+      setRemovedCards(prev => [...prev, profileIndex]);
       setIndex((i) => i + 1);
       queryClient.invalidateQueries({ queryKey: ["discovery"] });
       
@@ -112,7 +243,9 @@ export default function Discovery() {
   });
 
   const profiles = data?.profiles || [];
-  const current = profiles[index];
+  const visibleProfiles = profiles.filter((_, i) => !removedCards.includes(i));
+  const currentIndex = profiles.findIndex((_, i) => !removedCards.includes(i));
+  const current = visibleProfiles[0];
 
   if (userLoading || isLoading) {
     return (
@@ -163,100 +296,38 @@ export default function Discovery() {
         </h1>
       {current ? (
         <div className="flex flex-col items-center max-w-md mx-auto pb-8">
-          {/* Profile Card */}
-          <div 
-            className="w-full rounded-3xl shadow-2xl overflow-hidden relative mb-6"
-            style={{ backgroundColor: "white" }}
-          >
-            <button
-              onClick={() => navigate(`/profile/${current.id}`)}
-              className="w-full relative"
-            >
-              {current.photo ? (
-                <div className="relative">
-                  <img
-                    src={current.photo}
-                    alt={current.name || `User ${current.id}`}
-                    className="w-full h-[500px] object-cover"
-                    style={{ backgroundColor: COLORS.cardBg }}
-                  />
-                  {/* Gradient overlay for text readability */}
-                  <div 
-                    className="absolute bottom-0 left-0 right-0 h-32"
-                    style={{ 
-                      background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" 
-                    }}
-                  />
-                </div>
-              ) : (
-                <div
-                  className="w-full h-[500px] flex items-center justify-center"
-                  style={{ backgroundColor: COLORS.cardBg }}
-                >
-                  <span className="text-gray-600">View Profile</span>
-                </div>
-              )}
-              
-              {/* Profile info overlay */}
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-3xl font-bold">
-                    {current.name || "User " + current.id}
-                  </h2>
-                  {current.immediate_available && (
-                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-500">
-                      <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                      <span className="text-xs font-semibold">Online</span>
-                    </div>
-                  )}
-                </div>
-                {current.membership_tier && (
-                  <span 
-                    className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold mb-2"
-                    style={{ backgroundColor: "rgba(255,255,255,0.2)", color: "white" }}
-                  >
-                    {current.membership_tier.charAt(0).toUpperCase() + current.membership_tier.slice(1)}
-                  </span>
-                )}
-                {current.bio && (
-                  <p className="text-sm opacity-90 line-clamp-2 mt-2">
-                    {current.bio}
-                  </p>
-                )}
-              </div>
-            </button>
-
-            {/* Tap to view full profile hint */}
-            <div className="px-6 py-4 text-center border-t border-gray-100">
-              <p className="text-sm opacity-60" style={{ color: COLORS.text }}>
-                Tap photo to view full profile
-              </p>
-            </div>
+          {/* Card Carousel Stack */}
+          <div className="relative w-full mb-6" style={{ height: '580px' }}>
+            <AnimatePresence>
+              {visibleProfiles.slice(0, 3).map((profile, idx) => (
+                <SwipeableCard
+                  key={profile.id}
+                  profile={profile}
+                  index={idx}
+                  totalCards={Math.min(3, visibleProfiles.length)}
+                  isLocked={idx === 0 && (likeMutation.isPending || discardMutation.isPending)}
+                  onSwipeLeft={() => discardMutation.mutate(profile.id)}
+                  onSwipeRight={() => likeMutation.mutate(profile.id)}
+                  onTap={() => navigate(`/profile/${profile.id}`)}
+                />
+              ))}
+            </AnimatePresence>
           </div>
 
-          {/* Navigation controls */}
+          {/* Counter and Undo */}
           <div className="flex gap-3 items-center justify-center mb-4">
             <button
-              onClick={() => setIndex((i) => Math.max(0, i - 1))}
-              disabled={index === 0}
+              onClick={() => setRemovedCards([])}
+              disabled={removedCards.length === 0}
               className="px-4 py-2 rounded-full flex items-center gap-2 font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-              style={{ backgroundColor: "white", color: COLORS.text }}
+              style={{ backgroundColor: "white", color: COLORS.primary }}
             >
-              <ChevronLeft size={20} />
-              Previous
+              <RotateCcw size={18} />
+              Reset
             </button>
             <span className="text-sm font-medium" style={{ color: COLORS.text }}>
-              {index + 1} of {profiles.length}
+              {currentIndex + 1} of {profiles.length}
             </span>
-            <button
-              onClick={() => setIndex((i) => Math.min(profiles.length - 1, i + 1))}
-              disabled={index >= profiles.length - 1}
-              className="px-4 py-2 rounded-full flex items-center gap-2 font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-              style={{ backgroundColor: "white", color: COLORS.text }}
-            >
-              Next
-              <ChevronRight size={20} />
-            </button>
           </div>
 
           {/* Action buttons */}
@@ -264,7 +335,7 @@ export default function Discovery() {
             <button
               onClick={() => discardMutation.mutate(current.id)}
               disabled={discardMutation.isPending}
-              className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+              className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all disabled:opacity-50 hover:scale-110"
               style={{ backgroundColor: "white" }}
             >
               <X color={COLORS.error} size={32} strokeWidth={2.5} />
@@ -272,7 +343,7 @@ export default function Discovery() {
             <button
               onClick={() => likeMutation.mutate(current.id)}
               disabled={likeMutation.isPending}
-              className="w-24 h-24 rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl transition-all disabled:opacity-50"
+              className="w-24 h-24 rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl transition-all disabled:opacity-50 hover:scale-110"
               style={{ backgroundColor: COLORS.primary }}
             >
               <Heart color="white" size={36} fill="white" strokeWidth={2.5} />
