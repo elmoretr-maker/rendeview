@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { TIER_LIMITS, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -12,31 +13,48 @@ const COLORS = {
 
 const TIERS = [
   {
-    key: "casual",
-    title: "Casual",
-    price: "Free",
-    desc: "Browse, see & send likes",
+    key: MEMBERSHIP_TIERS.FREE,
+    title: "Free",
+    price: TIER_LIMITS.free.price,
+    photos: TIER_LIMITS.free.photos,
+    videos: TIER_LIMITS.free.videos,
+    videoDuration: TIER_LIMITS.free.videoMaxDuration,
+    chatMinutes: TIER_LIMITS.free.chatMinutes,
+    maxMeetings: TIER_LIMITS.free.maxMeetings,
+    desc: "Get started with basic features",
     highlight: false,
   },
   {
-    key: "active",
-    title: "Active User",
-    price: "$14.99/mo",
-    desc: "Unlock video chat & scheduling",
+    key: MEMBERSHIP_TIERS.CASUAL,
+    title: "Casual",
+    price: TIER_LIMITS.casual.price,
+    photos: TIER_LIMITS.casual.photos,
+    videos: TIER_LIMITS.casual.videos,
+    videoDuration: TIER_LIMITS.casual.videoMaxDuration,
+    chatMinutes: TIER_LIMITS.casual.chatMinutes,
+    desc: "Expand your profile & chat time",
     highlight: true,
   },
   {
-    key: "dating",
+    key: MEMBERSHIP_TIERS.DATING,
     title: "Dating",
-    price: "$29.99/mo",
-    desc: "Priority matching & video",
+    price: TIER_LIMITS.dating.price,
+    photos: TIER_LIMITS.dating.photos,
+    videos: TIER_LIMITS.dating.videos,
+    videoDuration: TIER_LIMITS.dating.videoMaxDuration,
+    chatMinutes: TIER_LIMITS.dating.chatMinutes,
+    desc: "Priority matching & longer chats",
     highlight: false,
   },
   {
-    key: "business",
+    key: MEMBERSHIP_TIERS.BUSINESS,
     title: "Business",
-    price: "$49.99/mo",
-    desc: "Max exposure & tools",
+    price: TIER_LIMITS.business.price,
+    photos: TIER_LIMITS.business.photos,
+    videos: TIER_LIMITS.business.videos,
+    videoDuration: TIER_LIMITS.business.videoMaxDuration,
+    chatMinutes: TIER_LIMITS.business.chatMinutes,
+    desc: "Maximum exposure & unlimited features",
     highlight: false,
   },
 ];
@@ -73,11 +91,11 @@ export default function MembershipScreen() {
       try {
         setLoading(true);
         setError(null);
-        if (key === "casual") {
+        if (key === "free") {
           const res = await fetch("/api/profile", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ membership_tier: "casual" }),
+            body: JSON.stringify({ membership_tier: "free" }),
           });
           if (!res.ok) throw new Error("Failed to set tier");
           navigate("/onboarding/profile");
@@ -154,9 +172,21 @@ export default function MembershipScreen() {
                 {t.price}
               </span>
             </div>
-            <p className="opacity-80 mb-3" style={{ color: COLORS.text }}>
+            <p className="opacity-80 mb-2" style={{ color: COLORS.text }}>
               {t.desc}
             </p>
+            
+            <div className="mb-3 space-y-1 text-sm" style={{ color: COLORS.text }}>
+              <p>• {t.photos} Profile Photos</p>
+              <p>• {t.videos} Video{t.videos !== 1 ? 's' : ''} ({t.videoDuration}s max each)</p>
+              <p>• {t.chatMinutes} Minutes Video Chat</p>
+              {t.maxMeetings !== undefined && t.maxMeetings !== Infinity && (
+                <p className="font-semibold" style={{ color: COLORS.accent }}>
+                  • {t.maxMeetings} Meeting Limit
+                </p>
+              )}
+            </div>
+            
             <button
               onClick={() => chooseTier(t.key)}
               disabled={loading}
@@ -165,8 +195,8 @@ export default function MembershipScreen() {
             >
               {loading
                 ? "Please wait..."
-                : t.key === "casual"
-                  ? "Continue with Casual"
+                : t.key === "free"
+                  ? "Continue with Free"
                   : `Choose ${t.title}`}
             </button>
           </div>
@@ -174,11 +204,14 @@ export default function MembershipScreen() {
 
         <div className="mt-4 p-4 rounded-xl" style={{ backgroundColor: COLORS.lightGray }}>
           <h3 className="text-base font-bold mb-2" style={{ color: COLORS.text }}>
-            Call extensions
+            Call Extensions
           </h3>
-          <p style={{ color: COLORS.text }}>• $5 for 5 minutes</p>
-          <p style={{ color: COLORS.text }}>• $10 for 15 minutes</p>
-          <p style={{ color: COLORS.text }}>• $20 for 30 minutes</p>
+          <p className="font-semibold" style={{ color: COLORS.accent }}>
+            • $8.00 for 10 minutes
+          </p>
+          <p className="text-sm mt-1 opacity-80" style={{ color: COLORS.text }}>
+            Extend any video call beyond your tier's limit
+          </p>
         </div>
 
         {pricing?.second_date_cents != null && (
