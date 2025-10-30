@@ -105,10 +105,8 @@ export default function ProfileMediaPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async ({ mediaUrl }) => {
-      const res = await fetch("/api/profile/media", {
+      const res = await fetch(`/api/profile/media?url=${encodeURIComponent(mediaUrl)}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mediaUrl }),
       });
       if (!res.ok) throw new Error("Failed to delete");
       return res.json();
