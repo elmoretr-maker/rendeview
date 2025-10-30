@@ -27,15 +27,15 @@ const COLORS = {
 };
 
 function limitsForTier(tier) {
-  const t = (tier || "casual").toLowerCase();
+  const t = (tier || "free").toLowerCase();
   switch (t) {
     case "business":
-      return { maxPhotos: 10, maxVideoSec: 5 * 60 };
+      return { maxPhotos: 20, maxVideoSec: 5 * 60 };
     case "dating":
-      return { maxPhotos: 6, maxVideoSec: 60 };
-    case "active":
-      return { maxPhotos: 4, maxVideoSec: 30 };
+      return { maxPhotos: 10, maxVideoSec: 60 };
     case "casual":
+      return { maxPhotos: 6, maxVideoSec: 30 };
+    case "free":
     default:
       return { maxPhotos: 2, maxVideoSec: 15 };
   }
@@ -47,7 +47,7 @@ export default function MediaOnboarding() {
   const [assets, setAssets] = useState([]);
   const [videoAsset, setVideoAsset] = useState(null);
   const [videoAccepted, setVideoAccepted] = useState(false);
-  const [tier, setTier] = useState("casual");
+  const [tier, setTier] = useState("free");
   const [recording, setRecording] = useState(false);
   const cameraRef = useRef(null);
   const [permission, requestPermission] = useCameraPermissions();
@@ -71,7 +71,7 @@ export default function MediaOnboarding() {
         const res = await fetch("/api/profile");
         if (res.ok) {
           const data = await res.json();
-          if (mounted) setTier(data?.user?.membership_tier || "casual");
+          if (mounted) setTier(data?.user?.membership_tier || "free");
         }
       } catch {}
     })();
