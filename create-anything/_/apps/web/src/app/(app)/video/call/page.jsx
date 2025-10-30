@@ -8,7 +8,8 @@ import {
   Clock,
   DollarSign,
   CheckCircle,
-  XCircle
+  XCircle,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
 import { loadStripe } from "@stripe/stripe-js";
@@ -110,10 +111,13 @@ export default function VideoCall() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentClientSecret, setPaymentClientSecret] = useState(null);
   const [currentExtension, setCurrentExtension] = useState(null);
+  const [userTier, setUserTier] = useState(null);
+  const [showTimeLimitNudge, setShowTimeLimitNudge] = useState(false);
 
   const pollIntervalRef = useRef(null);
   const localTimerRef = useRef(null);
   const graceTimerRef = useRef(null);
+  const timeLimitNudgeShown = useRef(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -205,6 +209,19 @@ export default function VideoCall() {
     };
   }, [graceCountdown, navigate]);
 
+  useEffect(() => {
+    if (
+      userTier === "free" &&
+      localRemainingSeconds !== null &&
+      localRemainingSeconds <= 60 &&
+      localRemainingSeconds > 55 &&
+      !timeLimitNudgeShown.current
+    ) {
+      setShowTimeLimitNudge(true);
+      timeLimitNudgeShown.current = true;
+    }
+  }, [localRemainingSeconds, userTier]);
+
   const createRoomMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch("/api/video/room/create", {
@@ -223,7 +240,16 @@ export default function VideoCall() {
     onSuccess: (data) => {
       setCurrentRoomUrl(data.room_url);
       setSessionId(data.video_session_id);
-      toast.success("Video room created!");
+      setUserTier(data.user_tier);
+      
+      if (data.is_final_free_meeting) {
+        toast.info(
+          "This is your last free video call for today! Upgrade to Casual ($9.99/mo) for unlimited daily calls and longer chat sessions.",
+          { duration: 8000 }
+        );
+      } else {
+        toast.success("Video room created!");
+      }
     },
     onError: (error) => {
       setError(error.message || "Failed to create video room");
@@ -447,6 +473,30 @@ export default function VideoCall() {
       </div>
 
       <div className="bg-gradient-to-t from-black to-transparent p-6">
+        {showTimeLimitNudge && (
+          <div className="mb-4 p-4 rounded-xl flex items-center justify-between gap-4 relative" style={{ backgroundColor: 'rgba(91, 59, 175, 0.85)' }}>
+            <button
+              onClick={() => setShowTimeLimitNudge(false)}
+              className="absolute top-2 right-2 p-1 rounded-full hover:bg-white/20 transition-all"
+              aria-label="Dismiss"
+            >
+              <X size={18} className="text-white" />
+            </button>
+            <div className="flex-1 pr-6">
+              <p className="text-white font-semibold text-sm">
+                Only 1 minute left on your Free plan! Upgrade to Casual ($9.99/mo) for 15-minute calls and unlimited meetings.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/onboarding/membership")}
+              className="px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all hover:opacity-90"
+              style={{ backgroundColor: COLORS.secondary, color: "white" }}
+            >
+              Upgrade
+            </button>
+          </div>
+        )}
+
         {graceCountdown !== null && (
           <div className="mb-4 p-4 rounded-xl text-center" style={{ backgroundColor: 'rgba(243, 156, 18, 0.9)' }}>
             <p className="text-white font-bold">Time's up! Extend to continue ({formatTime(graceCountdown)} remaining)</p>

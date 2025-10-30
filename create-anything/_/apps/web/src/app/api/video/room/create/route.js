@@ -15,7 +15,7 @@ export async function POST(request) {
     const [meRow] =
       await sql`SELECT membership_tier, video_meetings_count, last_video_meeting_at FROM auth_users WHERE id = ${session.user.id}`;
     const myTier = (meRow?.membership_tier || "free").toLowerCase();
-    const meetingCount = meRow?.video_meetings_count || 0;
+    let meetingCount = meRow?.video_meetings_count || 0;
     const lastMeetingDate = meRow?.last_video_meeting_at;
 
     // Free tier: 3 meeting cap
@@ -29,6 +29,7 @@ export async function POST(request) {
       
       if (!isSameDay) {
         await sql`UPDATE auth_users SET video_meetings_count = 0, last_video_meeting_at = ${now.toISOString()} WHERE id = ${session.user.id}`;
+        meetingCount = 0;
       } else if (meetingCount >= 3) {
         return Response.json(
           {
@@ -146,12 +147,21 @@ export async function POST(request) {
     ]);
 
     // Increment meeting count for free tier users
+    let isFinalFreeMeeting = false;
     if (myTier === "free") {
+      // This will be their 3rd meeting after increment
+      isFinalFreeMeeting = (meetingCount + 1) === 3;
       await sql`UPDATE auth_users SET video_meetings_count = video_meetings_count + 1 WHERE id = ${session.user.id}`;
     }
 
     return Response.json(
-      { video_session_id: vidSessionId, room_url: roomData.url, room_name },
+      { 
+        video_session_id: vidSessionId, 
+        room_url: roomData.url, 
+        room_name,
+        is_final_free_meeting: isFinalFreeMeeting,
+        user_tier: myTier
+      },
       { status: 200 },
     );
   } catch (err) {

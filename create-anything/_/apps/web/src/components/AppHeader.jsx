@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router";
-import { Home, Users, MessageCircle, User, LogOut } from "lucide-react";
+import { Home, Users, MessageCircle, User, Crown } from "lucide-react";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -17,6 +17,7 @@ export default function AppHeader() {
     { path: "/discovery", icon: Home, label: "Discover" },
     { path: "/matches", icon: Users, label: "Matches" },
     { path: "/messages", icon: MessageCircle, label: "Messages" },
+    { path: "/onboarding/membership", icon: Crown, label: "Membership" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
 
