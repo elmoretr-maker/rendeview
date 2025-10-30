@@ -141,3 +141,17 @@ The application follows a client-server architecture. The frontend is a React 18
     - Invalidates video-sessions query cache
     - Routes user back to their profile page
     - Both parties can end the call independently
+
+- **Critical Routing & Upload Fixes** (October 30, 2025): Resolved matches API and photo/video upload functionality
+  - **Matches API Routing Conflict**: Fixed endpoint routing issue that was breaking Matches, Messages, and Schedule pages
+    - Problem: `/api/matches/list` was being incorrectly routed to `/api/matches/[id]` dynamic route, causing "invalid input syntax for type integer" errors
+    - Solution: Renamed endpoint from `/api/matches/list` to `/api/matches/all` to avoid routing conflict
+    - Updated all 6 references across codebase: Matches page, Messages page, Schedule proposal page, API route handler, and mobile app pages
+  - **Photo/Video Upload Modal Fix**: Restored upload button functionality on Profile page
+    - Problem: Uppy file upload modals weren't displaying due to missing CSS imports
+    - Root cause: Vite requires explicit package.json exports for CSS files
+    - Solution: Added correct Uppy CSS imports to root.tsx using proper export paths:
+      - `@uppy/core/css/style.min.css` (not /dist/style.min.css)
+      - `@uppy/dashboard/css/style.min.css` (not /dist/style.min.css)
+    - Result: Upload Video and Upload Photos buttons now open functional Uppy modal dialogs with drag-drop, progress bars, and file validation
+  - **Impact**: Users can now view their matches list correctly and upload profile media without errors

@@ -20,6 +20,8 @@ import {
   Component,
 } from 'react';
 import './global.css';
+import '@uppy/core/css/style.min.css';
+import '@uppy/dashboard/css/style.min.css';
 
 import fetch from '@/__create/fetch';
 // @ts-ignore
