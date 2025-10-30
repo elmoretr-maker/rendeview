@@ -74,9 +74,14 @@ export default function RemoteProfile() {
       if (!res.ok) throw new Error("Failed to discard");
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["discovery"] });
       toast.success("Profile hidden");
+      
+      if (data?.warning) {
+        toast.warning(data.warning, { duration: 6000 });
+      }
+      
       navigate(-1);
     },
     onError: () => toast.error("Could not discard profile"),

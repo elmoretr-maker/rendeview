@@ -91,9 +91,13 @@ export default function Discovery() {
       if (!res.ok) throw new Error("Failed to discard");
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       setIndex((i) => i + 1);
       queryClient.invalidateQueries({ queryKey: ["discovery"] });
+      
+      if (data?.warning) {
+        toast.warning(data.warning, { duration: 6000 });
+      }
     },
     onError: (e) => {
       if (e?.code === 401 || e?.message === "AUTH_401") {
