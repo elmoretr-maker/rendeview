@@ -388,7 +388,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <LoadFonts />
       </head>
       <body>
-        <ClientOnly loader={() => children} />
+        {children}
         <HotReloadIndicator />
         <Toaster position="bottom-right" />
         <ScrollRestoration />
