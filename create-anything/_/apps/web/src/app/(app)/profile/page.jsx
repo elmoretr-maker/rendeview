@@ -158,9 +158,20 @@ export default function Profile() {
   }, []);
 
   const handlePhotoUpload = useCallback(async () => {
-    const res = await fetch("/api/objects/upload", { method: "POST" });
-    const data = await res.json();
-    return { method: "PUT", url: data.uploadURL };
+    try {
+      const res = await fetch("/api/objects/upload", { method: "POST" });
+      if (!res.ok) {
+        const error = await res.json();
+        toast.error(error.error || "Failed to get upload URL");
+        throw new Error("Upload URL request failed");
+      }
+      const data = await res.json();
+      return { method: "PUT", url: data.uploadURL };
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to initiate upload");
+      throw e;
+    }
   }, []);
 
   const handlePhotoComplete = useCallback(async (result) => {
@@ -173,6 +184,7 @@ export default function Profile() {
           body: JSON.stringify({ mediaURL: uploadURL, type: "photo" }),
         });
         if (!res.ok) throw new Error("Failed to save photo");
+        const data = await res.json();
         toast.success("Photo uploaded successfully");
         window.location.reload();
       } catch (e) {
@@ -183,9 +195,20 @@ export default function Profile() {
   }, []);
 
   const handleVideoUpload = useCallback(async () => {
-    const res = await fetch("/api/objects/upload", { method: "POST" });
-    const data = await res.json();
-    return { method: "PUT", url: data.uploadURL };
+    try {
+      const res = await fetch("/api/objects/upload", { method: "POST" });
+      if (!res.ok) {
+        const error = await res.json();
+        toast.error(error.error || "Failed to get upload URL");
+        throw new Error("Upload URL request failed");
+      }
+      const data = await res.json();
+      return { method: "PUT", url: data.uploadURL };
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to initiate upload");
+      throw e;
+    }
   }, []);
 
   const handleVideoComplete = useCallback(async (result) => {
@@ -198,6 +221,7 @@ export default function Profile() {
           body: JSON.stringify({ mediaURL: uploadURL, type: "video" }),
         });
         if (!res.ok) throw new Error("Failed to save video");
+        const data = await res.json();
         toast.success("Video uploaded successfully");
         window.location.reload();
       } catch (e) {
@@ -272,7 +296,7 @@ export default function Profile() {
           {videoUrl ? (
             <div className="relative rounded-xl overflow-hidden bg-black">
               <video
-                src={videoUrl}
+                src={`/api${videoUrl}`}
                 controls
                 loop
                 className="w-full"
@@ -321,7 +345,7 @@ export default function Profile() {
                         className="relative block"
                       >
                         <img
-                          src={m.url}
+                          src={`/api${m.url}`}
                           alt="Profile"
                           className="w-32 h-32 rounded-lg object-cover"
                           style={{ border: `3px solid ${isPrimary ? COLORS.primary : "#E5E7EB"}` }}
