@@ -2,7 +2,8 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Heart, X } from "lucide-react";
+import { Heart, X, Eye } from "lucide-react";
+import AppHeader from "@/components/AppHeader";
 import MatchCelebration from "@/components/MatchCelebration";
 
 const COLORS = {
@@ -14,22 +15,22 @@ const COLORS = {
   cardBg: "#F3F4F6",
 };
 
-export default function Likers() {
+export default function ProfileViewers() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCelebration, setShowCelebration] = React.useState(false);
   const [matchedUser, setMatchedUser] = React.useState(null);
-  
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ["likers"],
+    queryKey: ["profileViewers"],
     queryFn: async () => {
-      const res = await fetch("/api/matches/likers");
+      const res = await fetch("/api/profile-views");
       if (res.status === 401) {
         const err = new Error("AUTH_401");
         err.code = 401;
         throw err;
       }
-      if (!res.ok) throw new Error("Failed to load likers");
+      if (!res.ok) throw new Error("Failed to load profile viewers");
       return res.json();
     },
     retry: (count, err) => {
@@ -54,15 +55,15 @@ export default function Likers() {
       return res.json();
     },
     onSuccess: (data, likedId) => {
-      queryClient.invalidateQueries({ queryKey: ["likers"] });
+      queryClient.invalidateQueries({ queryKey: ["profileViewers"] });
       queryClient.invalidateQueries({ queryKey: ["matches"] });
       queryClient.invalidateQueries({ queryKey: ["newMatches"] });
       
       if (data?.matched) {
-        const likedUser = likers.find(l => l.user.id === likedId);
+        const likedViewer = viewers.find(v => v.user.id === likedId);
         setMatchedUser({
-          name: likedUser?.user.name,
-          photo: likedUser?.user.photo,
+          name: likedViewer?.user.name,
+          photo: likedViewer?.user.photo,
         });
         setShowCelebration(true);
       } else {
@@ -95,7 +96,7 @@ export default function Likers() {
       return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["likers"] });
+      queryClient.invalidateQueries({ queryKey: ["profileViewers"] });
       toast.success("Profile passed");
     },
     onError: (e) => {
@@ -108,82 +109,125 @@ export default function Likers() {
     },
   });
 
-  const likers = data?.likers || [];
+  const viewers = data?.viewers || [];
 
-  React.useEffect(() => {
-    if (error?.message === "AUTH_401") {
-      toast.error("Session expired. Please sign in.");
-    }
-  }, [error]);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+        <AppHeader />
+        <div className="flex items-center justify-center" style={{ minHeight: "60vh" }}>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: COLORS.primary }}></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error?.message === "AUTH_401") {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+        <AppHeader />
+        <div className="px-4 py-8 max-w-2xl mx-auto">
+          <p className="mb-4" style={{ color: COLORS.text }}>Session expired. Please sign in.</p>
+          <button
+            onClick={() => navigate("/account/signin")}
+            className="px-4 py-2 rounded-lg text-white font-semibold shadow-md"
+            style={{ backgroundColor: COLORS.primary }}
+          >
+            Sign In
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6" style={{ color: COLORS.text }}>Likers</h1>
-        
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: COLORS.primary }}></div>
+    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <AppHeader />
+      
+      <div className="px-4 py-8 max-w-4xl mx-auto">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Eye size={28} style={{ color: COLORS.primary }} />
+            <h1 className="text-3xl font-bold" style={{ color: COLORS.text }}>
+              Profile Viewers
+            </h1>
           </div>
-        ) : error?.message === "AUTH_401" ? (
-          <div>
-            <p className="mb-4" style={{ color: COLORS.text }}>Session expired. Please sign in.</p>
-            <button
-              onClick={() => navigate("/account/signin")}
-              className="px-4 py-2 rounded-lg text-white font-semibold shadow-md"
-              style={{ backgroundColor: COLORS.primary }}
-            >
-              Sign In
-            </button>
-          </div>
-        ) : error ? (
-          <p style={{ color: COLORS.error }}>Error loading likers</p>
-        ) : likers.length === 0 ? (
+          <p className="text-gray-600">
+            See who's been checking out your profile
+          </p>
+          <p className="text-sm text-gray-500 mt-1">
+            Recent viewers from the last 7 days
+          </p>
+        </div>
+
+        {viewers.length === 0 ? (
           <div className="text-center py-12">
-            <p style={{ color: COLORS.text }}>No likers yet</p>
+            <p style={{ color: COLORS.text }}>No profile views yet. Keep being active!</p>
           </div>
         ) : (
           <div className="space-y-4">
-            {likers.map((item, idx) => (
+            {viewers.map((viewer) => (
               <div
-                key={idx}
+                key={viewer.user.id}
                 className="rounded-xl shadow-md overflow-hidden"
                 style={{ backgroundColor: "white" }}
               >
                 <div className="flex items-center p-4">
                   <button
-                    onClick={() => navigate(`/profile/${item.user.id}`)}
+                    onClick={() => navigate(`/profile/${viewer.user.id}`)}
                     className="flex items-center flex-1"
                   >
-                    {item.user.photo ? (
+                    {viewer.user.photo ? (
                       <img
-                        src={item.user.photo}
-                        alt={item.user.name || "User"}
-                        className="w-16 h-16 rounded-full object-cover bg-gray-200"
+                        src={viewer.user.photo}
+                        alt={viewer.user.name || "User"}
+                        className="w-20 h-20 rounded-full object-cover bg-gray-200"
                       />
                     ) : (
-                      <div className="w-16 h-16 rounded-full bg-gray-200"></div>
+                      <div className="w-20 h-20 rounded-full bg-gray-200"></div>
                     )}
                     <div className="ml-4 flex-1 text-left">
                       <p className="font-bold text-lg" style={{ color: COLORS.text }}>
-                        {item.user.name || `User ${item.user.id}`}
+                        {viewer.user.name || `User ${viewer.user.id}`}
                       </p>
                       <p className="text-sm text-gray-500">
-                        liked you {new Date(item.liked_at).toLocaleDateString()}
+                        Viewed {new Date(viewer.viewed_at).toLocaleDateString()} at{" "}
+                        {new Date(viewer.viewed_at).toLocaleTimeString([], { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
                       </p>
-                      {item.user.immediate_available && (
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                          <span className="text-xs text-green-600 font-semibold">Online Now</span>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2 mt-1">
+                        {viewer.user.immediate_available && (
+                          <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                            <span className="text-xs text-green-600 font-semibold">Online Now</span>
+                          </div>
+                        )}
+                        {viewer.user.membership_tier && (
+                          <span 
+                            className="text-xs px-2 py-0.5 rounded-full"
+                            style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
+                          >
+                            {viewer.user.membership_tier.charAt(0).toUpperCase() + viewer.user.membership_tier.slice(1)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </button>
                 </div>
 
+                {/* Bio preview */}
+                {viewer.user.bio && (
+                  <div className="px-4 pb-3">
+                    <p className="text-sm text-gray-700 line-clamp-2">{viewer.user.bio}</p>
+                  </div>
+                )}
+
+                {/* Action buttons */}
                 <div className="flex border-t border-gray-100">
                   <button
-                    onClick={() => passMutation.mutate(item.user.id)}
+                    onClick={() => passMutation.mutate(viewer.user.id)}
                     disabled={passMutation.isPending || likeMutation.isPending}
                     className="flex-1 flex items-center justify-center gap-2 py-4 font-semibold transition-colors disabled:opacity-50"
                     style={{ 
@@ -196,7 +240,7 @@ export default function Likers() {
                   </button>
                   <div className="w-px" style={{ backgroundColor: "#E5E7EB" }}></div>
                   <button
-                    onClick={() => likeMutation.mutate(item.user.id)}
+                    onClick={() => likeMutation.mutate(viewer.user.id)}
                     disabled={likeMutation.isPending || passMutation.isPending}
                     className="flex-1 flex items-center justify-center gap-2 py-4 font-semibold transition-colors disabled:opacity-50"
                     style={{ 

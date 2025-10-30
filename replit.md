@@ -22,6 +22,20 @@ The application employs a client-server architecture. The frontend, located at `
 - **Backend Framework**: Hono (Node.js)
 ## Recent Changes (October 30, 2025 - Latest)
 
+- **Enhanced Smart Matching System** (October 30, 2025): Implemented comprehensive matching features to increase user connections
+  - **Interactive Likers Page**: Users can now like/pass directly from /matches/likers page with match celebration on reciprocal likes
+  - **Smart Discovery Prioritization**: Discovery algorithm now prioritizes users who liked you first, then active users, then everyone else
+  - **Mutual Interests Highlighting**: Discovery cards show "Shared Interests" badges and display up to 3 common interests with match percentage
+  - **Activity-Based Matching**: Added last_active tracking, "Online Now" indicators, and prioritization of recently active users
+  - **Conversation Starters**: Chat interface displays 4 pre-written conversation starters when no messages exist yet
+  - **Daily Picks Feature**: New /daily-picks page with 10 curated matches selected daily using compatibility algorithm (interests + activity + membership)
+  - **Reverse Discovery**: New /profile-viewers page shows who viewed your profile in last 7 days with Like/Pass actions
+  - Database additions: interests (JSONB) and last_active (timestamp) columns to auth_users; profile_views and daily_picks tables created
+  - All discovery and interaction endpoints now update last_active timestamp for accurate activity tracking
+  - Files updated: likers/page.jsx, discovery/list/route.js, discovery/page.jsx, messages/[matchId]/page.jsx, daily-picks/route.js, daily-picks/page.jsx, profile-views/route.js, profile-viewers/page.jsx, api/utils/auth.js
+
+## Recent Changes (Continued)
+
 - **New Matches Celebration Feature** (October 30, 2025): Implemented celebratory new matches experience with dedicated page and notifications
   - Added database columns `viewed_by_user_a` and `viewed_by_user_b` to matches table for tracking viewed state per user
   - Created /api/new-matches endpoint returning unviewed matches for current user

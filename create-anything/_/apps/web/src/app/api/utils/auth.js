@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import sql from "./sql";
 
 /**
  * Get authenticated user ID with QA bypass support
@@ -34,4 +35,21 @@ export async function requireAuth() {
   }
   
   return userId;
+}
+
+/**
+ * Update user's last_active timestamp for activity tracking
+ * Call this in API routes to track user activity
+ * 
+ * @param {number} userId - The user ID to update
+ */
+export async function updateLastActive(userId) {
+  if (!userId) return;
+  
+  try {
+    await sql`UPDATE auth_users SET last_active = NOW() WHERE id = ${userId}`;
+  } catch (err) {
+    console.error('[updateLastActive] Failed to update last_active:', err);
+    // Don't throw - activity tracking shouldn't break the request
+  }
 }

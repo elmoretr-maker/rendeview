@@ -18,11 +18,19 @@ const COLORS = {
 };
 
 // Swipeable Card Component
-function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, totalCards, isLocked }) {
+function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, totalCards, isLocked, userInterests }) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 0, 200], [-25, 0, 25]);
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
   const [exitX, setExitX] = React.useState(0);
+
+  // Calculate mutual interests
+  const mutualInterests = React.useMemo(() => {
+    if (!userInterests || !profile.interests) return [];
+    return userInterests.filter(interest => 
+      profile.interests.includes(interest)
+    );
+  }, [userInterests, profile.interests]);
 
   const handleDragEnd = (event, info) => {
     if (isLocked) return;
@@ -113,14 +121,54 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
                 </div>
               )}
             </div>
-            {profile.membership_tier && (
-              <span 
-                className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold mb-2"
-                style={{ backgroundColor: "rgba(255,255,255,0.2)", color: "white" }}
-              >
-                {profile.membership_tier.charAt(0).toUpperCase() + profile.membership_tier.slice(1)}
-              </span>
+            
+            {/* Special indicators */}
+            <div className="flex flex-wrap gap-2 mb-2">
+              {profile.liked_you && (
+                <span 
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold"
+                  style={{ backgroundColor: COLORS.secondary, color: "white" }}
+                >
+                  <Heart size={12} fill="white" />
+                  Likes You
+                </span>
+              )}
+              {mutualInterests.length > 0 && (
+                <span 
+                  className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold"
+                  style={{ backgroundColor: COLORS.primary, color: "white" }}
+                >
+                  {mutualInterests.length} Shared Interest{mutualInterests.length > 1 ? 's' : ''}
+                </span>
+              )}
+              {profile.membership_tier && (
+                <span 
+                  className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold"
+                  style={{ backgroundColor: "rgba(255,255,255,0.2)", color: "white" }}
+                >
+                  {profile.membership_tier.charAt(0).toUpperCase() + profile.membership_tier.slice(1)}
+                </span>
+              )}
+            </div>
+            
+            {/* Show mutual interests details */}
+            {mutualInterests.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {mutualInterests.slice(0, 3).map((interest, idx) => (
+                  <span 
+                    key={idx}
+                    className="text-xs px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
+                  >
+                    {interest}
+                  </span>
+                ))}
+                {mutualInterests.length > 3 && (
+                  <span className="text-xs opacity-75">+{mutualInterests.length - 3} more</span>
+                )}
+              </div>
             )}
+            
             {profile.bio && (
               <p className="text-sm opacity-90 line-clamp-2 mt-2">
                 {profile.bio}
@@ -325,6 +373,7 @@ export default function Discovery() {
                   index={idx}
                   totalCards={Math.min(3, visibleProfiles.length)}
                   isLocked={idx === 0 && (likeMutation.isPending || discardMutation.isPending)}
+                  userInterests={user?.interests || []}
                   onSwipeLeft={() => discardMutation.mutate(profile.id)}
                   onSwipeRight={() => likeMutation.mutate(profile.id)}
                   onTap={() => navigate(`/profile/${profile.id}`)}

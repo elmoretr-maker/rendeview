@@ -78,6 +78,26 @@ export default function Chat() {
   }, [text, sendMutation]);
 
   const msgs = data?.messages || [];
+  const otherUser = data?.otherUser;
+
+  // Conversation starters based on profile info
+  const conversationStarters = React.useMemo(() => {
+    const starters = [
+      "Hey! How's your day going?",
+      "Hi there! Great to connect with you 😊",
+      "What are you up to today?",
+      "Happy to match with you!",
+    ];
+    
+    // Add personalized starters if we have profile info
+    if (otherUser) {
+      if (otherUser.membership_tier) {
+        starters.push(`I see you're on the ${otherUser.membership_tier} plan too!`);
+      }
+    }
+    
+    return starters.slice(0, 4); // Show max 4 starters
+  }, [otherUser]);
 
   React.useEffect(() => {
     if (error?.message === "AUTH_401") {
@@ -134,8 +154,32 @@ export default function Chat() {
         
         <div className="flex-1 overflow-y-auto mb-4 space-y-2">
           {msgs.length === 0 ? (
-            <div className="text-center py-12">
-              <p style={{ color: COLORS.text }}>No messages yet. Start the conversation!</p>
+            <div className="py-8">
+              <div className="text-center mb-6">
+                <p className="text-lg font-semibold mb-2" style={{ color: COLORS.text }}>
+                  Start the conversation!
+                </p>
+                <p className="text-sm text-gray-500">
+                  Pick a conversation starter or write your own message
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-2 max-w-md mx-auto">
+                {conversationStarters.map((starter, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setText(starter)}
+                    className="text-left px-4 py-3 rounded-lg border-2 transition-all hover:shadow-md"
+                    style={{ 
+                      borderColor: COLORS.cardBg,
+                      backgroundColor: "white",
+                      color: COLORS.text
+                    }}
+                  >
+                    <p className="text-sm">{starter}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
             msgs.map((item) => (
