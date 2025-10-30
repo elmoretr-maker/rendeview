@@ -103,3 +103,57 @@ export async function GET(request, context) {
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+
+export async function PATCH(request, context) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const sessionId = context.params.id;
+    if (!sessionId) {
+      return Response.json({ error: "Session ID required" }, { status: 400 });
+    }
+
+    const { state } = await request.json();
+    if (!state) {
+      return Response.json({ error: "State required" }, { status: 400 });
+    }
+
+    const [videoSession] = await sql`
+      SELECT 
+        vs.*,
+        m.user_a_id,
+        m.user_b_id
+      FROM video_sessions vs
+      JOIN matches m ON m.id = vs.match_id
+      WHERE vs.id = ${sessionId}
+    `;
+
+    if (!videoSession) {
+      return Response.json({ error: "Session not found" }, { status: 404 });
+    }
+
+    const userId = Number(session.user.id);
+    const isParticipant =
+      userId === Number(videoSession.user_a_id) ||
+      userId === Number(videoSession.user_b_id);
+
+    if (!isParticipant) {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    await sql`
+      UPDATE video_sessions 
+      SET state = ${state}, 
+          ended_at = CASE WHEN ${state} = 'ended' THEN NOW() ELSE ended_at END
+      WHERE id = ${sessionId}
+    `;
+
+    return Response.json({ ok: true });
+  } catch (err) {
+    console.error("PATCH /api/video/sessions/[id] error", err);
+    return Response.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}

@@ -35,10 +35,42 @@ export async function POST(request) {
       return Response.json({ error: "Invalid user" }, { status: 400 });
     }
 
-    await sql`
+    const result = await sql`
       INSERT INTO blockers (blocker_id, blocked_id)
       VALUES (${uid}, ${blockedId})
-      ON CONFLICT (blocker_id, blocked_id) DO NOTHING`;
+      ON CONFLICT (blocker_id, blocked_id) DO NOTHING
+      RETURNING id`;
+
+    if (result.length > 0) {
+      await sql`
+        UPDATE auth_users 
+        SET block_count = block_count + 1 
+        WHERE id = ${blockedId}`;
+
+      const [blockedUser] = await sql`
+        SELECT block_count, name 
+        FROM auth_users 
+        WHERE id = ${blockedId}`;
+
+      const blockCount = blockedUser?.block_count || 0;
+      let warning = null;
+
+      if (blockCount === 3) {
+        await sql`
+          UPDATE auth_users 
+          SET flagged_for_admin = true 
+          WHERE id = ${blockedId}`;
+        warning = `This user (${blockedUser.name}) has now been blocked by 3 people and has been flagged for admin review.`;
+      } else if (blockCount >= 4) {
+        await sql`
+          UPDATE auth_users 
+          SET account_status = 'under_review', flagged_for_admin = true 
+          WHERE id = ${blockedId}`;
+        warning = `This user (${blockedUser.name}) has been blocked by ${blockCount} people and their account is now under review.`;
+      }
+
+      return Response.json({ ok: true, warning, blockCount });
+    }
 
     return Response.json({ ok: true });
   } catch (err) {
