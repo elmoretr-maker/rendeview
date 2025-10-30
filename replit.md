@@ -22,6 +22,17 @@ The application employs a client-server architecture. The frontend, located at `
 - **Backend Framework**: Hono (Node.js)
 ## Recent Changes (October 30, 2025 - Latest)
 
+- **Onboarding Flow Fix** (October 30, 2025): Fixed new user routing and onboarding flow
+  - Root page (/) now properly checks user onboarding status before routing
+  - Unauthenticated users → /onboarding/welcome (landing page)
+  - Missing membership_tier → /onboarding/membership
+  - Missing name/profile → /onboarding/profile  
+  - Missing consent → /onboarding/consent
+  - Fully onboarded users → /discovery
+  - Removed QA_BYPASS logic from root page for proper production behavior
+  - Fixed welcome page logo using static import to prevent SSR hydration mismatches
+  - Files updated: page.jsx (root), welcome/page.jsx
+
 - **Navigation Improvements** (October 30, 2025): Enhanced authentication pages with back navigation
   - Added "Back" button to both Sign In and Sign Up pages
   - Button positioned at top-left corner with left arrow icon
