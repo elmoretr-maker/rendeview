@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 import { useUser } from "@/utils/useUser";
 import { toast } from "sonner";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import { Trash2, Upload } from "lucide-react";
+import { Trash2, Upload, Crown } from "lucide-react";
+import { getTierLimits, getRemainingPhotoSlots, getRemainingVideoSlots, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -29,6 +30,7 @@ export default function Profile() {
   const [media, setMedia] = useState([]);
   const [primaryPhoto, setPrimaryPhoto] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
+  const [membershipTier, setMembershipTier] = useState(MEMBERSHIP_TIERS.FREE);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -45,6 +47,7 @@ export default function Profile() {
         setImmediate(!!u.immediate_available);
         setOverride(!!u.availability_override);
         setPrimaryPhoto(u.primary_photo_url || null);
+        setMembershipTier(u.membership_tier || MEMBERSHIP_TIERS.FREE);
         if (u.typical_availability?.timezone) {
           setTimezone(u.typical_availability.timezone);
         }
@@ -158,6 +161,16 @@ export default function Profile() {
   }, []);
 
   const handlePhotoUpload = useCallback(async () => {
+    // Check tier limits before upload
+    const photoCount = media.filter(m => m.type === 'photo').length;
+    const limits = getTierLimits(membershipTier);
+    const remaining = getRemainingPhotoSlots(membershipTier, photoCount);
+    
+    if (remaining <= 0) {
+      toast.error(`Photo limit reached (${limits.photos} max). Upgrade to add more!`);
+      throw new Error("Photo limit reached");
+    }
+    
     try {
       const res = await fetch("/api/objects/upload", { method: "POST" });
       if (!res.ok) {
@@ -169,10 +182,12 @@ export default function Profile() {
       return { method: "PUT", url: data.uploadURL };
     } catch (e) {
       console.error(e);
-      toast.error("Failed to initiate upload");
+      if (e.message !== "Photo limit reached") {
+        toast.error("Failed to initiate upload");
+      }
       throw e;
     }
-  }, []);
+  }, [media, membershipTier]);
 
   const handlePhotoComplete = useCallback(async (result) => {
     if (result.successful && result.successful.length > 0) {
@@ -195,6 +210,16 @@ export default function Profile() {
   }, []);
 
   const handleVideoUpload = useCallback(async () => {
+    // Check tier limits before upload
+    const videoCount = media.filter(m => m.type === 'video').length;
+    const limits = getTierLimits(membershipTier);
+    const remaining = getRemainingVideoSlots(membershipTier, videoCount);
+    
+    if (remaining <= 0) {
+      toast.error(`Video limit reached (${limits.videos} max). Upgrade to add more!`);
+      throw new Error("Video limit reached");
+    }
+    
     try {
       const res = await fetch("/api/objects/upload", { method: "POST" });
       if (!res.ok) {
@@ -206,10 +231,12 @@ export default function Profile() {
       return { method: "PUT", url: data.uploadURL };
     } catch (e) {
       console.error(e);
-      toast.error("Failed to initiate upload");
+      if (e.message !== "Video limit reached") {
+        toast.error("Failed to initiate upload");
+      }
       throw e;
     }
-  }, []);
+  }, [media, membershipTier]);
 
   const handleVideoComplete = useCallback(async (result) => {
     if (result.successful && result.successful.length > 0) {
@@ -259,10 +286,26 @@ export default function Profile() {
     );
   }
 
+  const tierLimits = getTierLimits(membershipTier);
+  const photoCount = media.filter(m => m.type === 'photo').length;
+  const videoCount = media.filter(m => m.type === 'video').length;
+  const remainingPhotos = getRemainingPhotoSlots(membershipTier, photoCount);
+  const remainingVideos = getRemainingVideoSlots(membershipTier, videoCount);
+
   return (
     <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6" style={{ color: COLORS.text }}>Profile</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>Profile</h1>
+          <Link
+            to="/onboarding/membership"
+            className="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
+            style={{ backgroundColor: COLORS.secondary }}
+          >
+            <Crown size={18} />
+            {membershipTier?.toUpperCase() || 'FREE'} Tier
+          </Link>
+        </div>
 
         {error === "AUTH_401" ? (
           <div className="mb-6">
@@ -278,7 +321,7 @@ export default function Profile() {
         ) : null}
 
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <p className="font-semibold font-playfair text-xl" style={{ color: COLORS.text }}>Profile Video</p>
             <ObjectUploader
               maxNumberOfFiles={1}
@@ -287,12 +330,15 @@ export default function Profile() {
               onGetUploadParameters={handleVideoUpload}
               onComplete={handleVideoComplete}
               buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
-              buttonStyle={{ backgroundColor: COLORS.primary }}
+              buttonStyle={{ backgroundColor: remainingVideos > 0 ? COLORS.primary : '#9CA3AF' }}
             >
               <Upload size={18} />
-              Upload Video
+              {remainingVideos > 0 ? 'Upload Video' : 'Limit Reached'}
             </ObjectUploader>
           </div>
+          <p className="text-sm mb-3" style={{ color: '#6B7280' }}>
+            {videoCount} of {tierLimits.videos} video{tierLimits.videos !== 1 ? 's' : ''} • Max {tierLimits.videoMaxDuration}s each
+          </p>
           {videoUrl ? (
             <div className="relative rounded-xl overflow-hidden bg-black">
               <video
@@ -317,21 +363,24 @@ export default function Profile() {
         </div>
 
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <p className="font-semibold font-playfair text-xl" style={{ color: COLORS.text }}>Your Photos</p>
             <ObjectUploader
-              maxNumberOfFiles={5}
+              maxNumberOfFiles={remainingPhotos}
               maxFileSize={10485760}
               allowedFileTypes={['image/*']}
               onGetUploadParameters={handlePhotoUpload}
               onComplete={handlePhotoComplete}
               buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
-              buttonStyle={{ backgroundColor: COLORS.primary }}
+              buttonStyle={{ backgroundColor: remainingPhotos > 0 ? COLORS.primary : '#9CA3AF' }}
             >
               <Upload size={18} />
-              Upload Photos
+              {remainingPhotos > 0 ? `Upload Photo${remainingPhotos > 1 ? 's' : ''}` : 'Limit Reached'}
             </ObjectUploader>
           </div>
+          <p className="text-sm mb-3" style={{ color: '#6B7280' }}>
+            {photoCount} of {tierLimits.photos} photos • {remainingPhotos} slot{remainingPhotos !== 1 ? 's' : ''} remaining
+          </p>
           {media.filter((m) => m.type === "photo").length > 0 ? (
             <div className="flex flex-wrap gap-3">
               {media
