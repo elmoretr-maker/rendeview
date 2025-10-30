@@ -21,7 +21,7 @@ export default function Matches() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["matches"],
     queryFn: async () => {
-      const res = await fetch("/api/matches/list");
+      const res = await fetch("/api/matches/all");
       if (res.status === 401) {
         const err = new Error("AUTH_401");
         err.code = 401;

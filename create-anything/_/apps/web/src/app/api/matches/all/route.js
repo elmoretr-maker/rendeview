@@ -1,12 +1,13 @@
 import sql from "@/app/api/utils/sql";
-import { getAuthenticatedUserId } from "@/app/api/utils/auth";
+import { auth } from "@/auth";
 
 export async function GET() {
   try {
-    const uid = await getAuthenticatedUserId();
-    if (!uid) {
+    const session = await auth();
+    if (!session?.user?.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const uid = session.user.id;
 
     const rows = await sql`
       SELECT m.id as match_id,
@@ -25,7 +26,7 @@ export async function GET() {
 
     return Response.json({ matches });
   } catch (err) {
-    console.error("GET /api/matches/list error", err);
+    console.error("GET /api/matches/all error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
