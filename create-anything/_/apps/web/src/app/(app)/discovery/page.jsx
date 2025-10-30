@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Heart } from "lucide-react";
+import { X, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
@@ -232,6 +232,31 @@ export default function Discovery() {
                 Tap photo to view full profile
               </p>
             </div>
+          </div>
+
+          {/* Navigation controls */}
+          <div className="flex gap-3 items-center justify-center mb-4">
+            <button
+              onClick={() => setIndex((i) => Math.max(0, i - 1))}
+              disabled={index === 0}
+              className="px-4 py-2 rounded-full flex items-center gap-2 font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{ backgroundColor: "white", color: COLORS.text }}
+            >
+              <ChevronLeft size={20} />
+              Previous
+            </button>
+            <span className="text-sm font-medium" style={{ color: COLORS.text }}>
+              {index + 1} of {profiles.length}
+            </span>
+            <button
+              onClick={() => setIndex((i) => Math.min(profiles.length - 1, i + 1))}
+              disabled={index >= profiles.length - 1}
+              className="px-4 py-2 rounded-full flex items-center gap-2 font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{ backgroundColor: "white", color: COLORS.text }}
+            >
+              Next
+              <ChevronRight size={20} />
+            </button>
           </div>
 
           {/* Action buttons */}

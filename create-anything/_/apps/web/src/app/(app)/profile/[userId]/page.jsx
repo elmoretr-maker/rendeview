@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Heart, X, Video } from "lucide-react";
+import { Heart, X, Video, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 const COLORS = {
@@ -232,7 +232,15 @@ export default function RemoteProfile() {
         </div>
 
         {/* Action buttons - improved styling */}
-        <div className="flex gap-4 mt-8 justify-center sticky bottom-8">
+        <div className="flex gap-4 mt-8 justify-center sticky bottom-8 flex-wrap">
+          <button
+            onClick={() => navigate("/discovery")}
+            className="flex items-center gap-2 px-6 py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all"
+            style={{ backgroundColor: "white", color: COLORS.text }}
+          >
+            <ArrowLeft size={24} style={{ color: COLORS.text }} />
+            Back
+          </button>
           <button
             onClick={() => discardMutation.mutate()}
             disabled={discardMutation.isPending}
