@@ -54,3 +54,31 @@ The application follows a client-server architecture. The frontend is a React 18
     - Added video_meetings_count (integer) to auth_users for tracking free tier usage
     - Added last_video_meeting_at (timestamp) to auth_users for daily reset logic
     - Added duration_seconds (integer) to profile_media for video duration validation
+
+- **Real-Time Video Call Extension System**: Implemented synchronized payment-based call extension feature
+  - Database schema:
+    - Extended video_sessions table: base_duration_seconds, extended_seconds_total, state, grace_expires_at
+    - Created video_session_extensions table to track extension requests, payment status, and metadata
+  - API endpoints (5 total):
+    - GET /api/video/sessions/[id] - Returns session state with remaining time and extensions
+    - POST /api/video/sessions/[id]/extensions - Initiates extension request (creates pending extension)
+    - PUT /api/video/sessions/[id]/extensions/[extId] - Accept/decline extension (creates Stripe PaymentIntent)
+    - POST /api/video/sessions/[id]/extensions/[extId]/confirm - Confirms payment and atomically adds time
+  - Frontend video call page features:
+    - Smart polling (2s active, 500ms during grace/pending) for real-time synchronization
+    - Extend Call button appears when ≤2 minutes remain or during grace period
+    - Three modals: request extension, respond to extension, Stripe payment form
+    - Synchronized timer display visible to both users
+    - 20-second grace period with auto-redirect to profile pages after expiry
+    - Retained End Call and Report buttons throughout
+  - Security:
+    - Payment validation: validates PaymentIntent ID, amount ($8.00), and metadata before adding time
+    - Prevents payment bypass attacks (can't reuse old PaymentIntent IDs)
+    - Client-side-only rendering for Stripe Elements (prevents SSR issues)
+  - Extension flow: Initiator requests → Responder accepts/declines → Initiator pays via Stripe → Server validates → 10 minutes added to both users
+
+- **React Hydration Fix**: Resolved pre-existing hydration errors in root.tsx
+  - Added typeof window checks to all hooks that access DOM APIs (useHandshakeParent, useCodeGen, useRefresh)
+  - Fixed Layout component's useEffect hooks to only run client-side
+  - Eliminated "Hydration failed" and "Invalid hook call" console warnings
+  - Ensures consistent server/client rendering without fallback to client-only mode

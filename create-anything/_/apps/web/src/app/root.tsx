@@ -265,6 +265,8 @@ const healthyResponseType = 'sandbox:web:healthcheck:response';
 const useHandshakeParent = () => {
   const isHmrConnected = useHmrConnection();
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const healthyResponse = {
       type: healthyResponseType,
       healthy: isHmrConnected,
@@ -289,6 +291,8 @@ const useCodeGen = () => {
     useSandboxStore();
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleMessage = (event: MessageEvent) => {
       const { type } = event.data;
 
@@ -319,6 +323,8 @@ const useCodeGen = () => {
 
 const useRefresh = () => {
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'sandbox:web:refresh:request') {
         setTimeout(() => {
@@ -343,6 +349,8 @@ export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const pathname = location?.pathname;
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'sandbox:navigation') {
         navigate(event.data.pathname);
@@ -356,15 +364,15 @@ export function Layout({ children }: { children: ReactNode }) {
   }, [navigate]);
 
   useEffect(() => {
-    if (pathname) {
-      window.parent.postMessage(
-        {
-          type: 'sandbox:web:navigation',
-          pathname,
-        },
-        '*'
-      );
-    }
+    if (typeof window === 'undefined' || !pathname) return;
+    
+    window.parent.postMessage(
+      {
+        type: 'sandbox:web:navigation',
+        pathname,
+      },
+      '*'
+    );
   }, [pathname]);
   return (
     <html lang="en">
