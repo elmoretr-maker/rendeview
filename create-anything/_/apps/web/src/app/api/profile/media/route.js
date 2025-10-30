@@ -1,21 +1,19 @@
 // Route for saving media (photos/videos) to database after upload
-import { getAuth } from "@hono/auth-js";
-import { ObjectStorageService } from "../../../../../../server/objectStorage";
+import { getAuthenticatedUserId } from "@/app/api/utils/auth";
+import { ObjectStorageService } from "../../../../../server/objectStorage";
 import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL);
 
 export async function POST(request, { params }) {
   try {
-    const auth = await getAuth(request);
-    if (!auth?.user?.id) {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
     }
-
-    const userId = auth.user.id;
     const body = await request.json();
     const { mediaURL, type } = body; // type: "photo" or "video"
 
@@ -38,7 +36,7 @@ export async function POST(request, { params }) {
 
     // Save to database
     await sql`
-      INSERT INTO auth_user_media (user_id, type, url)
+      INSERT INTO profile_media (user_id, type, url)
       VALUES (${userId}, ${type}, ${objectPath})
     `;
 
@@ -57,15 +55,13 @@ export async function POST(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const auth = await getAuth(request);
-    if (!auth?.user?.id) {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
       });
     }
-
-    const userId = auth.user.id;
     const url = new URL(request.url);
     const mediaUrl = url.searchParams.get("url");
 
@@ -78,7 +74,7 @@ export async function DELETE(request, { params }) {
 
     // Delete from database
     await sql`
-      DELETE FROM auth_user_media
+      DELETE FROM profile_media
       WHERE user_id = ${userId} AND url = ${mediaUrl}
     `;
 

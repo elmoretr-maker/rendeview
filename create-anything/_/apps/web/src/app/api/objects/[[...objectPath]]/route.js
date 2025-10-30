@@ -1,12 +1,11 @@
 // Download route for serving uploaded files
-import { getAuth } from "@hono/auth-js";
-import { ObjectStorageService, ObjectNotFoundError } from "../../../../../../server/objectStorage";
-import { ObjectPermission } from "../../../../../../server/objectAcl";
+import { getAuthenticatedUserId } from "@/app/api/utils/auth";
+import { ObjectStorageService, ObjectNotFoundError } from "../../../../../server/objectStorage";
+import { ObjectPermission } from "../../../../../server/objectAcl";
 
 export async function GET(request, { params }) {
   try {
-    const auth = await getAuth(request);
-    const userId = auth?.user?.id;
+    const userId = await getAuthenticatedUserId();
     
     const objectPath = `/objects/${params.objectPath || ""}`;
     const objectStorageService = new ObjectStorageService();

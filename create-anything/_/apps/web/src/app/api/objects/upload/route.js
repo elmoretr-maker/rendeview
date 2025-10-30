@@ -1,11 +1,11 @@
 // Upload route for getting presigned URLs for file uploads
-import { getAuth } from "@hono/auth-js";
-import { ObjectStorageService } from "../../../../../../server/objectStorage";
+import { getAuthenticatedUserId } from "@/app/api/utils/auth";
+import { ObjectStorageService } from "../../../../../server/objectStorage";
 
 export async function POST(request, { params }) {
   try {
-    const auth = await getAuth(request);
-    if (!auth?.user?.id) {
+    const userId = await getAuthenticatedUserId();
+    if (!userId) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
