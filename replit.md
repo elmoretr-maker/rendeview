@@ -82,3 +82,14 @@ The application follows a client-server architecture. The frontend is a React 18
   - Fixed Layout component's useEffect hooks to only run client-side
   - Eliminated "Hydration failed" and "Invalid hook call" console warnings
   - Ensures consistent server/client rendering without fallback to client-only mode
+
+- **UX Enhancements & Business Logic**: Implemented navigation improvements and polite upgrade nudges
+  - **Navigation Enhancement**: Added Membership link with Crown icon to AppHeader for easy access from any screen
+  - **Meeting Cap Nudge**: Toast notification when Free user starts their 3rd (final) meeting
+    - Polite reminder about upgrade benefits (Casual tier: unlimited meetings, 15-min calls)
+    - Correctly handles daily reset logic to prevent false positives
+  - **Time Limit Nudge**: Non-intrusive banner at 4-minute mark (60 seconds remaining) for Free users
+    - Dismissible X button in top-right corner
+    - Optional Upgrade button navigating to membership page
+    - Only shows once per session
+  - All nudges target Free tier users only and use encouraging, non-pushy messaging
