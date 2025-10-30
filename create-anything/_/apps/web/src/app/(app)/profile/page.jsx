@@ -4,7 +4,7 @@ import { useUser } from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import { Trash2, Upload, Crown } from "lucide-react";
+import { Trash2, Upload, Crown, Image, Video } from "lucide-react";
 import { getTierLimits, getRemainingPhotoSlots, getRemainingVideoSlots, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
 
 const COLORS = {
@@ -300,15 +300,34 @@ export default function Profile() {
     <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
       <AppHeader />
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>Profile</h1>
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>Profile</h1>
+            <Link
+              to="/onboarding/membership"
+              className="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
+              style={{ backgroundColor: COLORS.secondary }}
+            >
+              <Crown size={18} />
+              {membershipTier?.toUpperCase() || 'FREE'} Tier
+            </Link>
+          </div>
+          
           <Link
-            to="/onboarding/membership"
-            className="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
-            style={{ backgroundColor: COLORS.secondary }}
+            to="/profile/media"
+            className="flex items-center gap-3 p-4 rounded-xl shadow-md hover:shadow-lg transition-all"
+            style={{ backgroundColor: "white" }}
           >
-            <Crown size={18} />
-            {membershipTier?.toUpperCase() || 'FREE'} Tier
+            <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.primary + "15" }}>
+              <Image size={24} style={{ color: COLORS.primary }} />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-lg" style={{ color: COLORS.text }}>Manage Photos & Videos</h3>
+              <p className="text-sm text-gray-600">Upload, record, and organize your media with camera-only recording</p>
+            </div>
+            <div className="flex-shrink-0 text-gray-400">
+              <span className="text-sm">→</span>
+            </div>
           </Link>
         </div>
 
