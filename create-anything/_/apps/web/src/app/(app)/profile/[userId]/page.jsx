@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, X, Video, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import AppHeader from "@/components/AppHeader";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -89,16 +90,20 @@ export default function RemoteProfile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.bg }}>
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: COLORS.primary }}></div>
+      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+        <AppHeader />
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: COLORS.primary }}></div>
+        </div>
       </div>
     );
   }
 
   if (error?.message === "AUTH_401") {
     return (
-      <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
-        <div className="max-w-2xl mx-auto">
+      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+        <AppHeader />
+        <div className="px-4 py-8 max-w-2xl mx-auto">
           <p className="mb-4">Session expired. Please sign in.</p>
           <button
             onClick={() => navigate("/account/signin")}
@@ -114,15 +119,19 @@ export default function RemoteProfile() {
 
   if (error) {
     return (
-      <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
-        <p className="text-red-600">Error loading profile</p>
+      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+        <AppHeader />
+        <div className="px-4 py-8 max-w-2xl mx-auto">
+          <p className="text-red-600">Error loading profile</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <AppHeader />
+      <div className="px-4 py-8 max-w-2xl mx-auto">
         {/* Header with name and membership tier */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2" style={{ color: COLORS.text }}>

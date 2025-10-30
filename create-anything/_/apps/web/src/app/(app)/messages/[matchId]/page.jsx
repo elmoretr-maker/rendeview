@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@/utils/useUser";
 import { toast } from "sonner";
+import AppHeader from "@/components/AppHeader";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -107,10 +108,13 @@ export default function Chat() {
 
   if (userLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.bg }}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: COLORS.primary }}></div>
-          <p className="mt-4" style={{ color: COLORS.text }}>Loading chat...</p>
+      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+        <AppHeader />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: COLORS.primary }}></div>
+            <p className="mt-4" style={{ color: COLORS.text }}>Loading chat...</p>
+          </div>
         </div>
       </div>
     );
@@ -118,8 +122,9 @@ export default function Chat() {
 
   if (error?.message === "AUTH_401") {
     return (
-      <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
-        <div className="max-w-2xl mx-auto">
+      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+        <AppHeader />
+        <div className="px-4 py-8 max-w-2xl mx-auto">
           <h1 className="text-xl font-bold mb-4" style={{ color: COLORS.text }}>Chat</h1>
           <div>
             <p className="mb-4" style={{ color: COLORS.text }}>Session expired. Please sign in.</p>
@@ -138,8 +143,9 @@ export default function Chat() {
 
   if (error) {
     return (
-      <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
-        <div className="max-w-2xl mx-auto">
+      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+        <AppHeader />
+        <div className="px-4 py-8 max-w-2xl mx-auto">
           <h1 className="text-xl font-bold mb-4" style={{ color: COLORS.text }}>Chat</h1>
           <p style={{ color: COLORS.error }}>Error loading messages</p>
         </div>
@@ -149,6 +155,7 @@ export default function Chat() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.bg }}>
+      <AppHeader />
       <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col px-4 py-8">
         <h1 className="text-xl font-bold mb-4" style={{ color: COLORS.text }}>Chat</h1>
         

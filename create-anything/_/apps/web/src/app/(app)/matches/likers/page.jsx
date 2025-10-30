@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Heart, X } from "lucide-react";
+import AppHeader from "@/components/AppHeader";
 import MatchCelebration from "@/components/MatchCelebration";
 
 const COLORS = {
@@ -117,8 +118,9 @@ export default function Likers() {
   }, [error]);
 
   return (
-    <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <AppHeader />
+      <div className="px-4 py-8 max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold mb-6" style={{ color: COLORS.text }}>Likers</h1>
         
         {isLoading ? (
