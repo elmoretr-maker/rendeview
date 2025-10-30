@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import MatchCelebration from "@/components/MatchCelebration";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
 
 const COLORS = {
@@ -164,6 +165,8 @@ export default function Discovery() {
 
   const [index, setIndex] = useState(0);
   const [removedCards, setRemovedCards] = useState([]);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [matchedUser, setMatchedUser] = useState(null);
   
   useEffect(() => {
     setIndex(0);
@@ -190,8 +193,19 @@ export default function Discovery() {
       setRemovedCards(prev => [...prev, profileIndex]);
       setIndex((i) => i + 1);
       queryClient.invalidateQueries({ queryKey: ["matches"] });
+      queryClient.invalidateQueries({ queryKey: ["newMatches"] });
       queryClient.invalidateQueries({ queryKey: ["discovery"] });
-      toast.success("Profile liked!");
+      
+      if (data?.matched) {
+        const matchedProfile = profiles.find(p => p.id === likedId);
+        setMatchedUser({
+          name: matchedProfile?.name,
+          photo: matchedProfile?.photo,
+        });
+        setShowCelebration(true);
+      } else {
+        toast.success("Profile liked!");
+      }
     },
     onError: (e) => {
       if (e?.code === 401 || e?.message === "AUTH_401") {
@@ -287,6 +301,11 @@ export default function Discovery() {
       style={{ backgroundColor: COLORS.bg }}
     >
       <AppHeader />
+      <MatchCelebration
+        isOpen={showCelebration}
+        onClose={() => setShowCelebration(false)}
+        matchedUser={matchedUser}
+      />
       <div className="pt-4 px-4">
         <h1
           className="text-2xl font-playfair font-bold mb-3 text-center"
