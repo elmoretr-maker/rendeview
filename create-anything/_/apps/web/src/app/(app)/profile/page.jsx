@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router";
 import { useUser } from "@/utils/useUser";
 import { toast } from "sonner";
+import AppHeader from "@/components/AppHeader";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { Trash2, Upload, Crown } from "lucide-react";
 import { getTierLimits, getRemainingPhotoSlots, getRemainingVideoSlots, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
@@ -277,10 +278,13 @@ export default function Profile() {
 
   if (loading || userLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.bg }}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: COLORS.primary }}></div>
-          <p className="mt-4" style={{ color: COLORS.text }}>Loading...</p>
+      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+        <AppHeader />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: COLORS.primary }}></div>
+            <p className="mt-4" style={{ color: COLORS.text }}>Loading...</p>
+          </div>
         </div>
       </div>
     );
@@ -293,8 +297,9 @@ export default function Profile() {
   const remainingVideos = getRemainingVideoSlots(membershipTier, videoCount);
 
   return (
-    <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <AppHeader />
+      <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>Profile</h1>
           <Link

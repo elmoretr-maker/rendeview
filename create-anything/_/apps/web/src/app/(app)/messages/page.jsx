@@ -46,10 +46,13 @@ export default function Messages() {
 
   if (userLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.bg }}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: COLORS.primary }}></div>
-          <p className="mt-4" style={{ color: COLORS.text }}>Loading...</p>
+      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+        <AppHeader />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: COLORS.primary }}></div>
+            <p className="mt-4" style={{ color: COLORS.text }}>Loading...</p>
+          </div>
         </div>
       </div>
     );
@@ -57,8 +60,9 @@ export default function Messages() {
 
   if (error?.message === "AUTH_401") {
     return (
-      <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
-        <div className="max-w-2xl mx-auto">
+      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+        <AppHeader />
+        <div className="max-w-2xl mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold mb-4" style={{ color: COLORS.text }}>Messages</h1>
           <div>
             <p className="mb-4" style={{ color: COLORS.text }}>Session expired. Please sign in.</p>
@@ -77,8 +81,9 @@ export default function Messages() {
 
   if (error) {
     return (
-      <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
-        <div className="max-w-2xl mx-auto">
+      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+        <AppHeader />
+        <div className="max-w-2xl mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold mb-4" style={{ color: COLORS.text }}>Messages</h1>
           <p style={{ color: COLORS.error }}>Error loading messages</p>
         </div>
@@ -87,8 +92,9 @@ export default function Messages() {
   }
 
   return (
-    <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <AppHeader />
+      <div className="max-w-2xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold mb-6" style={{ color: COLORS.text }}>Messages</h1>
 
         {matches.length === 0 ? (
