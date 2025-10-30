@@ -22,6 +22,18 @@ The application employs a client-server architecture. The frontend, located at `
 - **Backend Framework**: Hono (Node.js)
 ## Recent Changes (October 30, 2025 - Latest)
 
+- **Photos & Videos Management Page** (October 30, 2025): Created comprehensive media management system with camera-only video recording
+  - **Photo Upload**: Users can upload photos via ObjectUploader component with tier-based limits (Free: 3, Casual: 5, Dating: 8, Business: 10)
+  - **Camera-Only Video Recording**: Mobile-first VideoRecorderModal component records video directly from webcam/camera to prevent catfishing
+  - **Real-time Recording UI**: Live preview, countdown timer, recording indicator, and redo functionality
+  - **Tier-Based Video Limits**: Video count and duration enforced by membership (Free: 1x15s, Casual: 1x30s, Dating: 2x60s, Business: 3x5min)
+  - **Media Gallery**: Grid view for photos and videos with hover-to-delete functionality
+  - **Object Storage Integration**: Direct upload to Replit Object Storage using presigned URLs
+  - **Navigation**: Added prominent card on Profile page linking to /profile/media
+  - Database integration via existing /api/profile/media endpoints for create/delete operations
+  - Files created: profile/media/page.jsx with integrated VideoRecorderModal component
+  - Profile page updated with navigation card featuring Image icon and descriptive text
+
 - **Enhanced Smart Matching System** (October 30, 2025): Implemented comprehensive matching features to increase user connections
   - **Interactive Likers Page**: Users can now like/pass directly from /matches/likers page with match celebration on reciprocal likes
   - **Smart Discovery Prioritization**: Discovery algorithm now prioritizes users who liked you first, then active users, then everyone else
