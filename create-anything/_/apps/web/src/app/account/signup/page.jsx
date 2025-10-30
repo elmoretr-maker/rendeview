@@ -60,9 +60,18 @@ export default function SignUpPage() {
       <form
         noValidate
         onSubmit={onSubmit}
-        className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl"
+        className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl relative"
       >
-        <div className="mb-8 text-center">
+        <a
+          href="/onboarding/welcome"
+          className="absolute top-6 left-6 flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors group"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 group-hover:-translate-x-1 transition-transform">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          <span className="text-sm font-medium">Back</span>
+        </a>
+        <div className="mb-8 text-center mt-8">
           <img
             src={new URL("@/assets/logo-centered.png", import.meta.url).href}
             alt="Rende-View Logo"

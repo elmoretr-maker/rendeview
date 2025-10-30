@@ -20,3 +20,13 @@ The application employs a client-server architecture. The frontend, located at `
 - **Frontend Router**: React Router 7
 - **Styling**: TailwindCSS
 - **Backend Framework**: Hono (Node.js)
+## Recent Changes (October 30, 2025 - Latest)
+
+- **Navigation Improvements** (October 30, 2025): Enhanced authentication pages with back navigation
+  - Added "Back" button to both Sign In and Sign Up pages
+  - Button positioned at top-left corner with left arrow icon
+  - Navigates to Welcome page (/onboarding/welcome)
+  - Includes smooth hover animation (arrow slides left on hover)
+  - Aesthetically matches page design with subtle gray styling
+  - Improves user flow by allowing easy return to welcome/landing page
+  - Files updated: signin/page.jsx, signup/page.jsx
