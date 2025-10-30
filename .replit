@@ -18,6 +18,10 @@ author = "agent"
 task = "workflow.run"
 args = "Web App"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Mobile App"
+
 [[workflows.workflow]]
 name = "Web App"
 author = "agent"
@@ -30,6 +34,17 @@ waitForPort = 5000
 [workflows.workflow.metadata]
 outputType = "webview"
 
+[[workflows.workflow]]
+name = "Mobile App"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd create-anything/_/apps/mobile && npx --yes expo@latest start --tunnel"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
@@ -41,10 +56,6 @@ externalPort = 3001
 [[ports]]
 localPort = 38529
 externalPort = 3002
-
-[[ports]]
-localPort = 42207
-externalPort = 3003
 
 [[ports]]
 localPort = 43479
