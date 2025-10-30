@@ -1,0 +1,21 @@
+Please execute a complete update in a single run that includes the following logic changes and the authentication bypass:
+
+1.  **PROFILE MEDIA LIMITS:** Update the photo and video upload pages (onboarding/photos and onboarding/video) to enforce these limits based on the user's membership tier:
+    * **Free:** 2 Photos | 1 Video (Max 15 seconds)
+    * **Casual:** 6 Photos | 3 Videos (Max 30 seconds each)
+    * **Dating:** 10 Photos | 1 Video (Max 1 minute)
+    * **Business:** 20 Photos | 1 Video (Max 5 minutes)
+
+2.  **CHAT SESSION TIME & LOGIC:** Update the video date interface logic (/video/call) and the database schema/logic to enforce the following:
+    * **Initial Chat Allotment:** The video chat duration must be determined by the **user with the lowest remaining allowed chat time**. The maximum time for a session is set by the tier of the lowest user:
+        * **Free:** 5 minutes
+        * **Casual:** 15 minutes
+        * **Dating:** 25 minutes
+        * **Business:** 45 minutes
+    * **Universal Extension Fee:** Implement a universal, fixed extension fee logic for any user wishing to extend the call beyond the initial allotted time: **$8.00 for 10 minutes** (this fee is charged to the user requesting the extension).
+
+3.  **FREE TIER MEETING CAP:** Implement a **hard limit** on the **Free** membership tier: Users may initiate or accept a maximum of **3 video chat meetings total**. Upon reaching this limit, a mandatory prompt for upgrading to the Casual tier must be displayed before any new meeting can begin.
+
+4.  **UI/UX:** Update the /onboarding/membership page to correctly display all four tiers with their prices, profile allowances, and new chat time allotments, including the 3-meeting cap for the Free tier.
+
+5.  **TESTING BYPASS:** Finally, **re-implement the full server-side QA authentication bypass logic** across all protected pages to allow for seamless testing of these new features without login or block restrictions. Document how to easily remove this bypass later.
