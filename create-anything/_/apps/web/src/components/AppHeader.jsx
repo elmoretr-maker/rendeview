@@ -33,17 +33,17 @@ export default function AppHeader() {
         <div className="flex items-center justify-between h-16">
           {/* Logo Section */}
           <div 
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/discovery")}
           >
             <img
               src={new URL("@/assets/logo-centered.png", import.meta.url).href}
               alt="Rende-VIEW"
-              className="h-8 w-8 object-contain logo-image"
+              className="logo-image"
               style={{ width: '32px', height: '32px' }}
             />
             <span 
-              className="font-playfair text-xl font-bold hidden sm:block"
+              className="font-playfair text-lg font-bold hidden sm:block"
               style={{ color: COLORS.primary }}
             >
               Rende-VIEW

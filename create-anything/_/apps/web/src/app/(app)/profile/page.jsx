@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { useUser } from "@/utils/useUser";
 import { toast } from "sonner";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import { Trash2, Upload } from "lucide-react";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -155,6 +157,73 @@ export default function Profile() {
     }
   }, []);
 
+  const handlePhotoUpload = useCallback(async () => {
+    const res = await fetch("/api/objects/upload", { method: "POST" });
+    const data = await res.json();
+    return { method: "PUT", url: data.uploadURL };
+  }, []);
+
+  const handlePhotoComplete = useCallback(async (result) => {
+    if (result.successful && result.successful.length > 0) {
+      const uploadURL = result.successful[0].uploadURL;
+      try {
+        const res = await fetch("/api/profile/media", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mediaURL: uploadURL, type: "photo" }),
+        });
+        if (!res.ok) throw new Error("Failed to save photo");
+        toast.success("Photo uploaded successfully");
+        window.location.reload();
+      } catch (e) {
+        console.error(e);
+        toast.error("Failed to save photo");
+      }
+    }
+  }, []);
+
+  const handleVideoUpload = useCallback(async () => {
+    const res = await fetch("/api/objects/upload", { method: "POST" });
+    const data = await res.json();
+    return { method: "PUT", url: data.uploadURL };
+  }, []);
+
+  const handleVideoComplete = useCallback(async (result) => {
+    if (result.successful && result.successful.length > 0) {
+      const uploadURL = result.successful[0].uploadURL;
+      try {
+        const res = await fetch("/api/profile/media", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mediaURL: uploadURL, type: "video" }),
+        });
+        if (!res.ok) throw new Error("Failed to save video");
+        toast.success("Video uploaded successfully");
+        window.location.reload();
+      } catch (e) {
+        console.error(e);
+        toast.error("Failed to save video");
+      }
+    }
+  }, []);
+
+  const deleteMedia = useCallback(async (mediaUrl) => {
+    if (!window.confirm("Are you sure you want to delete this media?")) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/profile/media?url=${encodeURIComponent(mediaUrl)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete media");
+      toast.success("Media deleted");
+      window.location.reload();
+    } catch (e) {
+      console.error(e);
+      toast.error("Could not delete media");
+    }
+  }, []);
+
   if (loading || userLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.bg }}>
@@ -184,44 +253,98 @@ export default function Profile() {
           </div>
         ) : null}
 
-        {videoUrl && (
-          <div className="mb-6 rounded-xl overflow-hidden bg-black">
-            <video
-              src={videoUrl}
-              controls
-              loop
-              className="w-full"
-              style={{ height: "220px", objectFit: "cover" }}
-            />
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-semibold font-playfair text-xl" style={{ color: COLORS.text }}>Profile Video</p>
+            <ObjectUploader
+              maxNumberOfFiles={1}
+              maxFileSize={52428800}
+              allowedFileTypes={['video/*']}
+              onGetUploadParameters={handleVideoUpload}
+              onComplete={handleVideoComplete}
+              buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
+              buttonStyle={{ backgroundColor: COLORS.primary }}
+            >
+              <Upload size={18} />
+              Upload Video
+            </ObjectUploader>
           </div>
-        )}
+          {videoUrl ? (
+            <div className="relative rounded-xl overflow-hidden bg-black">
+              <video
+                src={videoUrl}
+                controls
+                loop
+                className="w-full"
+                style={{ height: "220px", objectFit: "cover" }}
+              />
+              <button
+                onClick={() => deleteMedia(videoUrl)}
+                className="absolute top-2 right-2 p-2 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ) : (
+            <div className="rounded-xl border-2 border-dashed p-8 text-center" style={{ borderColor: "#E5E7EB" }}>
+              <p className="text-gray-500">No video uploaded yet. Upload a video to help others get to know you!</p>
+            </div>
+          )}
+        </div>
 
         <div className="mb-6">
-          <p className="font-semibold mb-3" style={{ color: COLORS.text }}>Your Photos</p>
-          <div className="flex flex-wrap gap-2">
-            {media
-              .filter((m) => m.type === "photo")
-              .map((m, idx) => {
-                const isPrimary = m.url === primaryPhoto;
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => selectPrimary(m.url)}
-                    className="relative"
-                  >
-                    <img
-                      src={m.url}
-                      alt="Profile"
-                      className="w-24 h-24 rounded-lg object-cover"
-                      style={{ border: `2px solid ${isPrimary ? COLORS.primary : "#E5E7EB"}` }}
-                    />
-                    <p className="text-xs text-center mt-1" style={{ color: isPrimary ? COLORS.primary : "#6B7280" }}>
-                      {isPrimary ? "Primary" : "Set Primary"}
-                    </p>
-                  </button>
-                );
-              })}
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-semibold font-playfair text-xl" style={{ color: COLORS.text }}>Your Photos</p>
+            <ObjectUploader
+              maxNumberOfFiles={5}
+              maxFileSize={10485760}
+              allowedFileTypes={['image/*']}
+              onGetUploadParameters={handlePhotoUpload}
+              onComplete={handlePhotoComplete}
+              buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
+              buttonStyle={{ backgroundColor: COLORS.primary }}
+            >
+              <Upload size={18} />
+              Upload Photos
+            </ObjectUploader>
           </div>
+          {media.filter((m) => m.type === "photo").length > 0 ? (
+            <div className="flex flex-wrap gap-3">
+              {media
+                .filter((m) => m.type === "photo")
+                .map((m, idx) => {
+                  const isPrimary = m.url === primaryPhoto;
+                  return (
+                    <div key={idx} className="relative">
+                      <button
+                        onClick={() => selectPrimary(m.url)}
+                        className="relative block"
+                      >
+                        <img
+                          src={m.url}
+                          alt="Profile"
+                          className="w-32 h-32 rounded-lg object-cover"
+                          style={{ border: `3px solid ${isPrimary ? COLORS.primary : "#E5E7EB"}` }}
+                        />
+                        <p className="text-xs text-center mt-1 font-semibold" style={{ color: isPrimary ? COLORS.primary : "#6B7280" }}>
+                          {isPrimary ? "★ Primary" : "Set Primary"}
+                        </p>
+                      </button>
+                      <button
+                        onClick={() => deleteMedia(m.url)}
+                        className="absolute top-1 right-1 p-1.5 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
+            </div>
+          ) : (
+            <div className="rounded-xl border-2 border-dashed p-8 text-center" style={{ borderColor: "#E5E7EB" }}>
+              <p className="text-gray-500">No photos uploaded yet. Add photos to make your profile stand out!</p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">
