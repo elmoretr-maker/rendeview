@@ -29,4 +29,28 @@ The application follows a client-server architecture. The frontend is a React 18
   - Enhanced Profile page with upload buttons for photos (up to 5, 10MB each) and videos (1, 50MB max)
   - Added delete functionality and primary photo selection with beautiful empty states
   - Configured ACL policies: profile photos/videos are public (visible to all users), owned by uploader
-  - Media stored in `profile_media` table with columns: id, user_id, type, url, sort_order, created_at
+  - Media stored in `profile_media` table with columns: id, user_id, type, url, sort_order, created_at, duration_seconds
+
+- **4-Tier Membership System**: Implemented comprehensive tier-based limits for media, video chat, and meetings
+  - Created centralized membership tier utility (src/utils/membershipTiers.js) with constants and helper functions
+  - **Tier Structure**:
+    - Free: 2 photos, 1 video (15s max), 5 min chat, 3 meetings/day cap
+    - Casual ($9.99/mo): 6 photos, 3 videos (30s max each), 15 min chat, unlimited meetings
+    - Dating ($29.99/mo): 10 photos, 1 video (60s max), 25 min chat, unlimited meetings
+    - Business ($49.99/mo): 20 photos, 1 video (5 min max), 45 min chat, unlimited meetings
+  - Updated Profile page with tier-based upload limits, remaining slots display, and upgrade prompts
+  - Redesigned Membership page showing all 4 tiers with detailed benefits and $8/10min extension pricing
+  - Enhanced Onboarding pages (photos, video) with tier-aware limits and ObjectUploader integration
+  - Implemented Video Call page with:
+    - Session time tracking based on lowest tier between both users
+    - Visual countdown timer showing remaining time
+    - Warning at 1 minute remaining
+    - Extension purchase option ($8 for 10 additional minutes)
+  - Backend API enforcement:
+    - Free tier meeting cap (3 meetings per day) with automatic daily reset
+    - Meeting counter incrementation in auth_users table
+    - Error messages prompting users to upgrade when limits are reached
+  - Database schema updates:
+    - Added video_meetings_count (integer) to auth_users for tracking free tier usage
+    - Added last_video_meeting_at (timestamp) to auth_users for daily reset logic
+    - Added duration_seconds (integer) to profile_media for video duration validation
