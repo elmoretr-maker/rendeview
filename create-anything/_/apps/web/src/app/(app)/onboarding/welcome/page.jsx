@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { CheckCircle, Shield, Heart, Users } from "lucide-react";
+import logoImage from "@/assets/logo-centered.png";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -48,7 +49,7 @@ export default function Welcome() {
         {/* Header/Title Section */}
         <div className="text-center mb-12">
           <img
-            src={new URL("@/assets/logo-centered.png", import.meta.url).href}
+            src={logoImage}
             alt="Rende-View Logo"
             className="w-16 h-16 mx-auto mb-3 object-contain logo-image"
             style={{ width: '48px', height: '48px' }}
