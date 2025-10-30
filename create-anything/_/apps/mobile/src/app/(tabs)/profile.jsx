@@ -312,9 +312,52 @@ export default function Profile() {
                 {player.playing ? "Pause" : "Play"}
               </Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.push("/onboarding/video")}
+              style={{
+                backgroundColor: COLORS.primary,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 8,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#fff",
+                  fontWeight: "600",
+                  fontFamily: "Inter_600SemiBold",
+                }}
+              >
+                Re-record
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-      ) : null}
+      ) : (
+        <TouchableOpacity
+          onPress={() => router.push("/onboarding/video")}
+          style={{
+            backgroundColor: COLORS.lightGray,
+            paddingVertical: 12,
+            borderRadius: 12,
+            marginBottom: 12,
+            borderWidth: 2,
+            borderStyle: "dashed",
+            borderColor: COLORS.primary,
+          }}
+        >
+          <Text
+            style={{
+              textAlign: "center",
+              color: COLORS.primary,
+              fontWeight: "600",
+              fontFamily: "Inter_600SemiBold",
+            }}
+          >
+            Record Profile Video
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {/* Photos grid with primary selection */}
       <Text
