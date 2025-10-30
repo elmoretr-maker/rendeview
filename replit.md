@@ -22,6 +22,22 @@ The application follows a client-server architecture. The frontend is a React 18
 - **Backend Framework**: Hono (Node.js)
 
 ## Recent Changes (October 30, 2025)
+
+- **Mobile Camera-Only Video Recording** (October 30, 2025): Implemented mandatory in-app video recording for mobile users
+  - **Removed Gallery Upload**: Mobile users can no longer upload pre-recorded videos from their device gallery
+  - **Camera Recording Only**: All profile videos must be recorded directly through the Rendeview app using device camera
+  - **Front-Facing Camera Preview**: CameraView component shows live front-facing camera feed so users can see themselves while recording
+  - **Tier-Based Time Limits**: Video duration automatically restricted based on membership tier
+    - Free: 15 seconds maximum
+    - Casual ($9.99/mo): 30 seconds maximum
+    - Dating ($29.99/mo): 60 seconds maximum
+    - Business ($49.99/mo): 5 minutes (300 seconds) maximum
+  - **Accept/Redo Functionality**: Users can review their recorded video and choose to accept it or re-record until satisfied
+  - **Implementation**: Updated onboarding/video.jsx and onboarding/media.jsx to use expo-camera's CameraView
+  - **Profile Re-recording**: Added "Re-record" button on mobile profile page to allow users to replace their video anytime
+  - **Anti-Catfishing**: Mandatory camera recording ensures video authenticity and helps prevent catfishing
+
+## Recent Changes (October 30, 2025 - Earlier)
 - **Photo/Video Upload Feature**: Implemented complete file upload functionality for user profiles using Replit Object Storage
   - Built object storage infrastructure (objectStorage.ts, objectAcl.ts) with ACL-based access control
   - Created three API endpoints: /api/objects/upload (presigned URLs), /api/objects/[[...objectPath]] (download with ACL checks), /api/profile/media (save/delete media)
