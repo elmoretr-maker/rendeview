@@ -56,9 +56,10 @@ export default function VideoCall() {
           fetch(`/api/matches/${matchId}`)
         ]);
 
+        let tier = MEMBERSHIP_TIERS.FREE;
         if (profileRes.ok) {
           const profileData = await profileRes.json();
-          const tier = profileData.user?.membership_tier || MEMBERSHIP_TIERS.FREE;
+          tier = profileData.user?.membership_tier || MEMBERSHIP_TIERS.FREE;
           setMyTier(tier);
         }
 
