@@ -1,5 +1,6 @@
 import sql from "@/app/api/utils/sql";
 import { auth } from "@/auth";
+import { getTierLimits } from "@/utils/membershipTiers";
 
 // Creates a Daily.co room for a scheduled/initiated call and stores the room_url
 // Env required: DAILY_API_KEY, DAILY_DOMAIN_NAME (domain is optional; API returns full url)
@@ -70,12 +71,23 @@ export async function POST(request) {
         ? Number(match.user_b_id)
         : Number(match.user_a_id);
 
+    // Get other user's tier to calculate session time limit
+    const [otherUserRow] = await sql`
+      SELECT membership_tier FROM auth_users WHERE id = ${otherId}
+    `;
+    const otherTier = (otherUserRow?.membership_tier || "free").toLowerCase();
+
+    // Calculate base duration as minimum of both users' tier limits
+    const myLimits = getTierLimits(myTier);
+    const otherLimits = getTierLimits(otherTier);
+    const baseDurationSeconds = Math.min(myLimits.chatMinutes, otherLimits.chatMinutes) * 60;
+
     // Ensure a video_sessions row exists (use provided or create new)
     let vidSessionId = videoSessionId;
     if (!vidSessionId) {
       const insertRows = await sql(
-        "INSERT INTO video_sessions (match_id, caller_id, callee_id, started_at, second_date) VALUES ($1,$2,$3, now(), false) RETURNING id",
-        [matchId, me, otherId],
+        "INSERT INTO video_sessions (match_id, caller_id, callee_id, started_at, second_date, base_duration_seconds, state) VALUES ($1,$2,$3, now(), false, $4, 'active') RETURNING id",
+        [matchId, me, otherId, baseDurationSeconds],
       );
       vidSessionId = insertRows?.[0]?.id;
     }
