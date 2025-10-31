@@ -102,3 +102,27 @@ The application employs a client-server architecture. The frontend, located at `
   - Aesthetically matches page design with subtle gray styling
   - Improves user flow by allowing easy return to welcome/landing page
   - Files updated: signin/page.jsx, signup/page.jsx
+
+- **Consolidated Onboarding Flow Restructure** (October 31, 2025): Major onboarding architecture overhaul for streamlined user experience
+  - **NEW FLOW**: Welcome → Consent (Step 2) → Membership (Step 3) → Payment → Profile Setup (Step 4) → Main App
+  - **Consolidated Profile Page**: Combined name, bio, interests, photo uploads, and camera-only video recording into single comprehensive onboarding/profile page
+    - Users enter name (required), bio (optional, 500 chars), and interests/hobbies (up to 10)
+    - Inline photo upload with tier-based limits (2 photos minimum required to continue)
+    - Integrated VideoRecorderModal for optional camera-only video introduction
+    - All media management features from profile/media now available during onboarding
+    - Enforces anti-catfishing: camera-only video recording (no file uploads)
+  - **Consent Moved Earlier**: Data consent now Step 2 (before membership selection) with back navigation to welcome page
+  - **Enhanced Payment Flow**: Stripe page now shows "Continue to Profile Setup" button after successful payment, with cancel/back options
+  - **Back Navigation**: Added consistent back buttons across all onboarding pages (consent, membership, profile)
+  - **Removed Redundant Pages**: Deleted separate photos, video, and media onboarding pages from web app (consolidated into profile)
+  - **Updated Root Routing**: Root page (/) now checks consent → membership → profile in correct order
+  - **Progress Indicators**: Updated all pages to show Step X of 4 (reduced from 5 steps)
+  - Files updated: 
+    - onboarding/profile/page.jsx (fully rewritten with consolidated features)
+    - onboarding/consent/page.jsx (moved to step 2, added back button)
+    - onboarding/membership/page.jsx (updated to step 3, added back button)
+    - stripe/page.jsx (added "Continue to Profile Setup" button and enhanced UX)
+    - onboarding/welcome/page.jsx (routes to consent instead of signup)
+    - page.jsx root (updated routing logic for new flow order)
+  - Files removed: onboarding/photos/page.jsx, onboarding/video/page.jsx, onboarding/media/page.jsx
+  - **Mobile App**: Similar consolidation pending (media.jsx already has most features, needs profile integration)
