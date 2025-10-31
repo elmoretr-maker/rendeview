@@ -21,6 +21,11 @@ function ChatContent() {
   const queryClient = useQueryClient();
   const [text, setText] = useState("");
   const { user, isLoading: userLoading } = useUser();
+  
+  // Notes state
+  const [noteContent, setNoteContent] = useState("");
+  const [isEditingNote, setIsEditingNote] = useState(false);
+  const [savingNote, setSavingNote] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["messages", matchId],
@@ -40,6 +45,25 @@ function ChatContent() {
       return count < 2;
     },
   });
+
+  // Fetch note for the other user
+  const { data: noteData } = useQuery({
+    queryKey: ["note", data?.otherUser?.id],
+    queryFn: async () => {
+      if (!data?.otherUser?.id) return null;
+      const res = await fetch(`/api/notes?targetUserId=${data.otherUser.id}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!data?.otherUser?.id,
+  });
+
+  // Update note content when noteData changes
+  React.useEffect(() => {
+    if (noteData?.note) {
+      setNoteContent(noteData.note.note_content || "");
+    }
+  }, [noteData]);
 
   const sendMutation = useMutation({
     mutationFn: async (body) => {
@@ -104,6 +128,30 @@ function ChatContent() {
     }
     sendMutation.mutate(trimmed);
   }, [text, sendMutation]);
+
+  const saveNote = async () => {
+    if (!data?.otherUser?.id) return;
+    
+    setSavingNote(true);
+    try {
+      await fetch("/api/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetUserId: data.otherUser.id,
+          noteContent: noteContent.trim(),
+        }),
+      });
+      toast.success("Note saved!");
+      setIsEditingNote(false);
+      queryClient.invalidateQueries({ queryKey: ["note", data.otherUser.id] });
+    } catch (err) {
+      console.error("Failed to save note:", err);
+      toast.error("Failed to save note");
+    } finally {
+      setSavingNote(false);
+    }
+  };
 
   const msgs = data?.messages || [];
   const otherUser = data?.otherUser;
@@ -185,6 +233,65 @@ function ChatContent() {
       <AppHeader />
       <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col px-4 py-8">
         <h1 className="text-xl font-bold mb-4" style={{ color: COLORS.text }}>Chat</h1>
+        
+        {/* Private Notes Section */}
+        {otherUser && (
+          <div className="mb-4 p-4 rounded-xl shadow-sm" style={{ backgroundColor: "white" }}>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-semibold text-sm" style={{ color: COLORS.text }}>
+                📝 Private Note
+              </h2>
+              {!isEditingNote && (
+                <button
+                  onClick={() => setIsEditingNote(true)}
+                  className="text-sm font-medium hover:underline"
+                  style={{ color: COLORS.primary }}
+                >
+                  {noteContent ? "Edit" : "Add Note"}
+                </button>
+              )}
+            </div>
+            
+            {isEditingNote ? (
+              <div>
+                <textarea
+                  value={noteContent}
+                  onChange={(e) => setNoteContent(e.target.value)}
+                  placeholder="Add your thoughts about this person... (e.g., 'Loves hiking', 'Works in tech')"
+                  className="w-full p-3 rounded-lg border-2 resize-none mb-2 focus:outline-none focus:border-purple-500"
+                  style={{ borderColor: COLORS.cardBg }}
+                  rows={3}
+                  maxLength={500}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setIsEditingNote(false);
+                      setNoteContent(noteData?.note?.note_content || "");
+                    }}
+                    disabled={savingNote}
+                    className="px-3 py-2 text-sm rounded-lg font-medium disabled:opacity-50"
+                    style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveNote}
+                    disabled={savingNote}
+                    className="px-3 py-2 text-sm rounded-lg font-medium text-white disabled:opacity-50"
+                    style={{ backgroundColor: COLORS.primary }}
+                  >
+                    {savingNote ? "Saving..." : "Save"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm" style={{ color: noteContent ? COLORS.text : "#9CA3AF" }}>
+                {noteContent || "No notes yet. Click 'Add Note' to remember details about this person."}
+              </p>
+            )}
+          </div>
+        )}
         
         <div className="flex-1 overflow-y-auto mb-4 space-y-2">
           {msgs.length === 0 ? (
