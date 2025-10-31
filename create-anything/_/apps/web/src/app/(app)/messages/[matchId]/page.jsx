@@ -67,6 +67,7 @@ function ChatContent() {
         from_user_id: user?.id,
         body,
         sent_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
         is_optimistic: true,
       };
       
