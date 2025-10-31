@@ -296,6 +296,8 @@ function ConsolidatedProfileOnboardingContent() {
         if (upErr) throw new Error(upErr);
         media.push({ type: "photo", url, sort_order: i });
         setProgress({ done: i + 1, total });
+        // Small delay to make progress visible
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
       // Upload video if accepted
@@ -306,6 +308,7 @@ function ConsolidatedProfileOnboardingContent() {
         if (vErr) throw new Error(vErr);
         media.push({ type: "video", url: vurl, sort_order: media.length });
         setProgress({ done: total, total });
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
       // Save profile data with media
@@ -331,10 +334,37 @@ function ConsolidatedProfileOnboardingContent() {
       console.error(e);
       setError("Could not save profile");
       Alert.alert("Error", e.message || "Could not save profile");
+      // Reset progress on error
+      setProgress({ done: 0, total: 0 });
     } finally {
       setSaving(false);
     }
   }, [name, bio, interests, photos, videoAsset, videoAccepted, upload, router, limits.maxPhotos]);
+
+  const resetAll = useCallback(() => {
+    Alert.alert(
+      "Start Over?",
+      "This will clear all your photos, video, and information. Are you sure?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear All",
+          style: "destructive",
+          onPress: () => {
+            setPhotos([]);
+            setVideoAsset(null);
+            setVideoAccepted(false);
+            setName("");
+            setBio("");
+            setInterests([]);
+            setNewInterest("");
+            setProgress({ done: 0, total: 0 });
+            setError(null);
+          },
+        },
+      ]
+    );
+  }, []);
 
   return (
     <KeyboardAvoidingView
@@ -706,10 +736,24 @@ function ConsolidatedProfileOnboardingContent() {
         )}
 
         {/* Upload progress */}
-        {progress.total > 0 && progress.done < progress.total && (
-          <Text style={{ color: COLORS.text, opacity: 0.7, marginBottom: 16 }}>
-            Uploading {progress.done}/{progress.total}...
-          </Text>
+        {progress.total > 0 && (
+          <View style={{ backgroundColor: "#EDE9FE", padding: 12, borderRadius: 12, marginBottom: 16 }}>
+            <Text style={{ color: "#5B3BAF", fontSize: 14, textAlign: "center", fontWeight: "600" }}>
+              {progress.done < progress.total 
+                ? `📤 Uploading ${progress.done}/${progress.total}...`
+                : `✓ All ${progress.total} item${progress.total > 1 ? 's' : ''} uploaded!`
+              }
+            </Text>
+            {progress.done < progress.total && (
+              <View style={{ marginTop: 8, height: 4, backgroundColor: "#fff", borderRadius: 999, overflow: "hidden" }}>
+                <View style={{ 
+                  height: 4, 
+                  width: `${(progress.done / progress.total) * 100}%`, 
+                  backgroundColor: "#5B3BAF" 
+                }} />
+              </View>
+            )}
+          </View>
         )}
 
         {/* Photo requirement reminder */}
@@ -742,6 +786,29 @@ function ConsolidatedProfileOnboardingContent() {
             }}
           >
             {saving || loading ? "Saving..." : "Complete Setup"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Reset button */}
+        <TouchableOpacity
+          onPress={resetAll}
+          disabled={saving}
+          style={{ 
+            paddingVertical: 14, 
+            borderRadius: 12, 
+            marginBottom: 12,
+            opacity: saving ? 0.6 : 1 
+          }}
+        >
+          <Text
+            style={{
+              textAlign: "center",
+              color: "#E74C3C",
+              fontWeight: "600",
+              fontSize: 14,
+            }}
+          >
+            🔄 Start Over
           </Text>
         </TouchableOpacity>
 
