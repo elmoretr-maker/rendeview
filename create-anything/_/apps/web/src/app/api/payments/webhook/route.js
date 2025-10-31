@@ -52,6 +52,42 @@ export async function POST(request) {
         }
         break;
       }
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object;
+        const customerId = invoice.customer;
+        const subscriptionId = invoice.subscription;
+        
+        if (customerId && subscriptionId && invoice.billing_reason === 'subscription_cycle') {
+          const [user] = await sql`SELECT scheduled_tier, tier_change_at FROM auth_users WHERE stripe_id = ${customerId}`;
+          
+          if (user?.scheduled_tier) {
+            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+            const scheduledTier = subscription.metadata?.scheduled_tier || user.scheduled_tier;
+            
+            if (scheduledTier && scheduledTier !== 'free') {
+              const tierName = scheduledTier.toLowerCase();
+              if (['casual', 'dating', 'business'].includes(tierName)) {
+                await sql`
+                  UPDATE auth_users 
+                  SET membership_tier = ${tierName},
+                      scheduled_tier = NULL,
+                      tier_change_at = NULL,
+                      subscription_status = 'active',
+                      last_check_subscription_status_at = now()
+                  WHERE stripe_id = ${customerId}
+                `;
+                
+                await stripe.subscriptions.update(subscriptionId, {
+                  metadata: { scheduled_tier: null }
+                });
+                
+                console.log(`[WEBHOOK] Finalized scheduled downgrade to ${tierName} for customer ${customerId} on renewal`);
+              }
+            }
+          }
+        }
+        break;
+      }
       case "invoice.payment_failed": {
         const invoice = event.data.object;
         const customerId = invoice.customer;
@@ -64,7 +100,48 @@ export async function POST(request) {
         const subscription = event.data.object;
         const customerId = subscription.customer;
         if (customerId) {
-          await sql`UPDATE auth_users SET subscription_status = 'canceled', last_check_subscription_status_at = now() WHERE stripe_id = ${customerId}`;
+          const scheduledTier = subscription.metadata?.scheduled_tier;
+          
+          if (scheduledTier === "free") {
+            await sql`
+              UPDATE auth_users 
+              SET subscription_status = 'canceled', 
+                  membership_tier = 'free',
+                  scheduled_tier = NULL,
+                  tier_change_at = NULL,
+                  last_check_subscription_status_at = now() 
+              WHERE stripe_id = ${customerId}
+            `;
+            console.log(`[WEBHOOK] Finalized downgrade to free tier for customer ${customerId}`);
+          } else {
+            await sql`UPDATE auth_users SET subscription_status = 'canceled', last_check_subscription_status_at = now() WHERE stripe_id = ${customerId}`;
+          }
+        }
+        break;
+      }
+      case "customer.subscription.updated": {
+        const subscription = event.data.object;
+        const customerId = subscription.customer;
+        const scheduledTier = subscription.metadata?.scheduled_tier;
+        
+        if (customerId && subscription.status === 'active') {
+          const [user] = await sql`SELECT scheduled_tier FROM auth_users WHERE stripe_id = ${customerId}`;
+          
+          if (user?.scheduled_tier && scheduledTier && scheduledTier !== 'free') {
+            const tierName = scheduledTier.toLowerCase();
+            if (['casual', 'dating', 'business'].includes(tierName)) {
+              await sql`
+                UPDATE auth_users 
+                SET membership_tier = ${tierName},
+                    scheduled_tier = NULL,
+                    tier_change_at = NULL,
+                    subscription_status = 'active',
+                    last_check_subscription_status_at = now()
+                WHERE stripe_id = ${customerId}
+              `;
+              console.log(`[WEBHOOK] Finalized scheduled downgrade to ${tierName} for customer ${customerId}`);
+            }
+          }
         }
         break;
       }

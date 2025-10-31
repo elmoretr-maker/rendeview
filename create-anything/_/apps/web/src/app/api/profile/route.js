@@ -10,7 +10,7 @@ export async function GET() {
     const rows = await sql`
       SELECT id, name, email, image, role, consent_accepted, consent_at,
              immediate_available, availability_override, timezone, typical_availability,
-             membership_tier, primary_photo_url
+             membership_tier, primary_photo_url, scheduled_tier, tier_change_at
       FROM auth_users WHERE id = ${userId} LIMIT 1`;
     const media =
       await sql`SELECT id, type, url, sort_order FROM profile_media WHERE user_id = ${userId} ORDER BY sort_order ASC, id ASC`;

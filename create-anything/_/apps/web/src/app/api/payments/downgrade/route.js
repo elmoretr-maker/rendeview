@@ -43,6 +43,8 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
+    let periodEndDate = null;
+
     if (currentUser.stripe_id) {
       try {
         const subscriptions = await stripe.subscriptions.list({
@@ -51,44 +53,93 @@ export async function POST(request) {
           limit: 100,
         });
 
-        if (subscriptions.data.length === 0 && tierLower !== "free") {
+        if (subscriptions.data.length === 0) {
           return Response.json({ 
             error: "No active subscription found. Please upgrade through the subscription page instead." 
           }, { status: 400 });
         }
 
+        const [settings] = await sql`SELECT pricing FROM admin_settings WHERE id = 1`;
+        const pricing = settings?.pricing || {};
+        
         for (const sub of subscriptions.data) {
-          await stripe.subscriptions.cancel(sub.id, {
-            prorate: true,
-            invoice_now: true
-          });
-          console.log(`[DOWNGRADE] Cancelled Stripe subscription ${sub.id} for user ${uid} (with prorated refund)`);
+          periodEndDate = new Date(sub.current_period_end * 1000);
+          
+          if (tierLower === "free") {
+            await stripe.subscriptions.update(sub.id, {
+              cancel_at_period_end: true,
+              metadata: { scheduled_tier: "free" }
+            });
+            console.log(`[DOWNGRADE] Scheduled cancellation for subscription ${sub.id} at period end: ${periodEndDate}`);
+          } else {
+            const newAmount = pricing?.tiers?.[tierLower]?.price_cents;
+            const newMinutes = pricing?.tiers?.[tierLower]?.minutes;
+            
+            if (!newAmount || !newMinutes) {
+              throw new Error(`Invalid tier configuration for ${tierLower}`);
+            }
+
+            await stripe.subscriptions.update(sub.id, {
+              metadata: { scheduled_tier: tierLower }
+            });
+            
+            await stripe.subscriptionSchedules.create({
+              from_subscription: sub.id,
+              end_behavior: 'release',
+              phases: [
+                {
+                  items: sub.items.data.map(item => ({
+                    price: item.price.id,
+                    quantity: item.quantity
+                  })),
+                  start_date: sub.current_period_start,
+                  end_date: sub.current_period_end
+                },
+                {
+                  items: [{
+                    price_data: {
+                      currency: 'usd',
+                      product: sub.items.data[0].price.product,
+                      recurring: { interval: 'month' },
+                      unit_amount: newAmount
+                    },
+                    quantity: 1
+                  }],
+                  start_date: sub.current_period_end,
+                  metadata: { tier: tierLower }
+                }
+              ],
+              metadata: { scheduled_tier: tierLower, user_id: uid }
+            });
+            console.log(`[DOWNGRADE] Created subscription schedule for ${sub.id} to change to ${tierLower} at ${periodEndDate}`);
+          }
         }
       } catch (stripeErr) {
         console.error("[DOWNGRADE] Stripe operation failed:", stripeErr?.message || stripeErr);
         return Response.json({ 
-          error: "Failed to cancel subscription with Stripe. Please try again or contact support." 
+          error: "Failed to schedule downgrade with Stripe. Please try again or contact support." 
         }, { status: 500 });
       }
     }
 
     await sql`
       UPDATE auth_users 
-      SET membership_tier = 'free',
-          subscription_status = 'inactive',
-          last_check_subscription_status_at = now()
+      SET scheduled_tier = ${tierLower},
+          tier_change_at = ${periodEndDate ? periodEndDate.toISOString() : null}
       WHERE id = ${uid}
     `;
 
     const tierName = tierLower.charAt(0).toUpperCase() + tierLower.slice(1);
-    const message = tierLower === "free" 
-      ? `Successfully downgraded to Free tier. Your subscription has been cancelled with a prorated refund.`
-      : `Your subscription has been cancelled with a prorated refund. You are now on the Free tier. To access ${tierName} tier features, please click "Upgrade to ${tierName}" to subscribe.`;
+    const currentTierName = currentUser.membership_tier.charAt(0).toUpperCase() + currentUser.membership_tier.slice(1);
+    const formattedDate = periodEndDate ? periodEndDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'the end of your billing cycle';
+    
+    const message = `Your downgrade is scheduled. You retain your current ${currentTierName} benefits until ${formattedDate}.`;
 
     return Response.json({ 
       success: true, 
       message,
-      tier: "free"
+      scheduledTier: tierLower,
+      tierChangeAt: periodEndDate ? periodEndDate.toISOString() : null
     });
   } catch (err) {
     console.error("POST /api/payments/downgrade error", err?.message || err);

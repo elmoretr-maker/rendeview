@@ -62,6 +62,9 @@ export default function SubscriptionPage() {
   const [currentTier, setCurrentTier] = useState(null);
   const [error, setError] = useState(null);
 
+  const [scheduledTier, setScheduledTier] = useState(null);
+  const [tierChangeAt, setTierChangeAt] = useState(null);
+
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -71,6 +74,8 @@ export default function SubscriptionPage() {
         const data = await res.json();
         if (mounted) {
           setCurrentTier(data?.user?.membership_tier || "free");
+          setScheduledTier(data?.user?.scheduled_tier || null);
+          setTierChangeAt(data?.user?.tier_change_at || null);
         }
       } catch (e) {
         console.error(e);
@@ -138,7 +143,7 @@ export default function SubscriptionPage() {
         setError(null);
         
         const confirmed = window.confirm(
-          `Are you sure you want to downgrade to the ${TIERS.find(t => t.key === key)?.title} plan? Your subscription will be cancelled with a prorated refund.`
+          `Are you sure you want to downgrade to the ${TIERS.find(t => t.key === key)?.title} plan? The change will take effect at the end of your current billing cycle. You'll keep your current benefits until then.`
         );
         
         if (!confirmed) {
@@ -158,8 +163,9 @@ export default function SubscriptionPage() {
         }
         
         const data = await res.json();
-        toast.success(data.message || "Successfully downgraded");
-        setCurrentTier(data.tier || "free");
+        toast.success(data.message || "Downgrade scheduled successfully");
+        setScheduledTier(data.scheduledTier);
+        setTierChangeAt(data.tierChangeAt);
         window.location.reload();
       } catch (e) {
         console.error(e);
@@ -230,6 +236,44 @@ export default function SubscriptionPage() {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Scheduled Downgrade Alert */}
+        {scheduledTier && tierChangeAt && (
+          <div 
+            className="mb-6 p-6 rounded-xl border-2"
+            style={{ 
+              backgroundColor: "#FFF7ED", 
+              borderColor: "#FB923C" 
+            }}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "#FED7AA" }}>
+                <svg className="w-6 h-6" style={{ color: "#EA580C" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold" style={{ color: "#EA580C" }}>
+                  Scheduled Downgrade
+                </h3>
+                <p className="text-sm" style={{ color: "#9A3412" }}>
+                  Your plan will change on {new Date(tierChangeAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                </p>
+              </div>
+            </div>
+            <div className="p-4 rounded-lg" style={{ backgroundColor: "#FFEDD5" }}>
+              <p className="text-sm font-medium mb-2" style={{ color: "#9A3412" }}>
+                Current: {TIERS.find(t => t.key === currentTier)?.title}
+              </p>
+              <p className="text-sm font-medium" style={{ color: "#9A3412" }}>
+                Scheduled: {TIERS.find(t => t.key === scheduledTier)?.title}
+              </p>
+            </div>
+            <p className="mt-4 text-sm" style={{ color: "#9A3412" }}>
+              You will retain your current {TIERS.find(t => t.key === currentTier)?.title} benefits until {new Date(tierChangeAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
+            </p>
           </div>
         )}
 

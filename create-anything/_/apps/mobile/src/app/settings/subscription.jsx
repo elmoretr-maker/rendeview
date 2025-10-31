@@ -69,6 +69,8 @@ export default function SubscriptionScreen() {
   const [loading, setLoading] = useState(false);
   const [currentTier, setCurrentTier] = useState(null);
   const [error, setError] = useState(null);
+  const [scheduledTier, setScheduledTier] = useState(null);
+  const [tierChangeAt, setTierChangeAt] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -79,6 +81,8 @@ export default function SubscriptionScreen() {
         const data = await res.json();
         if (mounted) {
           setCurrentTier(data?.user?.membership_tier || "free");
+          setScheduledTier(data?.user?.scheduled_tier || null);
+          setTierChangeAt(data?.user?.tier_change_at || null);
         }
       } catch (e) {
         console.error(e);
@@ -149,7 +153,7 @@ export default function SubscriptionScreen() {
 
         Alert.alert(
           "Confirm Downgrade",
-          `Are you sure you want to downgrade to the ${tierName} plan? Your subscription will be cancelled with a prorated refund.`,
+          `Are you sure you want to downgrade to the ${tierName} plan? The change will take effect at the end of your current billing cycle. You'll keep your current benefits until then.`,
           [
             { text: "Cancel", style: "cancel", onPress: () => setLoading(false) },
             {
@@ -169,8 +173,9 @@ export default function SubscriptionScreen() {
                   }
 
                   const data = await res.json();
-                  Alert.alert("Success", data.message || "Successfully downgraded");
-                  setCurrentTier(data.tier || "free");
+                  Alert.alert("Success", data.message || "Downgrade scheduled successfully");
+                  setScheduledTier(data.scheduledTier);
+                  setTierChangeAt(data.tierChangeAt);
                   router.push("/settings/subscription");
                 } catch (e) {
                   console.error(e);
@@ -302,6 +307,61 @@ export default function SubscriptionScreen() {
                   </Text>
                 )}
             </View>
+          </View>
+        )}
+
+        {/* Scheduled Downgrade Alert */}
+        {scheduledTier && tierChangeAt && (
+          <View
+            style={{
+              backgroundColor: "#FFF7ED",
+              padding: 20,
+              borderRadius: 12,
+              marginBottom: 16,
+              borderWidth: 2,
+              borderColor: "#FB923C",
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 }}>
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: "#FED7AA",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Ionicons name="time-outline" size={24} color="#EA580C" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 16, fontWeight: "700", color: "#EA580C" }}>
+                  Scheduled Downgrade
+                </Text>
+                <Text style={{ fontSize: 13, color: "#9A3412", marginTop: 2 }}>
+                  Your plan will change on {new Date(tierChangeAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                </Text>
+              </View>
+            </View>
+            <View
+              style={{
+                backgroundColor: "#FFEDD5",
+                padding: 12,
+                borderRadius: 8,
+                marginBottom: 12,
+              }}
+            >
+              <Text style={{ fontSize: 13, fontWeight: "600", color: "#9A3412", marginBottom: 6 }}>
+                Current: {TIERS.find(t => t.key === currentTier)?.title}
+              </Text>
+              <Text style={{ fontSize: 13, fontWeight: "600", color: "#9A3412" }}>
+                Scheduled: {TIERS.find(t => t.key === scheduledTier)?.title}
+              </Text>
+            </View>
+            <Text style={{ fontSize: 13, color: "#9A3412", lineHeight: 20 }}>
+              You will retain your current {TIERS.find(t => t.key === currentTier)?.title} benefits until {new Date(tierChangeAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
+            </Text>
           </View>
         )}
 
