@@ -82,7 +82,7 @@ export default function Welcome() {
         {/* Buttons Section */}
         <div className="text-center space-y-4 mb-6">
           <button
-            onClick={() => navigate("/account/signup")}
+            onClick={() => navigate("/onboarding/consent")}
             className="w-full px-10 py-4 rounded-full text-white font-semibold text-lg shadow-lg"
             style={{ backgroundColor: COLORS.primary }}
           >

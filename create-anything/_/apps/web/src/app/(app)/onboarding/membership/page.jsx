@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { TIER_LIMITS, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
 
@@ -65,8 +66,8 @@ export default function MembershipScreen() {
   const [pricing, setPricing] = useState(null);
   const [error, setError] = useState(null);
 
-  const totalSteps = 5;
-  const stepIndex = 1;
+  const totalSteps = 4;
+  const stepIndex = 3;
   const progressPct = `${(stepIndex / totalSteps) * 100}%`;
 
   useEffect(() => {
@@ -135,6 +136,15 @@ export default function MembershipScreen() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: COLORS.white }}>
       <div className="max-w-2xl mx-auto px-6 py-8">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate("/onboarding/consent")}
+          className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeft size={20} />
+          <span className="font-medium">Back</span>
+        </button>
+
         {/* Progress bar */}
         <div className="mb-6">
           <div className="h-1.5 bg-gray-200 rounded-full">

@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Consent() {
@@ -7,10 +8,10 @@ export default function Consent() {
   const [searchParams] = useSearchParams();
   const [saving, setSaving] = useState(false);
   
-  const returnTo = searchParams.get("returnTo") || "/discovery";
+  const returnTo = searchParams.get("returnTo");
 
-  const totalSteps = 5;
-  const stepIndex = 5;
+  const totalSteps = 4;
+  const stepIndex = 2;
   const progressPct = `${(stepIndex / totalSteps) * 100}%`;
 
   const accept = useCallback(async () => {
@@ -24,7 +25,8 @@ export default function Consent() {
       if (!res.ok) {
         throw new Error("Failed to save consent");
       }
-      navigate(returnTo, { replace: true });
+      // After consent, go to returnTo if specified, otherwise membership selection
+      navigate(returnTo || "/onboarding/membership", { replace: true });
     } catch (e) {
       console.error(e);
       toast.error("Could not save consent");
@@ -34,14 +36,25 @@ export default function Consent() {
   }, [navigate, returnTo]);
 
   const decline = useCallback(() => {
-    navigate(`/onboarding/data-consent-required?returnTo=${encodeURIComponent(returnTo)}`);
+    navigate(`/onboarding/data-consent-required?returnTo=${encodeURIComponent(returnTo || "/onboarding/membership")}`);
   }, [navigate, returnTo]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ backgroundColor: "#FFFFFF" }}>
+      {/* Back Button */}
+      <div className="absolute top-8 left-6">
+        <button
+          onClick={() => navigate("/onboarding/welcome")}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeft size={20} />
+          <span className="font-medium">Back</span>
+        </button>
+      </div>
+
       {/* Progress bar */}
       <div className="absolute top-8 left-6 right-6 max-w-2xl mx-auto">
-        <div className="h-1.5 bg-gray-200 rounded-full">
+        <div className="h-1.5 bg-gray-200 rounded-full mt-12">
           <div
             className="h-1.5 rounded-full"
             style={{ backgroundColor: "#5B3BAF", width: progressPct }}
@@ -65,7 +78,7 @@ export default function Consent() {
           className="w-full py-3.5 rounded-xl text-white font-semibold text-base mb-3 disabled:opacity-60"
           style={{ backgroundColor: "#00BFA6" }}
         >
-          {saving ? "Saving..." : "Accept & Finish"}
+          {saving ? "Saving..." : "Accept & Continue"}
         </button>
         
         <button
