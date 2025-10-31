@@ -35,6 +35,16 @@ The application utilizes a client-server architecture. The frontend, a React 18 
 **User Experience Features (October 31, 2025):**
 - **Private User Notes System**: Production-ready private notes feature allowing users to save personal observations about their matches. Database schema with UNIQUE(user_id, target_user_id) constraint ensures one note per match. Three integration points: (1) Post-call note modal appears automatically after video calls with retry capability on errors, (2) Inline note editor in chat detail pages with save/cancel workflow, (3) Note previews displayed on match list cards. Modal conflict resolution ensures post-call note prompt waits when video extension/payment modals are active, preventing overlapping UX. API endpoints (GET/POST /api/notes) handle authentication, validation, and upsert operations with proper error responses
 
+**Hybrid Chat Monetization System (October 31, 2025):**
+- **Three-Pool Message System**: Messages deduct in priority order - (1) First-encounter bonuses (10 per match, refreshes after video call), (2) Daily tier allowances (Free: 15, Casual: 24, Dating: 50, Business: 500), (3) Purchased credits (persistent, no expiration)
+- **Business Tier Per-Match Caps**: 50 messages per match per day (base), increases to 75 after video call with that match. Blocks ALL message types (first-encounter, daily, credits) when exhausted to prevent abuse
+- **Video Call Incentives**: Completing a video call refreshes 10 first-encounter messages for both users, encourages video engagement over endless texting
+- **Credit Packs**: $1.99/10, $3.99/20, $7.99/50 messages. Persistent credits never expire, provide escape valve when daily caps exhausted
+- **Real-time Quota UI**: Dual progress bars in chat interface show first-encounter and daily tier messages remaining, updates after each send
+- **Database Tables**: user_daily_message_counts (resets daily), match_first_encounter_messages (per-match bonuses), user_message_credits (purchased credits), match_daily_message_counts (Business tier per-match tracking)
+- **API Endpoints**: GET /api/messages/quota (check all pools), POST /api/messages/[matchId] (enforces limits with proper deduction), POST /api/video/complete (refreshes bonuses post-call)
+- **Revenue Protection**: Prevents unlimited free messaging, drives tier upgrades and credit purchases, encourages video calls (core value proposition)
+
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)
 - **Authentication**: Auth.js
