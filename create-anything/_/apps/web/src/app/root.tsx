@@ -237,11 +237,18 @@ export const ClientOnly: React.FC<ClientOnlyProps> = ({ loader }) => {
  * Works only in dev; in prod it always returns `true`.
  */
 export function useHmrConnection(): boolean {
-  const [connected, setConnected] = useState(() => !!import.meta.hot);
+  // Start with true to match server-side rendering (avoids hydration mismatch)
+  const [connected, setConnected] = useState(true);
 
   useEffect(() => {
-    // No HMR object outside dev builds
-    if (!import.meta.hot) return;
+    // No HMR object outside dev builds - stay connected
+    if (!import.meta.hot) {
+      setConnected(true);
+      return;
+    }
+
+    // Set initial client-side state based on HMR availability
+    setConnected(!!import.meta.hot);
 
     /** Fired the moment the WS closes unexpectedly */
     const onDisconnect = () => setConnected(false);
@@ -380,7 +387,7 @@ export function Layout({ children }: { children: ReactNode }) {
   }, [pathname]);
   return (
     <html lang="en">
-      <head>
+      <head suppressHydrationWarning>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
