@@ -6,11 +6,19 @@
 import sql from '@/app/api/utils/sql';
 
 // Mock auth session for testing
-export function mockAuth(userId: number = 1) {
-  const { auth } = require('@/auth');
-  auth.mockResolvedValue({
-    user: { id: userId },
-  });
+// Note: This function expects auth to be mocked via vi.mock('@/auth') in the test file
+export async function mockAuth(userId: number | null = 1) {
+  // Import the mocked auth module
+  const authModule = await import('../../../src/auth');
+  const auth = authModule.auth as any;
+  
+  if (userId === null) {
+    auth.mockResolvedValue(null);
+  } else {
+    auth.mockResolvedValue({
+      user: { id: userId },
+    });
+  }
 }
 
 // Clean up test data from database
@@ -32,8 +40,7 @@ export async function cleanupTestData() {
           flagged_for_admin = false,
           account_status = 'active',
           scheduled_tier = NULL,
-          tier_change_at = NULL,
-          stripe_id = NULL
+          tier_change_at = NULL
       WHERE id >= 1000
     `;
     
@@ -44,8 +51,7 @@ export async function cleanupTestData() {
           flagged_for_admin = false,
           account_status = 'active',
           scheduled_tier = NULL,
-          tier_change_at = NULL,
-          stripe_id = NULL
+          tier_change_at = NULL
       WHERE id = 1
     `;
   } catch (err) {
@@ -138,7 +144,7 @@ export function assertError(response: { status: number; data: any }, expectedSta
 export async function getUserData(userId: number) {
   const [user] = await sql`
     SELECT id, name, email, membership_tier, block_count, account_status, 
-           flagged_for_admin, scheduled_tier, tier_change_at, stripe_id
+           flagged_for_admin, scheduled_tier, tier_change_at
     FROM auth_users 
     WHERE id = ${userId}
   `;

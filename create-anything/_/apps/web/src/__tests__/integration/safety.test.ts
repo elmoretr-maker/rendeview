@@ -25,7 +25,7 @@ vi.mock('@/auth', () => ({
 describe('Safety System Integration Tests - Real API Routes', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
-    mockAuth(1);
+    await mockAuth(1);
     await cleanupTestData();
     
     // Create main test user
@@ -77,7 +77,7 @@ describe('Safety System Integration Tests - Real API Routes', () => {
           email: `blocker${blockerId}@example.com`,
         });
 
-        mockAuth(blockerId);
+        await mockAuth(blockerId);
         const response = await callRoute(blockUserHandler, {
           method: 'POST',
           body: {
@@ -147,7 +147,7 @@ describe('Safety System Integration Tests - Real API Routes', () => {
     });
 
     it('should require authentication', async () => {
-      mockAuth(null as any);
+      await mockAuth(null);
 
       const response = await callRoute(blockUserHandler, {
         method: 'POST',
@@ -169,7 +169,7 @@ describe('Safety System Integration Tests - Real API Routes', () => {
           name: `Blocker ${blockerId}`,
         });
 
-        mockAuth(blockerId);
+        await mockAuth(blockerId);
         const response = await callRoute(blockUserHandler, {
           method: 'POST',
           body: {
@@ -201,7 +201,7 @@ describe('Safety System Integration Tests - Real API Routes', () => {
           name: `Blocker ${blockerId}`,
         });
 
-        mockAuth(blockerId);
+        await mockAuth(blockerId);
         const response = await callRoute(blockUserHandler, {
           method: 'POST',
           body: {
@@ -233,7 +233,7 @@ describe('Safety System Integration Tests - Real API Routes', () => {
           name: `Blocker ${blockerId}`,
         });
 
-        mockAuth(blockerId);
+        await mockAuth(blockerId);
         await callRoute(blockUserHandler, {
           method: 'POST',
           body: {
@@ -421,7 +421,7 @@ describe('Safety System Integration Tests - Real API Routes', () => {
           name: `Blocker ${blockerId}`,
         });
 
-        mockAuth(blockerId);
+        await mockAuth(blockerId);
         
         // Each blocker blocks 2 users
         await callRoute(blockUserHandler, {
@@ -446,7 +446,7 @@ describe('Safety System Integration Tests - Real API Routes', () => {
       // Block user 1001 three times
       for (let blockerId = 2; blockerId <= 4; blockerId++) {
         await createTestUser(blockerId, {});
-        mockAuth(blockerId);
+        await mockAuth(blockerId);
         await callRoute(blockUserHandler, {
           method: 'POST',
           body: { blockedId: 1001 },
@@ -483,7 +483,7 @@ describe('Safety System Integration Tests - Real API Routes', () => {
           await createTestUser(blockerId, {
             name: `Blocker ${blockerId}`,
           });
-          mockAuth(blockerId);
+          await mockAuth(blockerId);
           await callRoute(blockUserHandler, {
             method: 'POST',
             body: { blockedId },
