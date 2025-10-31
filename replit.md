@@ -125,4 +125,11 @@ The application employs a client-server architecture. The frontend, located at `
     - onboarding/welcome/page.jsx (routes to consent instead of signup)
     - page.jsx root (updated routing logic for new flow order)
   - Files removed: onboarding/photos/page.jsx, onboarding/video/page.jsx, onboarding/media/page.jsx
-  - **Mobile App**: Similar consolidation pending (media.jsx already has most features, needs profile integration)
+  - **Mobile App**: Consolidation completed matching web app structure
+    - onboarding/profile.jsx fully rewritten with name, bio, interests, photo uploads, and camera-only video
+    - onboarding/consent.jsx updated to Step 2 with back button
+    - onboarding/membership.jsx updated to Step 3 with back button
+    - onboarding/welcome.jsx routes to consent (instead of signup)
+    - index.jsx routing logic updated: consent → membership → profile → tabs
+    - Files removed: onboarding/photos.jsx, onboarding/video.jsx, onboarding/media.jsx
+    - Progress reduced from 5 steps to 4 steps matching web app
