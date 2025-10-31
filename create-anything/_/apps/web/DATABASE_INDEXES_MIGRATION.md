@@ -165,9 +165,31 @@ DROP INDEX IF EXISTS idx_matches_created_at;
 - Negligible impact on insert/update performance for these table sizes
 
 ## Applied To
-- ✅ Development database (October 31, 2025)
+- ✅ Development database (October 31, 2025) - **VERIFIED: All 11 indexes successfully created**
 - ⬜ Staging database
 - ⬜ Production database
+
+### Verification Results (Development)
+**Date Applied:** October 31, 2025  
+**Indexes Created:** 11/11  
+**Status:** ✅ All indexes verified via pg_indexes query
+
+**auth_users table (3 indexes):**
+- ✅ idx_auth_users_membership_tier
+- ✅ idx_auth_users_created_at (DESC)
+- ✅ idx_auth_users_last_active (partial index)
+
+**video_sessions table (5 indexes):**
+- ✅ idx_video_sessions_match_id
+- ✅ idx_video_sessions_caller_id
+- ✅ idx_video_sessions_callee_id
+- ✅ idx_video_sessions_created_at (DESC)
+- ✅ idx_video_sessions_state (partial index)
+
+**matches table (3 indexes):**
+- ✅ idx_matches_user_a_id
+- ✅ idx_matches_user_b_id
+- ✅ idx_matches_created_at (DESC)
 
 ## Notes
 - All indexes use `IF NOT EXISTS` for safe re-running
