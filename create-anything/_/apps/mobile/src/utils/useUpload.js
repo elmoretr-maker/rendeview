@@ -13,7 +13,7 @@ function useUpload() {
         // Use base64 upload for React Native assets (Replit upload service doesn't support RN FormData)
         if (asset.base64) {
           // Photos with base64
-          response = await fetch("/_create/api/upload/", {
+          response = await fetch("/api/upload-base64", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -26,7 +26,7 @@ function useUpload() {
           const base64Data = await FileSystem.readAsStringAsync(asset.uri, {
             encoding: FileSystem.EncodingType.Base64,
           });
-          response = await fetch("/_create/api/upload/", {
+          response = await fetch("/api/upload-base64", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -37,7 +37,7 @@ function useUpload() {
           throw new Error("Asset missing both base64 and uri");
         }
       } else if ("url" in input) {
-        response = await fetch("/_create/api/upload/", {
+        response = await fetch("/api/upload-base64", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -45,7 +45,7 @@ function useUpload() {
           body: JSON.stringify({ url: input.url }),
         });
       } else if ("base64" in input) {
-        response = await fetch("/_create/api/upload/", {
+        response = await fetch("/api/upload-base64", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -53,7 +53,7 @@ function useUpload() {
           body: JSON.stringify({ base64: input.base64 }),
         });
       } else {
-        response = await fetch("/_create/api/upload/", {
+        response = await fetch("/api/upload-base64", {
           method: "POST",
           headers: {
             "Content-Type": "application/octet-stream",
