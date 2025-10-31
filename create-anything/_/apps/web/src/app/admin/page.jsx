@@ -7,6 +7,7 @@ export default function AdminPage() {
   const { data: user, loading } = useUser();
   const queryClient = useQueryClient();
   const [error, setError] = useState(null);
+  const [clearFlagError, setClearFlagError] = useState(null);
 
   // Check if user has admin access (email contains 'staff' OR specific email)
   const isAdmin = user?.email?.toLowerCase().includes('staff') || 
@@ -25,7 +26,7 @@ export default function AdminPage() {
   const settings = settingsResp?.settings || null;
 
   // Fetch flagged users
-  const { data: flaggedUsersResp, isLoading: flaggedLoading } = useQuery({
+  const { data: flaggedUsersResp, isLoading: flaggedLoading, error: flaggedError } = useQuery({
     queryKey: ["admin-flagged-users"],
     queryFn: async () => {
       const res = await fetch("/api/admin/flagged-users");
@@ -37,7 +38,7 @@ export default function AdminPage() {
   const flaggedUsers = flaggedUsersResp?.users || [];
 
   // Fetch revenue stats
-  const { data: revenueResp, isLoading: revenueLoading } = useQuery({
+  const { data: revenueResp, isLoading: revenueLoading, error: revenueError } = useQuery({
     queryKey: ["admin-revenue-stats"],
     queryFn: async () => {
       const res = await fetch("/api/admin/revenue-stats");
@@ -60,7 +61,11 @@ export default function AdminPage() {
       return res.json();
     },
     onSuccess: () => {
+      setClearFlagError(null);
       queryClient.invalidateQueries({ queryKey: ["admin-flagged-users"] });
+    },
+    onError: (err) => {
+      setClearFlagError(err.message || "Failed to clear flag");
     },
   });
 
@@ -170,8 +175,18 @@ export default function AdminPage() {
             </p>
           </div>
           <div className="p-6">
+            {clearFlagError && (
+              <div className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-700">
+                <strong>Error:</strong> {clearFlagError}
+              </div>
+            )}
             {flaggedLoading ? (
               <div className="text-center py-8 text-gray-500">Loading flagged users...</div>
+            ) : flaggedError ? (
+              <div className="rounded-lg bg-red-50 p-4 text-center">
+                <p className="text-red-700 font-medium">Failed to load flagged users</p>
+                <p className="text-red-600 text-sm mt-1">{flaggedError.message}</p>
+              </div>
             ) : flaggedUsers.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 No flagged users at this time
@@ -250,6 +265,11 @@ export default function AdminPage() {
           <div className="p-6">
             {revenueLoading ? (
               <div className="text-center py-8 text-gray-500">Loading stats...</div>
+            ) : revenueError ? (
+              <div className="rounded-lg bg-red-50 p-4 text-center">
+                <p className="text-red-700 font-medium">Failed to load revenue statistics</p>
+                <p className="text-red-600 text-sm mt-1">{revenueError.message}</p>
+              </div>
             ) : stats ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-blue-50 rounded-lg p-6">

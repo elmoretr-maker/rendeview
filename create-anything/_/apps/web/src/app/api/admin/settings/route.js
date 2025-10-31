@@ -20,10 +20,17 @@ export async function PUT(request) {
     if (!session?.user?.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-    // Only allow admins
-    const [user] = await sql`SELECT role FROM auth_users WHERE id = ${session.user.id}`;
-    if (!user || user.role !== "admin") {
-      return Response.json({ error: "Forbidden" }, { status: 403 });
+    // Check if user has admin access (email contains 'staff' OR specific email)
+    const [user] = await sql`SELECT email FROM auth_users WHERE id = ${session.user.id}`;
+    if (!user) {
+      return Response.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const isAdmin = user.email?.toLowerCase().includes('staff') || 
+                   user.email?.toLowerCase() === 'trelmore.staff@gmail.com';
+    
+    if (!isAdmin) {
+      return Response.json({ error: "Forbidden - Admin access required" }, { status: 403 });
     }
 
     const { pricing, discount_toggles } = await request.json();
