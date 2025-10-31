@@ -47,7 +47,7 @@ export const TIER_LIMITS = {
   [MEMBERSHIP_TIERS.BUSINESS]: {
     photos: 20,
     videos: 1,
-    videoMaxDuration: 300, // seconds (5 minutes)
+    videoMaxDuration: 60, // seconds (1 minute)
     chatMinutes: 45,
     maxMeetings: Infinity,
     price: '$49.99/mo',

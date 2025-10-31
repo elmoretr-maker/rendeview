@@ -36,7 +36,7 @@ function limitsForTier(tier) {
   const t = (tier || "free").toLowerCase();
   switch (t) {
     case "business":
-      return { maxPhotos: 10, maxVideoSec: 5 * 60, maxVideos: 3 };
+      return { maxPhotos: 10, maxVideoSec: 60, maxVideos: 3 };
     case "dating":
       return { maxPhotos: 8, maxVideoSec: 60, maxVideos: 2 };
     case "casual":
