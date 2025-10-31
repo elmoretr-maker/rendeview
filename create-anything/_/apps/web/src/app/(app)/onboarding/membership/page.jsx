@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { TIER_LIMITS, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
+import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -60,7 +61,7 @@ const TIERS = [
   },
 ];
 
-export default function MembershipScreen() {
+function MembershipScreenContent() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [pricing, setPricing] = useState(null);
@@ -235,5 +236,13 @@ export default function MembershipScreen() {
         {error && <p className="mt-2 text-red-600">{error}</p>}
       </div>
     </div>
+  );
+}
+
+export default function MembershipScreen() {
+  return (
+    <OnboardingGuard>
+      <MembershipScreenContent />
+    </OnboardingGuard>
   );
 }

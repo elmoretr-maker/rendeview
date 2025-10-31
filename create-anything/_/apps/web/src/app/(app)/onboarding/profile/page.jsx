@@ -5,6 +5,7 @@ import { Camera, Upload, X, Trash2, Video, PlayCircle, ArrowLeft } from "lucide-
 import { toast } from "sonner";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { getTierLimits, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
+import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -16,7 +17,7 @@ const COLORS = {
   cardBg: "#F3F4F6",
 };
 
-export default function ConsolidatedProfileOnboarding() {
+function ConsolidatedProfileOnboardingContent() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
@@ -646,5 +647,13 @@ function VideoRecorderModal({ onClose, maxDuration, onComplete }) {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ConsolidatedProfileOnboarding() {
+  return (
+    <OnboardingGuard>
+      <ConsolidatedProfileOnboardingContent />
+    </OnboardingGuard>
   );
 }

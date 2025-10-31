@@ -19,6 +19,7 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from "@expo-google-fonts/inter";
+import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -35,7 +36,7 @@ const FONT_SIZES = {
   body: 14,
 };
 
-export default function Welcome() {
+function WelcomeContent() {
   const insets = useSafeAreaInsets();
   const { signIn, signUp, isReady, auth } = useAuth();
   const router = useRouter();
@@ -286,3 +287,11 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
 });
+
+export default function Welcome() {
+  return (
+    <OnboardingGuard allowUnauthenticated={true}>
+      <WelcomeContent />
+    </OnboardingGuard>
+  );
+}

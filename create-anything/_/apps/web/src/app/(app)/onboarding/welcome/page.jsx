@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { CheckCircle, Shield, Heart, Users } from "lucide-react";
 import logoImage from "@/assets/logo-centered.png";
+import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -13,7 +14,7 @@ const COLORS = {
   error: "#E74C3C",
 };
 
-export default function Welcome() {
+function WelcomeContent() {
   const navigate = useNavigate();
 
   const valueProps = [
@@ -105,5 +106,13 @@ export default function Welcome() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function Welcome() {
+  return (
+    <OnboardingGuard allowUnauthenticated={true}>
+      <WelcomeContent />
+    </OnboardingGuard>
   );
 }

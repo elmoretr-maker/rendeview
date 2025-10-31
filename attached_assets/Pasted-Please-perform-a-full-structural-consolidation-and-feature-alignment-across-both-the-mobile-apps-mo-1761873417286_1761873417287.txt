@@ -1,0 +1,20 @@
+Please perform a full structural consolidation and feature alignment across both the mobile (apps/mobile) and web (apps/web) applications. The goal is a unified, continuous user flow that retains all anti-catfishing and media management abilities. Only remove redundant files/code; do not remove features.
+
+***CRITICAL NAVIGATION FIX & NEW PAGE CREATION***
+1.  **CREATE NEW PAGE (Subscription Management):** Create a new, secure, authenticated application page named `/settings/subscription` for both the Web and Mobile apps. This page must display the user's current membership tier, its benefits, and include the functional option to **Upgrade** or manage billing (linking to the /account/billing route).
+2.  **CORRECT NAVIGATION LINK:** Update the main persistent navigation bar to direct the **"Membership" link** to this new, post-onboarding route: `/settings/subscription`.
+3.  **ONBOARDING GATE AUDIT:** Conduct a final audit to ensure that **NO authenticated user is ever directed back into any page within the /onboarding/ route** (steps 1 through 4) after initial completion. If an authenticated user attempts to access an onboarding page, they must be redirected to the main app dashboard (e.g., /discovery).
+
+***ONBOARDING FUNNEL AND FLOW CONTINUITY***
+4.  **Unified Flow Enforced:** Ensure both the mobile and web onboarding flows follow this exact sequence: Welcome → Consent → Membership → Payment → Profile Setup → Main App Access.
+5.  **Consolidated Profile & Media Page:** Consolidate profile basics and media uploads into a **SINGLE page** named `/onboarding/profile`.
+6.  **Flow Continuity & Button Logic:** Implement **"Continue"** and **"Back" buttons** on all onboarding pages. After payment success, the user must be presented with a clear **"Continue to Profile Setup" button**.
+
+***VIDEO CHAT AND APP EXITS***
+7.  **Video Call Exit Button (CRITICAL):** On the `/video/call` interface, if the user is **NOT** currently in an active call, a clear **Exit/Close Button** must be displayed at all times, allowing them to route back to their profile page.
+8.  **Video Chat Ending Logic:** The **Stop Chat (End Call)** button must immediately terminate the call for both parties and route both users to their respective profile pages.
+
+***MAINTENANCE AND FINAL DOCUMENTATION***
+9.  **Feature Alignment:** Ensure all previously implemented features (anti-catfishing, video logic, tier limits, upgrade nudges) are correctly maintained across both the mobile and web versions.
+10. **FINAL DOCUMENTATION:** After all code changes are complete, provide a **complete, final flow breakdown for BOTH the Web App and the Mobile App**.
+11. **TESTING BYPASS (MAINTAIN):** **PRESERVE** the server-side authentication bypass logic (QA\_BYPASS\_AUTH) to keep the application fully accessible for testing.

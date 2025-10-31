@@ -37,7 +37,7 @@ export default function AppHeader() {
     { path: "/new-matches", icon: Heart, label: "New Matches", badge: newMatchCount },
     { path: "/matches", icon: Users, label: "Matches" },
     { path: "/messages", icon: MessageCircle, label: "Messages" },
-    { path: "/onboarding/membership", icon: Crown, label: "Membership" },
+    { path: "/settings/subscription", icon: Crown, label: "Membership" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
 

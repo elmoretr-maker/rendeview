@@ -618,6 +618,27 @@ export default function Profile() {
       </TouchableOpacity>
 
       <TouchableOpacity
+        onPress={() => router.push("/settings/subscription")}
+        style={{
+          backgroundColor: COLORS.primary,
+          paddingVertical: 12,
+          borderRadius: 10,
+          marginTop: 12,
+        }}
+      >
+        <Text
+          style={{
+            color: "#fff",
+            fontWeight: "700",
+            textAlign: "center",
+            fontFamily: "Inter_600SemiBold",
+          }}
+        >
+          Manage Membership
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
         onPress={() => {}}
         style={{ paddingVertical: 12, borderRadius: 10, marginTop: 12 }}
       >

@@ -1,0 +1,25 @@
+Please perform a final, comprehensive AUDIT against the entire application and execute all missing requirements for structural alignment, feature implementation, and flow continuity. Only execute the necessary code changes.
+
+1.  **VIDEO RECORDING IMPLEMENTATION (CRITICAL UI):**
+    * On the consolidated Profile/Media page, ensure the video recording component displays a **live preview of the user's camera feed** during recording.
+    * Implement the full set of video controls: **Record Button, Stop Button, Re-record Button, and Final Save Button.**
+
+2.  **VIDEO CHAT ENDING LOGIC (CRITICAL FIX):** Audit the **Stop Chat (End Call) button** on the `/video/call` page. The button must be clearly implemented and, upon clicking, must **immediately terminate the video call for both parties** and **route both users to their respective profile pages** upon exit.
+
+3.  **NAVIGATION & UI FIXES:**
+    * Ensure the persistent navigation bar is correctly displayed on **ALL** authenticated pages and is **HIDDEN** on the `/video/call` page.
+    * Add a link to the navigation bar labeled **"Membership"** directing users to the `/onboarding/membership` page.
+    * Ensure the `/matches` page correctly handles the **zero matches** state by displaying a user-friendly message, not an error.
+
+4.  **BLOCKED USERS FEATURE:** Implement the full functionality for the `/settings/blocked` page, including the ability to display blocked users, add **private notes**, and an **Unblock button**.
+
+5.  **UPGRADE NUDGES:** Implement polite reminders: Meeting Cap Nudge (3rd free call) and Time Limit Nudge (at 4-minute mark of call).
+
+6.  **FLOW CONTINUITY & CONSOLIDATION:**
+    * **Implement Mobile Flow Unification:** Merge the mobile onboarding pages to match the new 4-step sequence (Welcome → Consent → Membership → Profile Setup).
+    * **Flow Buttons:** Implement functional **Continue** and **Back** buttons on all onboarding pages.
+    * **Payment/Exit Logic:** Ensure the `/stripe` page has working **Continue to Profile** and **Cancel/Back** buttons, and ensure the `/video/call` page has a functioning **Exit Button** when a call is not active.
+
+7.  **FINAL DOCUMENTATION (NEW!):** After all code changes are complete, provide a **complete, final flow breakdown for BOTH the Web App and the Mobile App** reflecting the consolidated 4-step onboarding process and the final post-onboarding navigation.
+
+8.  **TESTING BYPASS (MAINTAIN):** **PRESERVE** the server-side authentication bypass logic (QA\_BYPASS\_AUTH) to keep the application fully accessible for testing.

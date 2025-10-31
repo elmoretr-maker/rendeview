@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -50,7 +51,7 @@ const TIERS = [
   },
 ];
 
-export default function MembershipScreen() {
+function MembershipScreenContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -296,5 +297,13 @@ export default function MembershipScreen() {
         </View>
       )}
     </View>
+  );
+}
+
+export default function MembershipScreen() {
+  return (
+    <OnboardingGuard>
+      <MembershipScreenContent />
+    </OnboardingGuard>
   );
 }

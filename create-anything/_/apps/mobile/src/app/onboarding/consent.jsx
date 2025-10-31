@@ -4,8 +4,9 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
+import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 
-export default function Consent() {
+function ConsentContent() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
@@ -156,5 +157,13 @@ export default function Consent() {
         </Text>
       </TouchableOpacity>
     </View>
+  );
+}
+
+export default function Consent() {
+  return (
+    <OnboardingGuard>
+      <ConsentContent />
+    </OnboardingGuard>
   );
 }

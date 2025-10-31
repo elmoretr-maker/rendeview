@@ -21,6 +21,7 @@ import useUpload from "@/utils/useUpload";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -46,7 +47,7 @@ function limitsForTier(tier) {
   }
 }
 
-export default function ConsolidatedProfileOnboarding() {
+function ConsolidatedProfileOnboardingContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   
@@ -746,5 +747,13 @@ export default function ConsolidatedProfileOnboarding() {
         </Text>
       </ScrollView>
     </KeyboardAvoidingView>
+  );
+}
+
+export default function ConsolidatedProfileOnboarding() {
+  return (
+    <OnboardingGuard>
+      <ConsolidatedProfileOnboardingContent />
+    </OnboardingGuard>
   );
 }

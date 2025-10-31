@@ -2,8 +2,9 @@ import React, { useCallback, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 
-export default function Consent() {
+function ConsentContent() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [saving, setSaving] = useState(false);
@@ -90,5 +91,13 @@ export default function Consent() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function Consent() {
+  return (
+    <OnboardingGuard>
+      <ConsentContent />
+    </OnboardingGuard>
   );
 }
