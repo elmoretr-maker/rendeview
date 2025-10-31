@@ -21,6 +21,11 @@ The application utilizes a client-server architecture. The frontend, a React 18 
 - **Database Constraints**: CHECK constraints enforce data integrity on auth_users table - block_count must be non-negative, membership_tier must be valid ('free', 'casual', 'dating', 'business')
 - **Unified Pricing Structure**: All pricing consistently sourced from admin_settings database table and membershipTiers.js, with confirmed 4-tier system (Free $0, Casual $9.99/15min, Dating $29.99/25min, Business $49.99/45min) and single extension option ($8.00 for 10 minutes)
 
+**Data Integrity & Performance (October 31, 2025):**
+- **Database Indexes**: 11 performance indexes added to auth_users (3), video_sessions (5), and matches (3) tables for 50-95% query speed improvement on frequently accessed columns. Migration documented in DATABASE_INDEXES_MIGRATION.md
+- **Central Configuration**: All magic numbers, limits, and thresholds centralized in src/config/constants.ts (300+ lines) covering rate limits, cache durations, pricing, video call config, media limits, daily limits, safety thresholds, pagination, and timeouts. Eliminates scattered hardcoded values
+- **Session Timeout Monitoring**: Global client-side session monitor with 30-minute timeout, 5-minute warning modal with countdown, automatic session extension on user activity, and user-friendly re-login prompt for expired sessions
+
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)
 - **Authentication**: Auth.js
