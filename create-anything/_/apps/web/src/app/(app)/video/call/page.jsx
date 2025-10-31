@@ -336,7 +336,7 @@ export default function VideoCall() {
 
     setSavingNote(true);
     try {
-      await fetch("/api/notes", {
+      const res = await fetch("/api/notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -344,14 +344,20 @@ export default function VideoCall() {
           noteContent: postCallNote.trim(),
         }),
       });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: "Failed to save note" }));
+        throw new Error(error.error || "Failed to save note");
+      }
+
       toast.success("Note saved!");
-    } catch (err) {
-      console.error("Failed to save note:", err);
-      toast.error("Failed to save note");
-    } finally {
-      setSavingNote(false);
       setShowPostCallNoteModal(false);
       navigate("/profile");
+    } catch (err) {
+      console.error("Failed to save note:", err);
+      toast.error(err.message || "Failed to save note");
+    } finally {
+      setSavingNote(false);
     }
   };
 

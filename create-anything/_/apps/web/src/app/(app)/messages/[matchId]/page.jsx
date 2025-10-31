@@ -134,7 +134,7 @@ function ChatContent() {
     
     setSavingNote(true);
     try {
-      await fetch("/api/notes", {
+      const res = await fetch("/api/notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -142,12 +142,18 @@ function ChatContent() {
           noteContent: noteContent.trim(),
         }),
       });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: "Failed to save note" }));
+        throw new Error(error.error || "Failed to save note");
+      }
+
       toast.success("Note saved!");
       setIsEditingNote(false);
       queryClient.invalidateQueries({ queryKey: ["note", data.otherUser.id] });
     } catch (err) {
       console.error("Failed to save note:", err);
-      toast.error("Failed to save note");
+      toast.error(err.message || "Failed to save note");
     } finally {
       setSavingNote(false);
     }
