@@ -131,6 +131,44 @@ export default function SubscriptionPage() {
     [navigate],
   );
 
+  const cancelScheduledDowngrade = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const confirmed = window.confirm(
+        "Cancel your scheduled downgrade? You will continue on your current plan and will be charged at renewal."
+      );
+
+      if (!confirmed) {
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch("/api/payments/cancel-downgrade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!res.ok) {
+        const t = await res.json().catch(() => ({}));
+        throw new Error(t?.error || "Could not cancel downgrade");
+      }
+
+      const data = await res.json();
+      toast.success(data.message || "Scheduled downgrade cancelled successfully");
+      setScheduledTier(null);
+      setTierChangeAt(null);
+      window.location.reload();
+    } catch (e) {
+      console.error(e);
+      setError(e.message);
+      toast.error(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const downgradeTier = useCallback(
     async (key) => {
       if (key === currentTier) {
@@ -274,6 +312,18 @@ export default function SubscriptionPage() {
             <p className="mt-4 text-sm" style={{ color: "#9A3412" }}>
               You will retain your current {TIERS.find(t => t.key === currentTier)?.title} benefits until {new Date(tierChangeAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
             </p>
+            <button
+              onClick={cancelScheduledDowngrade}
+              disabled={loading}
+              className="mt-4 w-full px-4 py-3 rounded-lg font-semibold transition-all disabled:opacity-50"
+              style={{ 
+                backgroundColor: "#FFFFFF", 
+                color: "#EA580C",
+                border: "2px solid #FB923C"
+              }}
+            >
+              {loading ? "Cancelling..." : "Cancel Scheduled Downgrade"}
+            </button>
           </div>
         )}
 

@@ -138,6 +138,59 @@ export default function SubscriptionScreen() {
     [router],
   );
 
+  const cancelScheduledDowngrade = useCallback(async () => {
+    try {
+      Alert.alert(
+        "Cancel Downgrade",
+        "Cancel your scheduled downgrade? You will continue on your current plan and will be charged at renewal.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Confirm",
+            onPress: async () => {
+              try {
+                setLoading(true);
+                setError(null);
+
+                const res = await fetch("/api/payments/cancel-downgrade", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                });
+
+                if (!res.ok) {
+                  const t = await res.json().catch(() => ({}));
+                  throw new Error(t?.error || "Could not cancel downgrade");
+                }
+
+                const data = await res.json();
+                Alert.alert("Success", data.message || "Scheduled downgrade cancelled successfully");
+                setScheduledTier(null);
+                setTierChangeAt(null);
+                
+                // Reload profile data
+                const profileRes = await fetch("/api/profile");
+                if (profileRes.ok) {
+                  const profileData = await profileRes.json();
+                  setCurrentTier(profileData?.user?.membership_tier || "free");
+                  setScheduledTier(profileData?.user?.scheduled_tier || null);
+                  setTierChangeAt(profileData?.user?.tier_change_at || null);
+                }
+              } catch (e) {
+                console.error(e);
+                setError(e.message);
+                Alert.alert("Error", e.message);
+              } finally {
+                setLoading(false);
+              }
+            },
+          },
+        ]
+      );
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
   const downgradeTier = useCallback(
     async (key) => {
       if (key === currentTier) {
@@ -362,6 +415,24 @@ export default function SubscriptionScreen() {
             <Text style={{ fontSize: 13, color: "#9A3412", lineHeight: 20 }}>
               You will retain your current {TIERS.find(t => t.key === currentTier)?.title} benefits until {new Date(tierChangeAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
             </Text>
+            <Pressable
+              onPress={cancelScheduledDowngrade}
+              disabled={loading}
+              style={{
+                marginTop: 16,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                borderRadius: 8,
+                backgroundColor: "#FFFFFF",
+                borderWidth: 2,
+                borderColor: "#FB923C",
+                opacity: loading ? 0.5 : 1,
+              }}
+            >
+              <Text style={{ textAlign: "center", fontWeight: "700", color: "#EA580C" }}>
+                {loading ? "Cancelling..." : "Cancel Scheduled Downgrade"}
+              </Text>
+            </Pressable>
           </View>
         )}
 

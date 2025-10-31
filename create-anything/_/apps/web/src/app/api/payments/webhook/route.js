@@ -4,27 +4,48 @@ import sql from "@/app/api/utils/sql";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request) {
+  const timestamp = new Date().toISOString();
+  const requestId = Math.random().toString(36).substring(7);
+  
   // Stripe requires the raw body to validate the signature
   const sig = request.headers.get("stripe-signature");
   if (!sig) {
+    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] ⚠️ MISSING SIGNATURE - Potential unauthorized webhook attempt from IP: ${request.headers.get("x-forwarded-for") || "unknown"}`);
     return Response.json({ error: "Missing signature" }, { status: 400 });
   }
+  
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.error("STRIPE_WEBHOOK_SECRET not set");
+    console.error(`[WEBHOOK_CONFIG][${timestamp}][${requestId}] ❌ CRITICAL: STRIPE_WEBHOOK_SECRET not configured - Webhook processing disabled`);
     return Response.json({ error: "Webhook not configured" }, { status: 500 });
   }
 
   let event;
+  let rawBody;
   try {
-    const rawBody = await request.text();
+    rawBody = await request.text();
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+    console.log(`[WEBHOOK_SUCCESS][${timestamp}][${requestId}] ✅ Signature verified - Event type: ${event.type}, Event ID: ${event.id}`);
   } catch (err) {
-    console.error("Webhook signature verification failed", err);
+    const errorMessage = err?.message || String(err);
+    const ip = request.headers.get("x-forwarded-for") || "unknown";
+    
+    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] ❌ SIGNATURE VERIFICATION FAILED`);
+    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Source IP: ${ip}`);
+    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Error: ${errorMessage}`);
+    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Signature Header: ${sig?.substring(0, 50)}...`);
+    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Body Length: ${rawBody?.length || 0} bytes`);
+    
+    if (errorMessage.includes("timestamp")) {
+      console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] ⚠️ TIMESTAMP MISMATCH - Possible replay attack or clock skew`);
+    }
+    
     return Response.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   try {
+    console.log(`[WEBHOOK_PROCESS][${timestamp}][${requestId}] Processing event type: ${event.type}`);
+    
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
@@ -146,13 +167,28 @@ export async function POST(request) {
         break;
       }
       default:
-        // No-op for unhandled events
+        console.log(`[WEBHOOK_INFO][${timestamp}][${requestId}] Unhandled event type: ${event.type} - No action taken`);
         break;
     }
+    
+    console.log(`[WEBHOOK_SUCCESS][${timestamp}][${requestId}] ✅ Event processed successfully: ${event.type}`);
   } catch (err) {
-    console.error("Error handling Stripe webhook", err);
+    const errorMessage = err?.message || String(err);
+    const errorStack = err?.stack || "";
+    
+    console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] ❌ PROCESSING ERROR`);
+    console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] Event Type: ${event?.type || "unknown"}`);
+    console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] Event ID: ${event?.id || "unknown"}`);
+    console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] Error Message: ${errorMessage}`);
+    console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] Stack Trace: ${errorStack}`);
+    
+    if (errorMessage.includes("database") || errorMessage.includes("sql")) {
+      console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] ⚠️ DATABASE ERROR - Check database connectivity and schema`);
+    }
+    
     return Response.json({ error: "Webhook handler error" }, { status: 500 });
   }
 
+  console.log(`[WEBHOOK_COMPLETE][${timestamp}][${requestId}] Webhook processed and acknowledged`);
   return Response.json({ received: true });
 }

@@ -111,9 +111,23 @@ export default function Profile() {
   }, [name, timezone, days, start, end, immediate, override]);
 
   const deleteAccount = useCallback(async () => {
-    if (!window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+    const firstConfirm = window.confirm(
+      "⚠️ WARNING: This will permanently delete your account, profile, matches, and all data. This action CANNOT be undone.\n\nAre you absolutely sure?"
+    );
+    
+    if (!firstConfirm) {
       return;
     }
+
+    const userInput = window.prompt(
+      'To confirm account deletion, type "CONFIRM" (all caps) below:'
+    );
+
+    if (userInput !== "CONFIRM") {
+      toast.error("Account deletion cancelled. You must type CONFIRM exactly.");
+      return;
+    }
+
     try {
       const res = await fetch("/api/account/delete", { method: "POST" });
       if (res.status === 401) {
