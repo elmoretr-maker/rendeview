@@ -41,15 +41,12 @@ export async function POST(request) {
     // Ensure pricing defaults exist in admin_settings
     const pricing = {
       tiers: {
-        casual: { price_cents: 0, minutes: 0 },
-        active: { price_cents: 1499, minutes: 999 },
-        dating: { price_cents: 2999, minutes: 999 },
-        business: { price_cents: 4999, minutes: 999 },
+        casual: { price_cents: 999, minutes: 15 },
+        dating: { price_cents: 2999, minutes: 25 },
+        business: { price_cents: 4999, minutes: 45 },
       },
       extensions: [
-        { minutes: 5, cents: 500 },
-        { minutes: 15, cents: 1000 },
-        { minutes: 30, cents: 2000 },
+        { minutes: 10, cents: 800 },
       ],
       second_date_cents: 1000,
     };

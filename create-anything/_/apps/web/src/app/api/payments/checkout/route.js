@@ -80,7 +80,7 @@ export async function POST(request) {
         quantity: 1,
       };
     } else if (kind === "extension") {
-      const allowed = [500, 1000, 2000];
+      const allowed = [800];
       if (!allowed.includes(Number(cents))) {
         return Response.json(
           { error: "Invalid extension amount" },
@@ -90,7 +90,7 @@ export async function POST(request) {
       lineItem = {
         price_data: {
           currency: "usd",
-          product_data: { name: `Call Extension` },
+          product_data: { name: `Call Extension (10 minutes)` },
           unit_amount: Number(cents),
         },
         quantity: 1,
