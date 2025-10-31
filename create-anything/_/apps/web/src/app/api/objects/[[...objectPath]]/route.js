@@ -2,6 +2,7 @@
 import { getAuthenticatedUserId } from "@/app/api/utils/auth";
 import { ObjectStorageService, ObjectNotFoundError } from "../../../../../server/objectStorage";
 import { ObjectPermission } from "../../../../../server/objectAcl";
+import { CACHE_DURATIONS } from "@/config/constants";
 
 export async function GET(request, { params }) {
   try {
@@ -31,7 +32,7 @@ export async function GET(request, { params }) {
     return new Response(stream, {
       headers: {
         "Content-Type": metadata.contentType || "application/octet-stream",
-        "Cache-Control": "public, max-age=3600",
+        "Cache-Control": `public, max-age=${CACHE_DURATIONS.OBJECT_STORAGE}`,
       },
     });
   } catch (error) {

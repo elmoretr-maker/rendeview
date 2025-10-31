@@ -2,6 +2,7 @@ import sql from "@/app/api/utils/sql";
 import { auth } from "@/auth";
 import { getTierLimits } from "@/utils/membershipTiers";
 import { checkRateLimit } from "@/app/api/utils/rateLimit";
+import { RATE_LIMITS, DAILY_LIMITS } from "@/config/constants";
 
 // Creates a Daily.co room for a scheduled/initiated call and stores the room_url
 // Env required: DAILY_API_KEY, DAILY_DOMAIN_NAME (domain is optional; API returns full url)
@@ -12,8 +13,9 @@ export async function POST(request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    // Rate limiting: 10 video room creations per hour per user
-    const rateCheck = await checkRateLimit(session.user.id, '/api/video/room/create', 10, 60);
+    // Rate limiting from central config
+    const { maxRequests, windowMinutes, endpoint } = RATE_LIMITS.VIDEO_ROOM_CREATION;
+    const rateCheck = await checkRateLimit(session.user.id, endpoint, maxRequests, windowMinutes);
     if (!rateCheck.allowed) {
       console.warn(`[RATE_LIMIT] User ${session.user.id} exceeded video room creation limit`);
       return Response.json(
@@ -39,8 +41,9 @@ export async function POST(request) {
     let meetingCount = meRow?.video_meetings_count || 0;
     const lastMeetingDate = meRow?.last_video_meeting_at;
 
-    // Free tier: 3 meeting cap
+    // Free tier: meeting cap from central config
     if (myTier === "free") {
+      const freeMeetingLimit = DAILY_LIMITS.MEETINGS.FREE;
       const now = new Date();
       const lastDate = lastMeetingDate ? new Date(lastMeetingDate) : null;
       const isSameDay = lastDate && 
@@ -51,10 +54,10 @@ export async function POST(request) {
       if (!isSameDay) {
         await sql`UPDATE auth_users SET video_meetings_count = 0, last_video_meeting_at = ${now.toISOString()} WHERE id = ${session.user.id}`;
         meetingCount = 0;
-      } else if (meetingCount >= 3) {
+      } else if (meetingCount >= freeMeetingLimit) {
         return Response.json(
           {
-            error: "Free tier allows 3 video meetings per day. Upgrade for unlimited calls!",
+            error: `Free tier allows ${freeMeetingLimit} video meetings per day. Upgrade for unlimited calls!`,
           },
           { status: 403 },
         );

@@ -1,6 +1,7 @@
 import sql from "@/app/api/utils/sql";
 import { auth } from "@/auth";
 import { checkRateLimit } from "@/app/api/utils/rateLimit";
+import { RATE_LIMITS } from "@/config/constants";
 
 export async function POST(request) {
   try {
@@ -10,8 +11,9 @@ export async function POST(request) {
     }
     const userId = session.user.id;
     
-    // Rate limiting: 100 likes per hour per user
-    const rateCheck = await checkRateLimit(userId, '/api/matches/like', 100, 60);
+    // Rate limiting from central config
+    const { maxRequests, windowMinutes, endpoint } = RATE_LIMITS.PROFILE_LIKES;
+    const rateCheck = await checkRateLimit(userId, endpoint, maxRequests, windowMinutes);
     if (!rateCheck.allowed) {
       console.warn(`[RATE_LIMIT] User ${userId} exceeded like limit`);
       return Response.json(

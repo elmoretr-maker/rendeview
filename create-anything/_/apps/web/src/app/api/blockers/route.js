@@ -1,6 +1,7 @@
 import sql from "@/app/api/utils/sql";
 import { auth } from "@/auth";
 import { checkRateLimit } from "@/app/api/utils/rateLimit";
+import { RATE_LIMITS } from "@/config/constants";
 
 export async function GET() {
   try {
@@ -32,8 +33,9 @@ export async function POST(request) {
     }
     const uid = session.user.id;
     
-    // Rate limiting: 20 block actions per hour per user
-    const rateCheck = await checkRateLimit(uid, '/api/blockers', 20, 60);
+    // Rate limiting from central config
+    const { maxRequests, windowMinutes, endpoint } = RATE_LIMITS.BLOCK_USER;
+    const rateCheck = await checkRateLimit(uid, endpoint, maxRequests, windowMinutes);
     if (!rateCheck.allowed) {
       console.warn(`[RATE_LIMIT] User ${uid} exceeded blocker creation limit`);
       return Response.json(
