@@ -81,3 +81,120 @@ WHERE id IN (1, 4, 5);
 ✅ Test data populated  
 ✅ No data loss  
 ✅ Backward compatible (all new columns nullable or have defaults)
+
+---
+
+## Migration: Hybrid Chat Monetization System
+**Date:** October 31, 2025  
+**Purpose:** Implement tier-based message quotas, first-encounter bonuses, credit system, and per-match caps
+
+### SQL Executed:
+```sql
+-- Table 1: Track daily tier message counts per user (resets daily)
+CREATE TABLE IF NOT EXISTS user_daily_message_counts (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  messages_sent INTEGER NOT NULL DEFAULT 0,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, date)
+);
+
+-- Table 2: Track first-encounter bonus messages per match pair
+CREATE TABLE IF NOT EXISTS match_first_encounter_messages (
+  id SERIAL PRIMARY KEY,
+  match_id INTEGER NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  messages_remaining INTEGER NOT NULL DEFAULT 10,
+  last_video_call_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(match_id, user_id)
+);
+
+-- Table 3: Track purchased message credits per user (persistent, no expiration)
+CREATE TABLE IF NOT EXISTS user_message_credits (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  credits_remaining INTEGER NOT NULL DEFAULT 0,
+  total_purchased INTEGER NOT NULL DEFAULT 0,
+  total_spent INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id)
+);
+
+-- Table 4: Track per-match daily message counts (for Business tier per-match caps)
+CREATE TABLE IF NOT EXISTS match_daily_message_counts (
+  id SERIAL PRIMARY KEY,
+  match_id INTEGER NOT NULL REFERENCES matches(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  messages_sent INTEGER NOT NULL DEFAULT 0,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
+  video_call_completed BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(match_id, user_id, date)
+);
+
+-- Add indexes for performance
+CREATE INDEX IF NOT EXISTS idx_user_daily_message_counts_user_date ON user_daily_message_counts(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_match_first_encounter_match_user ON match_first_encounter_messages(match_id, user_id);
+CREATE INDEX IF NOT EXISTS idx_user_message_credits_user ON user_message_credits(user_id);
+CREATE INDEX IF NOT EXISTS idx_match_daily_counts_match_user_date ON match_daily_message_counts(match_id, user_id, date);
+```
+
+### Business Logic:
+**Message Deduction Priority:**
+1. First-encounter messages (10 per match, refreshes after video call)
+2. Daily tier messages (Free: 15, Casual: 24, Dating: 50, Business: 500)
+3. Purchased credits (persistent until used)
+
+**Business Tier Per-Match Caps:**
+- 50 messages per match per day (base)
+- 75 messages per match per day (after video call with that match)
+- Blocks ALL message types when exhausted (including credits)
+
+**Video Call Benefits:**
+- Refreshes 10 first-encounter messages for both users
+- Business tier: Increases per-match cap from 50→75
+- Unlocks premium features (photo sharing, voice messages, GIFs, read receipts)
+
+### API Endpoints:
+- `GET /api/messages/quota?matchId={id}` - Check available messages across all pools
+- `POST /api/messages/{matchId}` - Send message (enforces all limits)
+- `POST /api/video/complete` - Refresh bonuses after video call
+
+### Verification:
+```sql
+-- Verify tables exist
+SELECT table_name 
+FROM information_schema.tables 
+WHERE table_schema = 'public' 
+AND table_name IN (
+  'user_daily_message_counts', 
+  'match_first_encounter_messages',
+  'user_message_credits',
+  'match_daily_message_counts'
+);
+
+-- Verify indexes exist
+SELECT indexname 
+FROM pg_indexes 
+WHERE schemaname = 'public' 
+AND tablename IN (
+  'user_daily_message_counts', 
+  'match_first_encounter_messages',
+  'user_message_credits',
+  'match_daily_message_counts'
+);
+```
+
+### Result:
+✅ All 4 tables created successfully  
+✅ All 4 indexes created successfully  
+✅ Foreign key constraints established  
+✅ Unique constraints prevent duplicate entries  
+✅ ON DELETE CASCADE ensures data integrity  
+✅ Message quota system fully operational

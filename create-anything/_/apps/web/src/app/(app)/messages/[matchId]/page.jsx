@@ -58,6 +58,18 @@ function ChatContent() {
     enabled: !!data?.otherUser?.id,
   });
 
+  // Fetch message quota
+  const { data: quotaData, refetch: refetchQuota } = useQuery({
+    queryKey: ["messageQuota", matchId],
+    queryFn: async () => {
+      const res = await fetch(`/api/messages/quota?matchId=${matchId}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!matchId,
+    refetchInterval: 10000,
+  });
+
   // Update note content when noteData changes
   React.useEffect(() => {
     if (noteData?.note) {
@@ -105,8 +117,9 @@ function ChatContent() {
     onSuccess: () => {
       setText("");
       queryClient.invalidateQueries({ queryKey: ["messages", matchId] });
+      refetchQuota();
     },
-    onError: (e, body, context) => {
+    onError: async (e, body, context) => {
       if (context?.previousMessages) {
         queryClient.setQueryData(["messages", matchId], context.previousMessages);
       }
@@ -116,6 +129,14 @@ function ChatContent() {
         navigate("/account/signin");
         return;
       }
+      
+      const errorData = await e.response?.json?.().catch(() => null);
+      if (errorData?.quotaExceeded) {
+        const tier = errorData.tier || 'free';
+        toast.error(`Out of messages! Upgrade your ${tier} plan or buy credits to continue chatting.`);
+        return;
+      }
+      
       toast.error("Message failed to send");
     },
   });
@@ -239,6 +260,65 @@ function ChatContent() {
       <AppHeader />
       <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col px-4 py-8">
         <h1 className="text-xl font-bold mb-4" style={{ color: COLORS.text }}>Chat</h1>
+        
+        {/* Message Quota Counter */}
+        {quotaData && (
+          <div className="mb-4 p-4 rounded-xl shadow-sm" style={{ backgroundColor: "white" }}>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <p className="text-xs font-medium mb-1" style={{ color: "#6B7280" }}>
+                  First Messages with {otherUser?.name || 'this user'}
+                </p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-2 rounded-full" style={{ backgroundColor: COLORS.cardBg }}>
+                    <div 
+                      className="h-2 rounded-full transition-all" 
+                      style={{ 
+                        backgroundColor: COLORS.secondary,
+                        width: `${(quotaData.quota.firstEncounter.remaining / quotaData.quota.firstEncounter.limit) * 100}%`
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm font-bold" style={{ color: COLORS.text }}>
+                    {quotaData.quota.firstEncounter.remaining}/{quotaData.quota.firstEncounter.limit}
+                  </span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-medium mb-1" style={{ color: "#6B7280" }}>
+                  Daily Messages ({quotaData.tier})
+                </p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-2 rounded-full" style={{ backgroundColor: COLORS.cardBg }}>
+                    <div 
+                      className="h-2 rounded-full transition-all" 
+                      style={{ 
+                        backgroundColor: COLORS.primary,
+                        width: `${(quotaData.quota.dailyTier.remaining / quotaData.quota.dailyTier.limit) * 100}%`
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm font-bold" style={{ color: COLORS.text }}>
+                    {quotaData.quota.dailyTier.remaining}/{quotaData.quota.dailyTier.limit}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {quotaData.quota.credits.remaining > 0 && (
+              <div className="mt-3 pt-3 border-t" style={{ borderColor: COLORS.cardBg }}>
+                <p className="text-xs" style={{ color: "#6B7280" }}>
+                  💳 Message Credits: <span className="font-bold" style={{ color: COLORS.text }}>{quotaData.quota.credits.remaining}</span>
+                </p>
+              </div>
+            )}
+            {quotaData.hasVideoCalledWith && quotaData.tier === 'business' && (
+              <div className="mt-2 text-xs flex items-center gap-1" style={{ color: COLORS.secondary }}>
+                <span>✓</span>
+                <span className="font-medium">Premium features unlocked</span>
+              </div>
+            )}
+          </div>
+        )}
         
         {/* Private Notes Section */}
         {otherUser && (

@@ -15,7 +15,10 @@ export const TIER_LIMITS = {
     chatMinutes: 5,
     maxMeetings: 3,
     price: 'Free',
-    priceMonthly: 0
+    priceMonthly: 0,
+    dailyMessages: 15,
+    perMatchDailyMessages: null,
+    firstEncounterMessages: 10
   },
   [MEMBERSHIP_TIERS.CASUAL]: {
     photos: 6,
@@ -24,7 +27,10 @@ export const TIER_LIMITS = {
     chatMinutes: 15,
     maxMeetings: Infinity,
     price: '$9.99/mo',
-    priceMonthly: 9.99
+    priceMonthly: 9.99,
+    dailyMessages: 24,
+    perMatchDailyMessages: null,
+    firstEncounterMessages: 10
   },
   [MEMBERSHIP_TIERS.DATING]: {
     photos: 10,
@@ -33,7 +39,10 @@ export const TIER_LIMITS = {
     chatMinutes: 25,
     maxMeetings: Infinity,
     price: '$29.99/mo',
-    priceMonthly: 29.99
+    priceMonthly: 29.99,
+    dailyMessages: 50,
+    perMatchDailyMessages: null,
+    firstEncounterMessages: 10
   },
   [MEMBERSHIP_TIERS.BUSINESS]: {
     photos: 20,
@@ -42,7 +51,11 @@ export const TIER_LIMITS = {
     chatMinutes: 45,
     maxMeetings: Infinity,
     price: '$49.99/mo',
-    priceMonthly: 49.99
+    priceMonthly: 49.99,
+    dailyMessages: 500,
+    perMatchDailyMessages: 50,
+    perMatchDailyMessagesAfterVideo: 75,
+    firstEncounterMessages: 10
   }
 };
 
@@ -50,6 +63,35 @@ export const TIER_LIMITS = {
 export const EXTENSION_PRICING = {
   costPer10Minutes: 8.00,
   durationMinutes: 10
+};
+
+// Message credit pricing
+export const MESSAGE_CREDIT_PRICING = {
+  PACK_SMALL: {
+    credits: 10,
+    price: '$1.99',
+    priceInCents: 199
+  },
+  PACK_MEDIUM: {
+    credits: 20,
+    price: '$3.99',
+    priceInCents: 399
+  },
+  PACK_LARGE: {
+    credits: 50,
+    price: '$7.99',
+    priceInCents: 799,
+    label: 'Best Offer'
+  }
+};
+
+// Premium features unlocked after video call (Business tier)
+export const POST_VIDEO_PREMIUM_FEATURES = {
+  PHOTO_SHARING: 'photo_sharing',
+  VOICE_MESSAGES: 'voice_messages',
+  GIF_REACTIONS: 'gif_reactions',
+  READ_RECEIPTS: 'read_receipts',
+  VIDEO_VERIFIED_BADGE: 'video_verified_badge'
 };
 
 /**
@@ -150,4 +192,52 @@ export function getRemainingPhotoSlots(tier, currentCount) {
 export function getRemainingVideoSlots(tier, currentCount) {
   const limits = getTierLimits(tier);
   return Math.max(0, limits.videos - currentCount);
+}
+
+/**
+ * Get daily message limit for a tier
+ * @param {string} tier - User's membership tier
+ * @returns {number} Daily message limit
+ */
+export function getDailyMessageLimit(tier) {
+  const limits = getTierLimits(tier);
+  return limits.dailyMessages || 0;
+}
+
+/**
+ * Get per-match daily message limit for a tier (Business tier only)
+ * @param {string} tier - User's membership tier
+ * @param {boolean} hasVideoCalledWith - Whether user has video called with this match
+ * @returns {number|null} Per-match daily limit, or null if not applicable
+ */
+export function getPerMatchDailyLimit(tier, hasVideoCalledWith = false) {
+  const limits = getTierLimits(tier);
+  if (!limits.perMatchDailyMessages) {
+    return null; // Not Business tier
+  }
+  
+  return hasVideoCalledWith && limits.perMatchDailyMessagesAfterVideo
+    ? limits.perMatchDailyMessagesAfterVideo
+    : limits.perMatchDailyMessages;
+}
+
+/**
+ * Get first-encounter message limit (applies to all tiers)
+ * @param {string} tier - User's membership tier
+ * @returns {number} First-encounter message limit
+ */
+export function getFirstEncounterMessageLimit(tier) {
+  const limits = getTierLimits(tier);
+  return limits.firstEncounterMessages || 10;
+}
+
+/**
+ * Check if a user has premium messaging features unlocked with a match
+ * (Requires Business tier + completed video call)
+ * @param {string} tier - User's membership tier
+ * @param {boolean} hasVideoCalledWith - Whether user has video called with this match
+ * @returns {boolean} Whether premium features are unlocked
+ */
+export function hasPremiumMessagingFeatures(tier, hasVideoCalledWith) {
+  return tier === MEMBERSHIP_TIERS.BUSINESS && hasVideoCalledWith;
 }
