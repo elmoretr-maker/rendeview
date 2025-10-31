@@ -16,7 +16,7 @@ import {
   useCameraPermissions,
   useMicrophonePermissions,
 } from "expo-camera";
-import { Video } from "expo-video";
+import { VideoView, useVideoPlayer } from "expo-video";
 import useUpload from "@/utils/useUpload";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -75,6 +75,13 @@ function ConsolidatedProfileOnboardingContent() {
   const stepIndex = 4;
   const progressPct = `${(stepIndex / totalSteps) * 100}%`;
   const limits = limitsForTier(tier);
+
+  const videoPlayer = useVideoPlayer(videoAsset?.uri || null, player => {
+    if (player && videoAsset) {
+      player.loop = true;
+      player.play();
+    }
+  });
 
   // Load existing profile data
   useEffect(() => {
@@ -570,12 +577,10 @@ function ConsolidatedProfileOnboardingContent() {
               mode="video"
             />
           ) : (
-            <Video
+            <VideoView
               style={{ flex: 1 }}
-              source={{ uri: videoAsset.uri }}
-              shouldPlay
-              isLooping
-              resizeMode="cover"
+              player={videoPlayer}
+              contentFit="cover"
             />
           )}
         </View>
