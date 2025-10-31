@@ -1,0 +1,31 @@
+Please perform a full structural consolidation and feature alignment across both the mobile (apps/mobile) and web (apps/web) applications. The goal is a unified, continuous user flow that retains all anti-catfishing and media management abilities. Only remove redundant files/code; do not remove features.
+
+PART 1: ONBOARDING FUNNEL AND CONSENT REORDERING
+
+1.  **Unified Flow Enforced (Revised):** Ensure both the mobile and web onboarding flows follow this exact, revised sequence:
+    * Step 1: /onboarding/welcome (Welcome screen)
+    * Step 2: /onboarding/consent (Data Consent must be accepted BEFORE payment)
+    * Step 3: /onboarding/membership (Choose Tier)
+    * Step 4: **PAYMENT REDIRECTION:** If a paid tier is selected, the user must be immediately redirected to the /stripe page for payment before proceeding.
+    * Step 5: /onboarding/profile (Combined Profile & Media)
+    * Step 6: MAIN APP ACCESS (After profile is complete according to tier limits)
+
+2.  **Consolidated Profile & Media Page (Step 5):**
+    * Consolidate steps 3 (Profile Basics) and 4 (Media Uploads) into a **SINGLE page** named `/onboarding/profile`.
+    * This unified page must include: **Name, Bio, Basics, Hobbies, Video Recording (Camera-Only enforced for anti-catfishing), Video Re-recording/Saving, Photo Uploads, Photo Deletions, and final Acceptance/Saving of all finalized media and profile data.**
+    * **Cleanup:** Remove all redundant pages (photos, video, separate profile pages) from both the mobile and web app folders.
+
+3.  **Flow Continuity & Button Logic (CRITICAL):**
+    * Implement a **"Continue" button** on every step (Welcome, Consent, Membership, Profile) that checks necessary state (e.g., Consent accepted, Tier selected) before navigating to the next sequential step.
+    * Implement a **functional "Back" button** on **ALL** onboarding pages to allow the user to return to the previous page.
+    * **Payment Success:** After a successful payment on the `/stripe` page, the user must be presented with a clear **"Continue to Profile Setup" button** that navigates them to the `/onboarding/profile` page.
+    * **Payment Cancellation:** Ensure the payment page has a **"Cancel / Back" button** that routes the user back to `/onboarding/membership`.
+
+PART 2: MAIN APP & UI CONSISTENCY
+
+1.  **Video Call Exit Button (CRITICAL):** On the `/video/call` interface, if the user is **NOT** currently in an active call, a clear **Exit/Close Button** must be displayed at all times, allowing them to route back to their profile page.
+
+2.  **Persistent Navigation Bar:** Ensure the Persistent Navigation Bar is implemented consistently across **ALL** Main App pages (Post-Onboarding) in both the mobile and web apps, providing quick access to **Discovery, Matches, Messages, Profile, and the new Membership link**.
+3.  **Video Call Exclusion:** The Persistent Navigation Bar must be **HIDDEN** on the `/video/call` interface.
+
+4.  **Feature Alignment:** Ensure all enhanced abilities added in previous steps (anti-catfishing, video recording/saving, photo/video tier limits, and the upgrade nudges) are correctly implemented and enforced in both the **mobile** and **web** versions.
