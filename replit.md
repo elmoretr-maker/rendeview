@@ -19,6 +19,7 @@ The application utilizes a client-server architecture. The frontend, a React 18 
 - **Idempotency Keys**: Payment checkout endpoint supports idempotency keys with 24-hour cache to prevent duplicate charges from retried requests
 - **Rate Limiting**: Database-backed rate limiting on critical endpoints - video room creation (10/hour), blocking users (20/hour), and profile likes (100/hour) - with proper 429 responses and retry-after headers
 - **Database Constraints**: CHECK constraints enforce data integrity on auth_users table - block_count must be non-negative, membership_tier must be valid ('free', 'casual', 'dating', 'business')
+- **Unified Pricing Structure**: All pricing consistently sourced from admin_settings database table and membershipTiers.js, with confirmed 4-tier system (Free $0, Casual $9.99/15min, Dating $29.99/25min, Business $49.99/45min) and single extension option ($8.00 for 10 minutes)
 
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)
