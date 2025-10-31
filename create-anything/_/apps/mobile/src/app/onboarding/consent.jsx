@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Consent() {
   const router = useRouter();
@@ -12,14 +13,12 @@ export default function Consent() {
   const returnTo =
     typeof params.returnTo === "string" && params.returnTo.length > 0
       ? decodeURIComponent(params.returnTo)
-      : "/(tabs)";
+      : "/onboarding/membership";
 
-  // ADD: progress (final step)
-  const totalSteps = 5;
-  const stepIndex = 5;
+  const totalSteps = 4;
+  const stepIndex = 2;
   const progressPct = `${(stepIndex / totalSteps) * 100}%`;
 
-  // ADD: query client to refresh consent state globally
   const queryClient = useQueryClient();
 
   const accept = useCallback(async () => {
@@ -35,7 +34,6 @@ export default function Consent() {
           `When updating consent, the response was [${res.status}] ${res.statusText}`,
         );
       }
-      // ADD: ensure global consent gate refetches with updated value
       try {
         await queryClient.invalidateQueries({ queryKey: ["profile-consent"] });
       } catch (e) {
@@ -66,7 +64,7 @@ export default function Consent() {
         justifyContent: "center",
       }}
     >
-      {/* ADD: Progress bar */}
+      {/* Progress bar */}
       <View
         style={{
           position: "absolute",
@@ -92,6 +90,21 @@ export default function Consent() {
         </Text>
       </View>
 
+      {/* Back button */}
+      <TouchableOpacity
+        onPress={() => router.push("/onboarding/welcome")}
+        style={{
+          position: "absolute",
+          top: insets.top + 50,
+          left: 24,
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
+        <Ionicons name="arrow-back" size={24} color="#6B7280" />
+        <Text style={{ marginLeft: 8, color: "#6B7280", fontSize: 16 }}>Back</Text>
+      </TouchableOpacity>
+
       <Text style={{ fontSize: 22, fontWeight: "700", marginBottom: 12 }}>
         Data Consent
       </Text>
@@ -105,7 +118,7 @@ export default function Consent() {
         onPress={accept}
         disabled={saving}
         style={{
-          backgroundColor: "#00BFA6", // Secondary Accent for positive action
+          backgroundColor: "#00BFA6",
           paddingVertical: 14,
           borderRadius: 12,
           marginBottom: 12,
@@ -120,7 +133,7 @@ export default function Consent() {
             fontSize: 16,
           }}
         >
-          {saving ? "Saving..." : "Accept & Finish"}
+          {saving ? "Saving..." : "Accept & Continue"}
         </Text>
       </TouchableOpacity>
       <TouchableOpacity

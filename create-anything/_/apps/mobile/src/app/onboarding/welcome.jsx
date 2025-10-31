@@ -20,15 +20,14 @@ import {
   Inter_700Bold,
 } from "@expo-google-fonts/inter";
 
-// UPDATE: Brand colors per user palette
 const COLORS = {
-  primary: "#5B3BAF", // Primary Accent (Deep Indigo/Violet)
-  secondary: "#00BFA6", // Secondary Accent (Vibrant Teal)
-  text: "#2C3E50", // Neutral Text (Dark Slate)
+  primary: "#5B3BAF",
+  secondary: "#00BFA6",
+  text: "#2C3E50",
   lightGray: "#F3F4F6",
-  bg: "#F9F9F9", // Background Light (Near White)
+  bg: "#F9F9F9",
   white: "#FFFFFF",
-  error: "#E74C3C", // Error/Danger
+  error: "#E74C3C",
 };
 const FONT_SIZES = {
   title: 32,
@@ -49,12 +48,11 @@ export default function Welcome() {
   useEffect(() => {
     if (!isReady) return;
     if (auth) {
-      // Let index gate decide next step (membership/profile/tabs)
+      // Let index gate decide next step (consent/membership/profile/tabs)
       router.replace("/");
     }
   }, [isReady, auth, router]);
 
-  // Wait for fonts to load for consistent typography
   if (!loaded && !error) {
     return null;
   }
@@ -86,12 +84,11 @@ export default function Welcome() {
     },
   ];
 
-  // ADD: derive auth flag and CTA behavior BEFORE any early returns (no new hooks)
   const isAuthed = Boolean(isReady && auth);
   const primaryCtaLabel = isAuthed ? "Continue" : "Get Started";
   const onPrimaryPress = () => {
     if (isAuthed) {
-      router.replace("/");
+      router.replace("/onboarding/consent");
     } else {
       signUp();
     }

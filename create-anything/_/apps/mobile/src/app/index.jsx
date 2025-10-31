@@ -22,24 +22,22 @@ export default function Index() {
           const data = await res.json();
           const user = data?.user;
 
-          // Membership gate: require selection before rest of onboarding
+          // NEW FLOW: Check consent first (Step 2 before membership)
+          if (!user?.consent_accepted) {
+            const returnTo = "/onboarding/membership";
+            router.replace(`/onboarding/consent?returnTo=${encodeURIComponent(returnTo)}`);
+            return;
+          }
+
+          // Membership gate (Step 3)
           if (!user?.membership_tier) {
             router.replace("/onboarding/membership");
             return;
           }
 
-          // Profile basics gate
+          // Profile basics gate (Step 4 - consolidated)
           if (!user?.name) {
             router.replace("/onboarding/profile");
-            return;
-          }
-
-          // Consent gate with return path back to main tabs
-          if (!user?.consent_accepted) {
-            const returnTo = "/(tabs)";
-            router.replace(
-              `/onboarding/data-consent-required?returnTo=${encodeURIComponent(returnTo)}`,
-            );
             return;
           }
 

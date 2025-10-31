@@ -9,13 +9,14 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 const COLORS = {
-  primary: "#5B3BAF", // updated to brand primary
+  primary: "#5B3BAF",
   text: "#2C3E50",
   lightGray: "#F5F5F5",
   white: "#FFFFFF",
-  accent: "#00BFA6", // secondary
+  accent: "#00BFA6",
 };
 
 const TIERS = [
@@ -56,9 +57,8 @@ export default function MembershipScreen() {
   const [pricing, setPricing] = useState(null);
   const [error, setError] = useState(null);
 
-  // ADD: progress
-  const totalSteps = 5;
-  const stepIndex = 1;
+  const totalSteps = 4;
+  const stepIndex = 3;
   const progressPct = `${(stepIndex / totalSteps) * 100}%`;
 
   useEffect(() => {
@@ -129,7 +129,7 @@ export default function MembershipScreen() {
     <View
       style={{ flex: 1, backgroundColor: COLORS.white, paddingTop: insets.top }}
     >
-      {/* ADD: Progress bar */}
+      {/* Progress bar */}
       <View style={{ paddingHorizontal: 24, marginTop: 8 }}>
         <View
           style={{ height: 6, backgroundColor: "#E5E7EB", borderRadius: 999 }}
@@ -147,6 +147,20 @@ export default function MembershipScreen() {
           Step {stepIndex} of {totalSteps}
         </Text>
       </View>
+
+      {/* Back button */}
+      <TouchableOpacity
+        onPress={() => router.push("/onboarding/consent")}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 24,
+          paddingVertical: 12,
+        }}
+      >
+        <Ionicons name="arrow-back" size={24} color="#6B7280" />
+        <Text style={{ marginLeft: 8, color: "#6B7280", fontSize: 16 }}>Back</Text>
+      </TouchableOpacity>
 
       <ScrollView contentContainerStyle={{ padding: 24 }}>
         <Text
