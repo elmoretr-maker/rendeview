@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import MatchCelebration from "@/components/MatchCelebration";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
+import { ErrorBoundary } from "@/app/components/ErrorBoundary";
+import { DiscoveryCardSkeleton } from "@/app/components/SkeletonLoader";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -188,7 +190,7 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
   );
 }
 
-export default function Discovery() {
+function DiscoveryContent() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data: user, loading: userLoading } = useUser();
@@ -250,10 +252,14 @@ export default function Discovery() {
       if (!res.ok) throw new Error("Failed to like");
       return res.json();
     },
-    onSuccess: (data, likedId) => {
+    onMutate: async (likedId) => {
       const profileIndex = profiles.findIndex(p => p.id === likedId);
       setRemovedCards(prev => [...prev, profileIndex]);
       setIndex((i) => i + 1);
+      
+      return { profileIndex };
+    },
+    onSuccess: (data, likedId) => {
       queryClient.invalidateQueries({ queryKey: ["matches"] });
       queryClient.invalidateQueries({ queryKey: ["newMatches"] });
       queryClient.invalidateQueries({ queryKey: ["discovery"] });
@@ -269,7 +275,12 @@ export default function Discovery() {
         toast.success("Profile liked!");
       }
     },
-    onError: (e) => {
+    onError: (e, likedId, context) => {
+      if (context?.profileIndex !== undefined) {
+        setRemovedCards(prev => prev.filter(idx => idx !== context.profileIndex));
+        setIndex((i) => Math.max(0, i - 1));
+      }
+      
       if (e?.code === 401 || e?.message === "AUTH_401") {
         toast.error("Sign in required", {
           description: "Please sign in to continue.",
@@ -296,17 +307,26 @@ export default function Discovery() {
       if (!res.ok) throw new Error("Failed to discard");
       return res.json();
     },
-    onSuccess: (data, blockedId) => {
+    onMutate: async (blockedId) => {
       const profileIndex = profiles.findIndex(p => p.id === blockedId);
       setRemovedCards(prev => [...prev, profileIndex]);
       setIndex((i) => i + 1);
+      
+      return { profileIndex };
+    },
+    onSuccess: (data, blockedId) => {
       queryClient.invalidateQueries({ queryKey: ["discovery"] });
       
       if (data?.warning) {
         toast.warning(data.warning, { duration: 6000 });
       }
     },
-    onError: (e) => {
+    onError: (e, blockedId, context) => {
+      if (context?.profileIndex !== undefined) {
+        setRemovedCards(prev => prev.filter(idx => idx !== context.profileIndex));
+        setIndex((i) => Math.max(0, i - 1));
+      }
+      
       if (e?.code === 401 || e?.message === "AUTH_401") {
         toast.error("Sign in required", {
           description: "Please sign in to continue.",
@@ -326,10 +346,19 @@ export default function Discovery() {
   if (userLoading || isLoading) {
     return (
       <div
-        className="flex min-h-screen items-center justify-center"
+        className="min-h-screen"
         style={{ backgroundColor: COLORS.bg }}
       >
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <AppHeader />
+        <div className="pt-4 px-4">
+          <h1
+            className="text-2xl font-playfair font-bold mb-3 text-center"
+            style={{ color: COLORS.text }}
+          >
+            Discover Your Match
+          </h1>
+          <DiscoveryCardSkeleton />
+        </div>
       </div>
     );
   }
@@ -484,5 +513,13 @@ export default function Discovery() {
       )}
       </div>
     </div>
+  );
+}
+
+export default function Discovery() {
+  return (
+    <ErrorBoundary componentName="Discovery">
+      <DiscoveryContent />
+    </ErrorBoundary>
   );
 }

@@ -6,6 +6,8 @@ import AppHeader from "@/components/AppHeader";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { Trash2, Upload, Crown, Image, Video } from "lucide-react";
 import { getTierLimits, getRemainingPhotoSlots, getRemainingVideoSlots, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
+import { ErrorBoundary } from "@/app/components/ErrorBoundary";
+import { ProfileSkeleton } from "@/app/components/SkeletonLoader";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -16,7 +18,7 @@ const COLORS = {
   cardBg: "#F3F4F6",
 };
 
-export default function Profile() {
+function ProfileContent() {
   const navigate = useNavigate();
   const { user, isLoading: userLoading } = useUser();
   const [loading, setLoading] = useState(true);
@@ -294,11 +296,8 @@ export default function Profile() {
     return (
       <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
         <AppHeader />
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: COLORS.primary }}></div>
-            <p className="mt-4" style={{ color: COLORS.text }}>Loading...</p>
-          </div>
+        <div className="max-w-2xl mx-auto px-4 py-8">
+          <ProfileSkeleton />
         </div>
       </div>
     );
@@ -575,5 +574,13 @@ export default function Profile() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Profile() {
+  return (
+    <ErrorBoundary componentName="Profile">
+      <ProfileContent />
+    </ErrorBoundary>
   );
 }
