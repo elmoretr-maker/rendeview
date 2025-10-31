@@ -9,6 +9,11 @@ I prefer detailed explanations and iterative development. Ask before making majo
 ## System Architecture
 The application utilizes a client-server architecture. The frontend, a React 18 application, employs React Router 7 for navigation and TailwindCSS for styling, with a mobile-first UI/UX featuring Tinder-style profile cards and gradient overlays. Routing uses Next.js-style route grouping. The backend is built with Hono (Node.js) and interacts with a PostgreSQL database. Auth.js handles authentication. Key features include Discovery, Matches, Messages with chat, Profile management, a consolidated onboarding flow (Welcome → Consent → Membership → Payment → Profile Setup → Main App), scheduling, and video calling. An `ErrorBoundary` ensures graceful error handling. The system incorporates a 4-tier membership model (Free, Casual, Dating, Business) governing media limits, chat durations, and meeting caps, enforced both client-side and via backend API. A real-time video call extension system allows paid extensions with synchronized timers. Safety features include a 4-strike moderation logic. Core features include smart matching with prioritization, mutual interests highlighting, activity-based matching, conversation starters, Daily Picks, and Reverse Discovery (profile viewers). Media management supports photo uploads and camera-only video recording with tier-based limits. Revenue-protection downgrade flows are implemented for subscription management, allowing scheduled tier changes without immediate refunds.
 
+**UX Enhancements (October 2025):**
+- **Optimistic UI Updates**: Discovery page Like/Pass buttons and Chat Send Message provide immediate visual feedback before server responses, with automatic rollback on failure
+- **Error Boundaries**: Reusable ErrorBoundary component wraps critical sections (Discovery, Matches, Profile, Chat) to prevent component failures from crashing the entire app
+- **Loading Skeletons**: Shimmer-effect skeleton loaders for Discovery cards and Profile page eliminate blank screen delays and improve perceived performance
+
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)
 - **Authentication**: Auth.js
