@@ -12,6 +12,7 @@ function useUpload() {
         
         // Use base64 upload for React Native assets (Replit upload service doesn't support RN FormData)
         if (asset.base64) {
+          // Photos with base64
           response = await fetch("/_create/api/upload/", {
             method: "POST",
             headers: {
@@ -19,8 +20,21 @@ function useUpload() {
             },
             body: JSON.stringify({ base64: asset.base64 }),
           });
+        } else if (asset.uri) {
+          // Videos or assets without base64 - convert to base64
+          const FileSystem = await import('expo-file-system');
+          const base64Data = await FileSystem.readAsStringAsync(asset.uri, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          response = await fetch("/_create/api/upload/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ base64: base64Data }),
+          });
         } else {
-          throw new Error("Asset missing base64 data - ensure base64:true is set in image picker options");
+          throw new Error("Asset missing both base64 and uri");
         }
       } else if ("url" in input) {
         response = await fetch("/_create/api/upload/", {

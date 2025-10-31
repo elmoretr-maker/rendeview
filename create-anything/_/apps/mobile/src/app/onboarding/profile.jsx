@@ -712,6 +712,15 @@ function ConsolidatedProfileOnboardingContent() {
           </Text>
         )}
 
+        {/* Photo requirement reminder */}
+        {photos.length < 2 && (
+          <View style={{ backgroundColor: "#FEF3C7", padding: 12, borderRadius: 12, marginBottom: 16 }}>
+            <Text style={{ color: "#92400E", fontSize: 14, textAlign: "center" }}>
+              📸 Please add at least 2 photos to continue ({photos.length}/2)
+            </Text>
+          </View>
+        )}
+
         {/* Complete button */}
         <TouchableOpacity
           onPress={onSave}
@@ -738,7 +747,7 @@ function ConsolidatedProfileOnboardingContent() {
 
         {/* Back button */}
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => router.replace("/onboarding/membership")}
           style={{ paddingVertical: 14, borderRadius: 12 }}
         >
           <Text
@@ -750,7 +759,7 @@ function ConsolidatedProfileOnboardingContent() {
               fontSize: 16,
             }}
           >
-            Back
+            Back to Membership
           </Text>
         </TouchableOpacity>
 
