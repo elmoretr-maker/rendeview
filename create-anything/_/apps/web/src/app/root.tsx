@@ -387,16 +387,16 @@ export function Layout({ children }: { children: ReactNode }) {
   }, [pathname]);
   return (
     <html lang="en">
-      <head suppressHydrationWarning>
+      <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
         <script type="module" src="/src/__create/dev-error-overlay.js"></script>
         <link rel="icon" href="/src/__create/favicon.png" />
-        <LoadFonts />
       </head>
       <body>
+        <ClientOnly loader={() => <LoadFonts />} />
         {children}
         <HotReloadIndicator />
         <Toaster position="bottom-right" />
