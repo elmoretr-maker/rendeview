@@ -54,7 +54,7 @@ The application utilizes a client-server architecture. The frontend, a React 18 
 - **Unified Upload Endpoint**: `/api/upload-base64` route accepts three input types - base64 (JSON), url (JSON), or buffer (octet-stream) - and returns { url, mimeType }
 - **Photo Uploads**: expo-image-picker with base64:true option captures photos as base64 directly
 - **Video Uploads**: expo-file-system converts recorded video URIs to base64 before upload
-- **Profile Onboarding UX**: Photo requirement banner (minimum 2 photos), progress counter, back button navigation to membership page, video playback auto-pause after acceptance
+- **Profile Onboarding UX**: Photo requirement banner (minimum 2 photos), enhanced upload progress display with purple banner showing "📤 Uploading X/Y..." with visual progress bar, completion message "✓ All X items uploaded!", 100ms throttling between uploads for smooth visibility, Start Over button with confirmation dialog to clear all photos/videos/fields, back button navigation to membership page, video playback auto-pause after acceptance
 - **Dependencies**: expo-file-system@~19.0.17 for video-to-base64 conversion
 
 ## External Dependencies
