@@ -6,11 +6,23 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 export async function POST(request) {
   const timestamp = new Date().toISOString();
   const requestId = Math.random().toString(36).substring(7);
+  const sourceIp = request.headers.get("x-forwarded-for") || "unknown";
   
   // Stripe requires the raw body to validate the signature
   const sig = request.headers.get("stripe-signature");
   if (!sig) {
-    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] ⚠️ MISSING SIGNATURE - Potential unauthorized webhook attempt from IP: ${request.headers.get("x-forwarded-for") || "unknown"}`);
+    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] ⚠️ MISSING SIGNATURE - Potential unauthorized webhook attempt from IP: ${sourceIp}`);
+    
+    // Log failed webhook attempt to database for monitoring
+    try {
+      await sql`
+        INSERT INTO webhook_events (event_id, event_type, signature_valid, processing_success, error_message, request_id, source_ip)
+        VALUES (${'unknown-' + requestId}, ${'signature_missing'}, ${false}, ${false}, ${'Missing signature header'}, ${requestId}, ${sourceIp})
+      `;
+    } catch (logErr) {
+      console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Failed to log security event:`, logErr);
+    }
+    
     return Response.json({ error: "Missing signature" }, { status: 400 });
   }
   
@@ -28,16 +40,25 @@ export async function POST(request) {
     console.log(`[WEBHOOK_SUCCESS][${timestamp}][${requestId}] ✅ Signature verified - Event type: ${event.type}, Event ID: ${event.id}`);
   } catch (err) {
     const errorMessage = err?.message || String(err);
-    const ip = request.headers.get("x-forwarded-for") || "unknown";
     
     console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] ❌ SIGNATURE VERIFICATION FAILED`);
-    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Source IP: ${ip}`);
+    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Source IP: ${sourceIp}`);
     console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Error: ${errorMessage}`);
     console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Signature Header: ${sig?.substring(0, 50)}...`);
     console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Body Length: ${rawBody?.length || 0} bytes`);
     
     if (errorMessage.includes("timestamp")) {
       console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] ⚠️ TIMESTAMP MISMATCH - Possible replay attack or clock skew`);
+    }
+    
+    // Log signature verification failure to database for monitoring
+    try {
+      await sql`
+        INSERT INTO webhook_events (event_id, event_type, signature_valid, processing_success, error_message, request_id, source_ip)
+        VALUES (${'unknown-' + requestId}, ${'signature_failed'}, ${false}, ${false}, ${errorMessage}, ${requestId}, ${sourceIp})
+      `;
+    } catch (logErr) {
+      console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Failed to log security event:`, logErr);
     }
     
     return Response.json({ error: "Invalid signature" }, { status: 400 });
@@ -66,7 +87,7 @@ export async function POST(request) {
           // Optionally set membership tier from metadata when provided
           if (refUserId && tier) {
             const v = tier.toLowerCase();
-            if (["casual", "active", "dating", "business"].includes(v)) {
+            if (["casual", "dating", "business"].includes(v)) {
               await sql`UPDATE auth_users SET membership_tier = ${v} WHERE id = ${Number(refUserId)}`;
             }
           }
@@ -172,6 +193,17 @@ export async function POST(request) {
     }
     
     console.log(`[WEBHOOK_SUCCESS][${timestamp}][${requestId}] ✅ Event processed successfully: ${event.type}`);
+    
+    // Log successful webhook processing to database for monitoring
+    try {
+      await sql`
+        INSERT INTO webhook_events (event_id, event_type, signature_valid, processing_success, request_id, source_ip)
+        VALUES (${event.id}, ${event.type}, ${true}, ${true}, ${requestId}, ${sourceIp})
+        ON CONFLICT (event_id) DO UPDATE SET processing_success = true
+      `;
+    } catch (logErr) {
+      console.error(`[WEBHOOK][${timestamp}][${requestId}] Failed to log successful event:`, logErr);
+    }
   } catch (err) {
     const errorMessage = err?.message || String(err);
     const errorStack = err?.stack || "";
@@ -184,6 +216,17 @@ export async function POST(request) {
     
     if (errorMessage.includes("database") || errorMessage.includes("sql")) {
       console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] ⚠️ DATABASE ERROR - Check database connectivity and schema`);
+    }
+    
+    // Log processing failure to database for monitoring
+    try {
+      await sql`
+        INSERT INTO webhook_events (event_id, event_type, signature_valid, processing_success, error_message, request_id, source_ip)
+        VALUES (${event?.id || 'unknown-' + requestId}, ${event?.type || 'unknown'}, ${true}, ${false}, ${errorMessage}, ${requestId}, ${sourceIp})
+        ON CONFLICT (event_id) DO UPDATE SET processing_success = false, error_message = ${errorMessage}
+      `;
+    } catch (logErr) {
+      console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] Failed to log error event:`, logErr);
     }
     
     return Response.json({ error: "Webhook handler error" }, { status: 500 });

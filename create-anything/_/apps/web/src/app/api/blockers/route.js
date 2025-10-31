@@ -1,5 +1,6 @@
 import sql from "@/app/api/utils/sql";
 import { auth } from "@/auth";
+import { checkRateLimit } from "@/app/api/utils/rateLimit";
 
 export async function GET() {
   try {
@@ -30,6 +31,27 @@ export async function POST(request) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
     const uid = session.user.id;
+    
+    // Rate limiting: 20 block actions per hour per user
+    const rateCheck = await checkRateLimit(uid, '/api/blockers', 20, 60);
+    if (!rateCheck.allowed) {
+      console.warn(`[RATE_LIMIT] User ${uid} exceeded blocker creation limit`);
+      return Response.json(
+        { 
+          error: "Too many block requests. Please try again later.",
+          retryAfter: rateCheck.resetAt
+        },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': String(rateCheck.limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': rateCheck.resetAt.toISOString()
+          }
+        }
+      );
+    }
+    
     const { blockedId } = await request.json();
     if (!blockedId || blockedId === uid) {
       return Response.json({ error: "Invalid user" }, { status: 400 });

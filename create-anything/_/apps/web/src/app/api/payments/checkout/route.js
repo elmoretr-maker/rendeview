@@ -13,6 +13,28 @@ export async function POST(request) {
     const uid = session.user.id;
     const body = await request.json();
     const { kind, tier, cents, redirectURL } = body || {};
+    
+    // Idempotency key support for preventing duplicate charges
+    const idempotencyKey = request.headers.get("idempotency-key");
+    if (idempotencyKey) {
+      // Check for existing request with this idempotency key
+      const [existing] = await sql`
+        SELECT response_body, status_code 
+        FROM idempotency_keys 
+        WHERE key = ${idempotencyKey} 
+        AND user_id = ${uid}
+        AND expires_at > NOW()
+      `;
+      
+      if (existing?.response_body) {
+        console.log(`[IDEMPOTENCY][${uid}] Returning cached response for key: ${idempotencyKey}`);
+        // Parse the JSON string before returning
+        const cachedResponse = typeof existing.response_body === 'string' 
+          ? JSON.parse(existing.response_body) 
+          : existing.response_body;
+        return Response.json(cachedResponse, { status: existing.status_code || 200 });
+      }
+    }
 
     // Ensure customer exists
     const [user] =
@@ -125,7 +147,7 @@ export async function POST(request) {
         try {
           if (kind === "subscription" && tier) {
             const v = String(tier).toLowerCase();
-            if (["casual", "active", "dating", "business"].includes(v)) {
+            if (["casual", "dating", "business"].includes(v)) {
               await sql`UPDATE auth_users SET membership_tier = ${v}, subscription_status = 'active', last_check_subscription_status_at = now() WHERE id = ${uid}`;
             }
           }
@@ -139,7 +161,7 @@ export async function POST(request) {
         try {
           if (kind === "subscription" && tier) {
             const v = String(tier).toLowerCase();
-            if (["casual", "active", "dating", "business"].includes(v)) {
+            if (["casual", "dating", "business"].includes(v)) {
               await sql`UPDATE auth_users SET membership_tier = ${v}, subscription_status = 'active', last_check_subscription_status_at = now() WHERE id = ${uid}`;
             }
           }
@@ -154,9 +176,46 @@ export async function POST(request) {
       return Response.json({ error: msg || "Stripe error" }, { status: 500 });
     }
 
-    return Response.json({ url: checkout.url });
+    const response = { url: checkout.url };
+    
+    // Store response with idempotency key if provided
+    if (idempotencyKey) {
+      try {
+        await sql`
+          INSERT INTO idempotency_keys (key, user_id, request_body, response_body, status_code)
+          VALUES (${idempotencyKey}, ${uid}, ${JSON.stringify(body)}, ${JSON.stringify(response)}, ${200})
+          ON CONFLICT (key) DO NOTHING
+        `;
+        console.log(`[IDEMPOTENCY][${uid}] Stored response for key: ${idempotencyKey}`);
+      } catch (idempErr) {
+        console.error(`[IDEMPOTENCY][${uid}] Failed to store idempotency key:`, idempErr);
+        // Don't fail the request if idempotency storage fails
+      }
+    }
+    
+    return Response.json(response);
   } catch (err) {
     console.error("POST /api/payments/checkout error", err?.message || err);
+    
+    // Store error response with idempotency key if provided
+    const idempotencyKey = request.headers.get("idempotency-key");
+    if (idempotencyKey) {
+      try {
+        const session = await auth();
+        const uid = session?.user?.id;
+        if (uid) {
+          const errorResponse = { error: "Internal Server Error" };
+          await sql`
+            INSERT INTO idempotency_keys (key, user_id, request_body, response_body, status_code)
+            VALUES (${idempotencyKey}, ${uid}, ${'{}'}, ${JSON.stringify(errorResponse)}, ${500})
+            ON CONFLICT (key) DO NOTHING
+          `;
+        }
+      } catch (idempErr) {
+        console.error(`[IDEMPOTENCY] Failed to store error idempotency key:`, idempErr);
+      }
+    }
+    
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

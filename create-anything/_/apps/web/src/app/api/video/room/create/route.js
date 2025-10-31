@@ -1,6 +1,7 @@
 import sql from "@/app/api/utils/sql";
 import { auth } from "@/auth";
 import { getTierLimits } from "@/utils/membershipTiers";
+import { checkRateLimit } from "@/app/api/utils/rateLimit";
 
 // Creates a Daily.co room for a scheduled/initiated call and stores the room_url
 // Env required: DAILY_API_KEY, DAILY_DOMAIN_NAME (domain is optional; API returns full url)
@@ -9,6 +10,26 @@ export async function POST(request) {
     const session = await auth();
     if (!session?.user?.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
+    // Rate limiting: 10 video room creations per hour per user
+    const rateCheck = await checkRateLimit(session.user.id, '/api/video/room/create', 10, 60);
+    if (!rateCheck.allowed) {
+      console.warn(`[RATE_LIMIT] User ${session.user.id} exceeded video room creation limit`);
+      return Response.json(
+        { 
+          error: "Too many video room requests. Please try again later.",
+          retryAfter: rateCheck.resetAt
+        },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': String(rateCheck.limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': rateCheck.resetAt.toISOString()
+          }
+        }
+      );
     }
 
     // Check membership tier and meeting limits
