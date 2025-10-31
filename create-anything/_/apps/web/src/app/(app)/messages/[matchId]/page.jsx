@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -14,7 +15,7 @@ const COLORS = {
   cardBg: "#F3F4F6",
 };
 
-export default function Chat() {
+function ChatContent() {
   const { matchId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -55,11 +56,36 @@ export default function Chat() {
       if (!res.ok) throw new Error("Failed to send");
       return res.json();
     },
+    onMutate: async (body) => {
+      await queryClient.cancelQueries({ queryKey: ["messages", matchId] });
+      
+      const previousMessages = queryClient.getQueryData(["messages", matchId]);
+      
+      const optimisticMessage = {
+        id: `temp-${Date.now()}`,
+        match_id: matchId,
+        from_user_id: user?.id,
+        body,
+        sent_at: new Date().toISOString(),
+        is_optimistic: true,
+      };
+      
+      queryClient.setQueryData(["messages", matchId], (old) => ({
+        ...old,
+        messages: [...(old?.messages || []), optimisticMessage],
+      }));
+      
+      return { previousMessages };
+    },
     onSuccess: () => {
       setText("");
       queryClient.invalidateQueries({ queryKey: ["messages", matchId] });
     },
-    onError: (e) => {
+    onError: (e, body, context) => {
+      if (context?.previousMessages) {
+        queryClient.setQueryData(["messages", matchId], context.previousMessages);
+      }
+      
       if (e?.code === 401 || e?.message === "AUTH_401") {
         toast.error("Sign in required. Please sign in to continue.");
         navigate("/account/signin");
@@ -222,5 +248,13 @@ export default function Chat() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Chat() {
+  return (
+    <ErrorBoundary componentName="Chat">
+      <ChatContent />
+    </ErrorBoundary>
   );
 }

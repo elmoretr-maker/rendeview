@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -14,9 +15,9 @@ const COLORS = {
   cardBg: "#F3F4F6",
 };
 
-export default function Matches() {
+function MatchesContent() {
   const navigate = useNavigate();
-  const { user, isLoading: userLoading } = useUser();
+  const { user, isLoading: userLoading} = useUser();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["matches"],
@@ -142,5 +143,13 @@ export default function Matches() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function Matches() {
+  return (
+    <ErrorBoundary componentName="Matches">
+      <MatchesContent />
+    </ErrorBoundary>
   );
 }
