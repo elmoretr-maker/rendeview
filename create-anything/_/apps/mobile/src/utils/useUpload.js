@@ -9,10 +9,15 @@ function useUpload() {
 
       if ("reactNativeAsset" in input && input.reactNativeAsset) {
         const asset = input.reactNativeAsset;
+        
+        // Debug logging
+        console.log('[useUpload] Raw asset structure:', JSON.stringify(asset, null, 2));
+        
         // Build a RN-friendly FormData file part: { uri, name, type }
         const uri = asset.uri || asset?.file?.uri;
         
         if (!uri) {
+          console.error('[useUpload] Missing URI in asset:', asset);
           throw new Error("Invalid asset: missing uri");
         }
 
@@ -48,13 +53,16 @@ function useUpload() {
           resolvedMime = "image/jpeg";
         }
 
-        const formData = new FormData();
-        formData.append("file", {
-          // @ts-ignore React Native FormData file shape
+        const fileObject = {
           uri,
           name: resolvedName,
           type: resolvedMime,
-        });
+        };
+        
+        console.log('[useUpload] Resolved file object for FormData:', fileObject);
+
+        const formData = new FormData();
+        formData.append("file", fileObject);
 
         response = await fetch("/_create/api/upload/", {
           method: "POST",
