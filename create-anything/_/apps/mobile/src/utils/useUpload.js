@@ -11,29 +11,49 @@ function useUpload() {
         const asset = input.reactNativeAsset;
         // Build a RN-friendly FormData file part: { uri, name, type }
         const uri = asset.uri || asset?.file?.uri;
-        const guessedName =
-          asset.fileName ||
-          asset.name ||
-          (uri ? uri.split("/").pop() : null) ||
-          "upload";
-        // Try to infer content type sensibly; default to image/jpeg if unknown
-        const type =
-          asset.mimeType ||
-          asset.type ||
-          (guessedName.toLowerCase().endsWith(".mp4")
-            ? "video/mp4"
-            : "image/jpeg");
-
+        
         if (!uri) {
           throw new Error("Invalid asset: missing uri");
+        }
+
+        // Determine if this is a video or image
+        const isVideo = 
+          (asset.mimeType && asset.mimeType.startsWith("video/")) ||
+          (asset.type === "video") ||
+          uri.toLowerCase().includes(".mp4") ||
+          uri.toLowerCase().includes(".mov");
+
+        // Infer file extension from URI or asset info
+        const uriExtension = uri.split(".").pop()?.toLowerCase() || "";
+        let extension;
+        if (isVideo) {
+          extension = (uriExtension === "mp4" || uriExtension === "mov") ? uriExtension : "mp4";
+        } else {
+          extension = (uriExtension === "jpg" || uriExtension === "jpeg" || uriExtension === "png") ? uriExtension : "jpg";
+        }
+
+        // Build proper filename with extension
+        const baseName = asset.fileName || asset.name || "upload";
+        const resolvedName = baseName.includes(".") ? baseName : `${baseName}.${extension}`;
+
+        // Build proper MIME type - only use asset.type if it contains a slash
+        let resolvedMime;
+        if (asset.mimeType && asset.mimeType.includes("/")) {
+          resolvedMime = asset.mimeType;
+        } else if (asset.type && asset.type.includes("/")) {
+          resolvedMime = asset.type;
+        } else if (isVideo) {
+          resolvedMime = "video/mp4";
+        } else {
+          resolvedMime = "image/jpeg";
         }
 
         const formData = new FormData();
         formData.append("file", {
           // @ts-ignore React Native FormData file shape
           uri,
-          name: guessedName,
-          type,
+          name: resolvedName,
+          type: resolvedMime,
         });
 
         response = await fetch("/_create/api/upload/", {

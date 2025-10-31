@@ -83,6 +83,14 @@ function ConsolidatedProfileOnboardingContent() {
     }
   });
 
+  // Pause and disable loop when video is accepted
+  useEffect(() => {
+    if (videoPlayer && videoAccepted) {
+      videoPlayer.loop = false;
+      videoPlayer.pause();
+    }
+  }, [videoPlayer, videoAccepted]);
+
   // Load existing profile data
   useEffect(() => {
     let mounted = true;
