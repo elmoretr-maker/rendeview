@@ -32,6 +32,9 @@ The application utilizes a client-server architecture. The frontend, a React 18 
 - **Feature Flag System**: Production-ready feature flag system (src/utils/featureFlags.ts) supporting 12+ flags including scheduled downgrades, payment checkout, video extensions, matching features, and safety systems. Enables emergency feature shutdown via environment variables with user-friendly error messages
 - **Structured Logging**: Comprehensive logging system (src/utils/logger.ts) tracking 20+ business events including subscriptions, payments, matches, video calls, and safety actions. All payment endpoints use structured logging with business event tracking, replacing console.log statements. JSON output for log aggregation, colored console for development, specialized helpers for each event type. Documented in CODE_QUALITY_ENHANCEMENTS.md
 
+**User Experience Features (October 31, 2025):**
+- **Private User Notes System**: Production-ready private notes feature allowing users to save personal observations about their matches. Database schema with UNIQUE(user_id, target_user_id) constraint ensures one note per match. Three integration points: (1) Post-call note modal appears automatically after video calls with retry capability on errors, (2) Inline note editor in chat detail pages with save/cancel workflow, (3) Note previews displayed on match list cards. Modal conflict resolution ensures post-call note prompt waits when video extension/payment modals are active, preventing overlapping UX. API endpoints (GET/POST /api/notes) handle authentication, validation, and upsert operations with proper error responses
+
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)
 - **Authentication**: Auth.js

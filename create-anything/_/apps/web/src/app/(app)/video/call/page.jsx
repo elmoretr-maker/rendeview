@@ -147,17 +147,20 @@ export default function VideoCall() {
       }
 
       if (data.session.state === "ended" && !noteModalShown.current) {
-        // Show post-call note modal before navigating
-        noteModalShown.current = true;
-        
-        // Determine the other user's ID
-        const callerId = data.session.caller_id;
-        const calleeId = data.session.callee_id;
-        const currentUserId = currentUser?.id;
-        const otherUser = currentUserId === callerId ? calleeId : callerId;
-        
-        setOtherUserId(otherUser);
-        setShowPostCallNoteModal(true);
+        // Only show post-call note modal if no other modals are active
+        // (don't interfere with extension/payment flow)
+        if (!showExtendResponseModal && !showPaymentModal) {
+          noteModalShown.current = true;
+          
+          // Determine the other user's ID
+          const callerId = data.session.caller_id;
+          const calleeId = data.session.callee_id;
+          const currentUserId = currentUser?.id;
+          const otherUser = currentUserId === callerId ? calleeId : callerId;
+          
+          setOtherUserId(otherUser);
+          setShowPostCallNoteModal(true);
+        }
         return;
       }
 
@@ -184,7 +187,7 @@ export default function VideoCall() {
     } catch (err) {
       console.error("Poll session error:", err);
     }
-  }, [sessionId, navigate]);
+  }, [sessionId, navigate, currentUser, showExtendResponseModal, showPaymentModal]);
 
   useEffect(() => {
     const interval = sessionData?.pendingExtensions?.length > 0 || graceCountdown !== null
@@ -214,8 +217,8 @@ export default function VideoCall() {
       graceTimerRef.current = setInterval(() => {
         setGraceCountdown((prev) => {
           if (prev === null || prev <= 0) {
-            // Show note modal if not already shown
-            if (!noteModalShown.current && sessionData && currentUser) {
+            // Show note modal only if not already shown AND no other modals are active
+            if (!noteModalShown.current && sessionData && currentUser && !showExtendResponseModal && !showPaymentModal) {
               noteModalShown.current = true;
               const callerId = sessionData.session.caller_id;
               const calleeId = sessionData.session.callee_id;
@@ -237,7 +240,7 @@ export default function VideoCall() {
     return () => {
       if (graceTimerRef.current) clearInterval(graceTimerRef.current);
     };
-  }, [graceCountdown, navigate]);
+  }, [graceCountdown, navigate, sessionData, currentUser, showExtendResponseModal, showPaymentModal]);
 
   useEffect(() => {
     if (
@@ -416,6 +419,9 @@ export default function VideoCall() {
         toast.info("Extension declined");
         setShowExtendResponseModal(false);
         setCurrentExtension(null);
+        
+        // Check if we should show note modal after declining
+        setTimeout(() => pollSession(), 100);
       } else if (action === "accept") {
         toast.success("Extension accepted! Waiting for payment...");
         setShowExtendResponseModal(false);
@@ -458,7 +464,9 @@ export default function VideoCall() {
       setShowPaymentModal(false);
       setPaymentClientSecret(null);
       setCurrentExtension(null);
-      pollSession();
+      
+      // Check session status after payment completes
+      setTimeout(() => pollSession(), 100);
     } catch (err) {
       console.error("Payment confirmation error:", err);
       toast.error("Failed to confirm payment");
@@ -704,6 +712,8 @@ export default function VideoCall() {
                 onCancel={() => {
                   setShowPaymentModal(false);
                   setPaymentClientSecret(null);
+                  // Check if note modal should appear after canceling payment
+                  setTimeout(() => pollSession(), 100);
                 }}
               />
             </Elements>
