@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import useUser from "@/utils/useUser";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -92,6 +93,7 @@ export default function VideoCall() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { data: currentUser } = useUser();
   const matchId = searchParams.get("matchId");
   const roomUrl = searchParams.get("roomUrl");
 
@@ -113,11 +115,18 @@ export default function VideoCall() {
   const [currentExtension, setCurrentExtension] = useState(null);
   const [userTier, setUserTier] = useState(null);
   const [showTimeLimitNudge, setShowTimeLimitNudge] = useState(false);
+  
+  // Post-call note modal
+  const [showPostCallNoteModal, setShowPostCallNoteModal] = useState(false);
+  const [postCallNote, setPostCallNote] = useState("");
+  const [otherUserId, setOtherUserId] = useState(null);
+  const [savingNote, setSavingNote] = useState(false);
 
   const pollIntervalRef = useRef(null);
   const localTimerRef = useRef(null);
   const graceTimerRef = useRef(null);
   const timeLimitNudgeShown = useRef(false);
+  const noteModalShown = useRef(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -137,8 +146,18 @@ export default function VideoCall() {
         setLocalRemainingSeconds(data.session.remainingSeconds);
       }
 
-      if (data.session.state === "ended") {
-        navigate("/profile");
+      if (data.session.state === "ended" && !noteModalShown.current) {
+        // Show post-call note modal before navigating
+        noteModalShown.current = true;
+        
+        // Determine the other user's ID
+        const callerId = data.session.caller_id;
+        const calleeId = data.session.callee_id;
+        const currentUserId = currentUser?.id;
+        const otherUser = currentUserId === callerId ? calleeId : callerId;
+        
+        setOtherUserId(otherUser);
+        setShowPostCallNoteModal(true);
         return;
       }
 
@@ -195,7 +214,18 @@ export default function VideoCall() {
       graceTimerRef.current = setInterval(() => {
         setGraceCountdown((prev) => {
           if (prev === null || prev <= 0) {
-            navigate("/profile");
+            // Show note modal if not already shown
+            if (!noteModalShown.current && sessionData && currentUser) {
+              noteModalShown.current = true;
+              const callerId = sessionData.session.caller_id;
+              const calleeId = sessionData.session.callee_id;
+              const currentUserId = currentUser?.id;
+              const otherUser = currentUserId === callerId ? calleeId : callerId;
+              setOtherUserId(otherUser);
+              setShowPostCallNoteModal(true);
+            } else if (noteModalShown.current) {
+              navigate("/profile");
+            }
             return 0;
           }
           return prev - 1;
@@ -296,6 +326,38 @@ export default function VideoCall() {
     setShowReportModal(false);
     setReportReason("");
     handleEndCall();
+  };
+
+  const handleSaveNote = async () => {
+    if (!otherUserId) {
+      navigate("/profile");
+      return;
+    }
+
+    setSavingNote(true);
+    try {
+      await fetch("/api/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetUserId: otherUserId,
+          noteContent: postCallNote.trim(),
+        }),
+      });
+      toast.success("Note saved!");
+    } catch (err) {
+      console.error("Failed to save note:", err);
+      toast.error("Failed to save note");
+    } finally {
+      setSavingNote(false);
+      setShowPostCallNoteModal(false);
+      navigate("/profile");
+    }
+  };
+
+  const handleSkipNote = () => {
+    setShowPostCallNoteModal(false);
+    navigate("/profile");
   };
 
   const handleInitiateExtension = async () => {
@@ -687,6 +749,46 @@ export default function VideoCall() {
                 style={{ backgroundColor: COLORS.error }}
               >
                 Submit Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPostCallNoteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.text }}>
+              How was your call?
+            </h2>
+            <p className="mb-4 text-sm opacity-70" style={{ color: COLORS.text }}>
+              Leave a private note about your conversation. Only you can see this.
+            </p>
+            <textarea
+              placeholder="Add your thoughts... (e.g., 'Great conversation about travel', 'Shared interest in photography')"
+              value={postCallNote}
+              onChange={(e) => setPostCallNote(e.target.value)}
+              className="w-full p-3 rounded-xl border-2 resize-none mb-4 focus:outline-none focus:border-purple-500"
+              style={{ borderColor: COLORS.cardBg }}
+              rows={4}
+              maxLength={500}
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={handleSkipNote}
+                disabled={savingNote}
+                className="flex-1 px-4 py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50"
+                style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
+              >
+                Skip
+              </button>
+              <button
+                onClick={handleSaveNote}
+                disabled={savingNote}
+                className="flex-1 px-4 py-3 rounded-xl font-bold text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50"
+                style={{ backgroundColor: COLORS.primary }}
+              >
+                {savingNote ? "Saving..." : "Save Note"}
               </button>
             </div>
           </div>
