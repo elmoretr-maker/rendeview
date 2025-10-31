@@ -41,6 +41,17 @@ export async function GET(request, context) {
         ? Number(videoSession.user_b_id)
         : Number(videoSession.user_a_id);
 
+    // Fetch both users' membership tiers
+    const [currentUserData] = await sql`
+      SELECT membership_tier FROM auth_users WHERE id = ${userId}
+    `;
+    const [otherUserData] = await sql`
+      SELECT membership_tier FROM auth_users WHERE id = ${otherUserId}
+    `;
+
+    const currentUserTier = (currentUserData?.membership_tier || 'free').toLowerCase();
+    const otherUserTier = (otherUserData?.membership_tier || 'free').toLowerCase();
+
     const extensions = await sql`
       SELECT *
       FROM video_session_extensions
@@ -83,6 +94,8 @@ export async function GET(request, context) {
         endsAt,
         graceExpiresAt: videoSession.grace_expires_at,
         isInGracePeriod,
+        caller_id: videoSession.caller_id,
+        callee_id: videoSession.callee_id,
       },
       pendingExtensions: extensions.map((ext) => ({
         id: ext.id,
@@ -97,6 +110,8 @@ export async function GET(request, context) {
         isResponder: ext.responder_id === userId,
       })),
       otherUserId,
+      currentUserTier,
+      otherUserTier,
     });
   } catch (err) {
     console.error("/api/video/sessions/[id] error", err);

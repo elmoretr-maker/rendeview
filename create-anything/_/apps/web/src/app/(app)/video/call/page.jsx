@@ -115,6 +115,8 @@ export default function VideoCall() {
   const [currentExtension, setCurrentExtension] = useState(null);
   const [userTier, setUserTier] = useState(null);
   const [showTimeLimitNudge, setShowTimeLimitNudge] = useState(false);
+  const [showTierUpgradeNudge, setShowTierUpgradeNudge] = useState(false);
+  const [otherUserTierName, setOtherUserTierName] = useState(null);
   
   // Post-call note modal
   const [showPostCallNoteModal, setShowPostCallNoteModal] = useState(false);
@@ -126,6 +128,7 @@ export default function VideoCall() {
   const localTimerRef = useRef(null);
   const graceTimerRef = useRef(null);
   const timeLimitNudgeShown = useRef(false);
+  const tierUpgradeNudgeShown = useRef(false);
   const noteModalShown = useRef(false);
 
   useEffect(() => {
@@ -144,6 +147,20 @@ export default function VideoCall() {
 
       if (data.session.remainingSeconds !== undefined) {
         setLocalRemainingSeconds(data.session.remainingSeconds);
+      }
+
+      // Check for tier difference and show upgrade nudge
+      if (!tierUpgradeNudgeShown.current && data.currentUserTier && data.otherUserTier) {
+        const tierOrder = { free: 0, casual: 1, dating: 2, business: 3 };
+        const currentTierLevel = tierOrder[data.currentUserTier] || 0;
+        const otherTierLevel = tierOrder[data.otherUserTier] || 0;
+        
+        if (currentTierLevel < otherTierLevel) {
+          tierUpgradeNudgeShown.current = true;
+          const tierNames = { free: 'Free', casual: 'Casual', dating: 'Dating', business: 'Business' };
+          setOtherUserTierName(tierNames[data.otherUserTier] || 'Premium');
+          setShowTierUpgradeNudge(true);
+        }
       }
 
       if (data.session.state === "ended" && !noteModalShown.current) {
@@ -549,6 +566,30 @@ export default function VideoCall() {
       </div>
 
       <div className="bg-gradient-to-t from-black to-transparent p-6">
+        {showTierUpgradeNudge && !showTimeLimitNudge && (
+          <div className="mb-4 p-4 rounded-xl flex items-center justify-between gap-4 relative" style={{ backgroundColor: 'rgba(0, 191, 166, 0.85)' }}>
+            <button
+              onClick={() => setShowTierUpgradeNudge(false)}
+              className="absolute top-2 right-2 p-1 rounded-full hover:bg-white/20 transition-all"
+              aria-label="Dismiss"
+            >
+              <X size={18} className="text-white" />
+            </button>
+            <div className="flex-1 pr-6">
+              <p className="text-white font-semibold text-sm">
+                💎 Your match is on the {otherUserTierName} plan! Upgrade to enjoy longer video dates together.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/onboarding/membership")}
+              className="px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all hover:opacity-90"
+              style={{ backgroundColor: "white", color: COLORS.secondary }}
+            >
+              Upgrade Now
+            </button>
+          </div>
+        )}
+
         {showTimeLimitNudge && (
           <div className="mb-4 p-4 rounded-xl flex items-center justify-between gap-4 relative" style={{ backgroundColor: 'rgba(91, 59, 175, 0.85)' }}>
             <button
