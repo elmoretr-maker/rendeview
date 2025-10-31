@@ -14,6 +14,12 @@ The application utilizes a client-server architecture. The frontend, a React 18 
 - **Error Boundaries**: Reusable ErrorBoundary component wraps critical sections (Discovery, Matches, Profile, Chat) to prevent component failures from crashing the entire app
 - **Loading Skeletons**: Shimmer-effect skeleton loaders for Discovery cards and Profile page eliminate blank screen delays and improve perceived performance
 
+**Security & Revenue Protection (October 31, 2025):**
+- **Webhook Monitoring**: All Stripe webhook events logged to database (webhook_events table) with signature validation tracking, IP addresses, and processing status for security monitoring and alerting
+- **Idempotency Keys**: Payment checkout endpoint supports idempotency keys with 24-hour cache to prevent duplicate charges from retried requests
+- **Rate Limiting**: Database-backed rate limiting on critical endpoints - video room creation (10/hour), blocking users (20/hour), and profile likes (100/hour) - with proper 429 responses and retry-after headers
+- **Database Constraints**: CHECK constraints enforce data integrity on auth_users table - block_count must be non-negative, membership_tier must be valid ('free', 'casual', 'dating', 'business')
+
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)
 - **Authentication**: Auth.js
