@@ -136,6 +136,36 @@ export async function POST(request: Request): Promise<Response> {
             kind,
             stripeCustomerId: customerId,
           });
+        } else if (mode === "payment" && kind === "message_credits") {
+          const userId = session.metadata?.user_id;
+          const credits = session.metadata?.credits;
+          
+          if (userId && credits) {
+            const creditsInt = parseInt(credits, 10);
+            
+            await sql`
+              INSERT INTO user_message_credits (user_id, credits_remaining, total_purchased)
+              VALUES (${Number(userId)}, ${creditsInt}, ${creditsInt})
+              ON CONFLICT (user_id) 
+              DO UPDATE SET 
+                credits_remaining = user_message_credits.credits_remaining + ${creditsInt},
+                total_purchased = user_message_credits.total_purchased + ${creditsInt},
+                updated_at = NOW()
+            `;
+            
+            logger.business(BusinessEvent.PAYMENT_SUCCEEDED, {
+              userId: Number(userId),
+              kind: 'message_credits',
+              credits: creditsInt,
+              amount: session.amount_total,
+            });
+            
+            logger.info('Message credits added successfully', {
+              userId: Number(userId),
+              creditsAdded: creditsInt,
+              sessionId: session.id,
+            });
+          }
         }
         break;
       }

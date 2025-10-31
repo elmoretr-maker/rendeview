@@ -5,6 +5,8 @@ import { useUser } from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
+import { BuyCreditsModal } from "@/components/BuyCreditsModal";
+import { SmartNudge } from "@/components/SmartNudge";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -26,6 +28,9 @@ function ChatContent() {
   const [noteContent, setNoteContent] = useState("");
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [savingNote, setSavingNote] = useState(false);
+  
+  // Credits modal state
+  const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["messages", matchId],
@@ -132,8 +137,8 @@ function ChatContent() {
       
       const errorData = await e.response?.json?.().catch(() => null);
       if (errorData?.quotaExceeded) {
-        const tier = errorData.tier || 'free';
-        toast.error(`Out of messages! Upgrade your ${tier} plan or buy credits to continue chatting.`);
+        toast.error("Out of messages!");
+        setShowBuyCreditsModal(true);
         return;
       }
       
@@ -182,6 +187,16 @@ function ChatContent() {
 
   const msgs = data?.messages || [];
   const otherUser = data?.otherUser;
+  
+  const daysSinceFirstMessage = React.useMemo(() => {
+    if (!msgs || msgs.length === 0) return 0;
+    const firstMessage = msgs[0];
+    const firstMessageDate = new Date(firstMessage.created_at);
+    const now = new Date();
+    const diffTime = Math.abs(now - firstMessageDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  }, [msgs]);
 
   // Conversation starters based on profile info
   const conversationStarters = React.useMemo(() => {
@@ -320,6 +335,15 @@ function ChatContent() {
           </div>
         )}
         
+        {/* Smart Nudge */}
+        {otherUser && msgs.length > 0 && (
+          <SmartNudge 
+            matchId={matchId}
+            otherUserName={otherUser.name || 'this person'}
+            daysSinceFirstMessage={daysSinceFirstMessage}
+          />
+        )}
+        
         {/* Private Notes Section */}
         {otherUser && (
           <div className="mb-4 p-4 rounded-xl shadow-sm" style={{ backgroundColor: "white" }}>
@@ -441,6 +465,12 @@ function ChatContent() {
           </button>
         </div>
       </div>
+      
+      <BuyCreditsModal 
+        isOpen={showBuyCreditsModal} 
+        onClose={() => setShowBuyCreditsModal(false)}
+        currentTier={quotaData?.tier || 'free'}
+      />
     </div>
   );
 }
