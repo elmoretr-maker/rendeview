@@ -1,26 +1,48 @@
 import Stripe from "stripe";
 import sql from "@/app/api/utils/sql";
+import { logger, BusinessEvent } from "@/utils/logger";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-export async function POST(request) {
+interface UserRecord {
+  scheduled_tier: string | null;
+  tier_change_at: string | null;
+}
+
+interface WebhookEventLog {
+  event_id: string;
+  event_type: string;
+  signature_valid: boolean;
+  processing_success: boolean;
+  error_message?: string;
+  request_id: string;
+  source_ip: string;
+}
+
+type StripeCustomerId = string;
+type SubscriptionId = string;
+
+export async function POST(request: Request): Promise<Response> {
   const timestamp = new Date().toISOString();
   const requestId = Math.random().toString(36).substring(7);
   const sourceIp = request.headers.get("x-forwarded-for") || "unknown";
   
-  // Stripe requires the raw body to validate the signature
   const sig = request.headers.get("stripe-signature");
   if (!sig) {
-    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] ⚠️ MISSING SIGNATURE - Potential unauthorized webhook attempt from IP: ${sourceIp}`);
+    logger.error('Webhook signature missing - potential unauthorized attempt', {
+      sourceIp,
+      requestId,
+    });
     
-    // Log failed webhook attempt to database for monitoring
     try {
       await sql`
         INSERT INTO webhook_events (event_id, event_type, signature_valid, processing_success, error_message, request_id, source_ip)
         VALUES (${'unknown-' + requestId}, ${'signature_missing'}, ${false}, ${false}, ${'Missing signature header'}, ${requestId}, ${sourceIp})
       `;
-    } catch (logErr) {
-      console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Failed to log security event:`, logErr);
+    } catch (logErr: any) {
+      logger.error('Failed to log webhook security event', {
+        error: logErr?.message || String(logErr),
+      });
     }
     
     return Response.json({ error: "Missing signature" }, { status: 400 });
@@ -28,49 +50,65 @@ export async function POST(request) {
   
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
-    console.error(`[WEBHOOK_CONFIG][${timestamp}][${requestId}] ❌ CRITICAL: STRIPE_WEBHOOK_SECRET not configured - Webhook processing disabled`);
+    logger.error('CRITICAL: STRIPE_WEBHOOK_SECRET not configured - Webhook processing disabled');
     return Response.json({ error: "Webhook not configured" }, { status: 500 });
   }
 
-  let event;
-  let rawBody;
+  let event: Stripe.Event;
+  let rawBody = "";
+  
   try {
     rawBody = await request.text();
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
-    console.log(`[WEBHOOK_SUCCESS][${timestamp}][${requestId}] ✅ Signature verified - Event type: ${event.type}, Event ID: ${event.id}`);
-  } catch (err) {
+    
+    logger.info('Webhook signature verified', {
+      eventType: event.type,
+      eventId: event.id,
+      requestId,
+    });
+  } catch (err: any) {
     const errorMessage = err?.message || String(err);
     
-    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] ❌ SIGNATURE VERIFICATION FAILED`);
-    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Source IP: ${sourceIp}`);
-    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Error: ${errorMessage}`);
-    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Signature Header: ${sig?.substring(0, 50)}...`);
-    console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Body Length: ${rawBody?.length || 0} bytes`);
+    logger.error('Webhook signature verification failed', {
+      sourceIp,
+      requestId,
+      error: errorMessage,
+      signaturePrefix: sig?.substring(0, 50),
+      bodyLength: rawBody?.length || 0,
+    });
     
     if (errorMessage.includes("timestamp")) {
-      console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] ⚠️ TIMESTAMP MISMATCH - Possible replay attack or clock skew`);
+      logger.warn('Webhook timestamp mismatch - possible replay attack or clock skew', {
+        requestId,
+        sourceIp,
+      });
     }
     
-    // Log signature verification failure to database for monitoring
     try {
       await sql`
         INSERT INTO webhook_events (event_id, event_type, signature_valid, processing_success, error_message, request_id, source_ip)
         VALUES (${'unknown-' + requestId}, ${'signature_failed'}, ${false}, ${false}, ${errorMessage}, ${requestId}, ${sourceIp})
       `;
-    } catch (logErr) {
-      console.error(`[WEBHOOK_SECURITY][${timestamp}][${requestId}] Failed to log security event:`, logErr);
+    } catch (logErr: any) {
+      logger.error('Failed to log webhook security event', {
+        error: logErr?.message || String(logErr),
+      });
     }
     
     return Response.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   try {
-    console.log(`[WEBHOOK_PROCESS][${timestamp}][${requestId}] Processing event type: ${event.type}`);
+    logger.info('Processing webhook event', {
+      eventType: event.type,
+      eventId: event.id,
+      requestId,
+    });
     
     switch (event.type) {
       case "checkout.session.completed": {
-        const session = event.data.object;
-        const customerId = session.customer;
+        const session = event.data.object as Stripe.Checkout.Session;
+        const customerId = session.customer as StripeCustomerId | null;
         const mode = session.mode;
         const kind = session.metadata?.kind || null;
         const tier = session.metadata?.tier || null;
@@ -80,27 +118,35 @@ export async function POST(request) {
           if (customerId) {
             await sql`UPDATE auth_users SET subscription_status = 'active', last_check_subscription_status_at = now() WHERE stripe_id = ${customerId}`;
           }
-          // Fallback: if no customer on file, use client_reference_id to activate
+          
           if (!customerId && refUserId) {
             await sql`UPDATE auth_users SET subscription_status = 'active', last_check_subscription_status_at = now() WHERE id = ${Number(refUserId)}`;
           }
-          // Optionally set membership tier from metadata when provided
+          
           if (refUserId && tier) {
             const v = tier.toLowerCase();
             if (["casual", "dating", "business"].includes(v)) {
               await sql`UPDATE auth_users SET membership_tier = ${v} WHERE id = ${Number(refUserId)}`;
             }
           }
+
+          logger.business(BusinessEvent.SUBSCRIPTION_CREATED, {
+            userId: refUserId ? Number(refUserId) : null,
+            tier,
+            kind,
+            stripeCustomerId: customerId,
+          });
         }
         break;
       }
+      
       case "invoice.payment_succeeded": {
-        const invoice = event.data.object;
-        const customerId = invoice.customer;
-        const subscriptionId = invoice.subscription;
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as StripeCustomerId;
+        const subscriptionId = (typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id) as SubscriptionId | null;
         
         if (customerId && subscriptionId && invoice.billing_reason === 'subscription_cycle') {
-          const [user] = await sql`SELECT scheduled_tier, tier_change_at FROM auth_users WHERE stripe_id = ${customerId}`;
+          const [user] = await sql<UserRecord[]>`SELECT scheduled_tier, tier_change_at FROM auth_users WHERE stripe_id = ${customerId}`;
           
           if (user?.scheduled_tier) {
             const subscription = await stripe.subscriptions.retrieve(subscriptionId);
@@ -120,27 +166,45 @@ export async function POST(request) {
                 `;
                 
                 await stripe.subscriptions.update(subscriptionId, {
-                  metadata: { scheduled_tier: null }
+                  metadata: { scheduled_tier: '' }
                 });
                 
-                console.log(`[WEBHOOK] Finalized scheduled downgrade to ${tierName} for customer ${customerId} on renewal`);
+                logger.business(BusinessEvent.SUBSCRIPTION_DOWNGRADED, {
+                  stripeCustomerId: customerId,
+                  toTier: tierName,
+                  triggeredBy: 'renewal',
+                });
+                
+                logger.info('Finalized scheduled downgrade on renewal', {
+                  tier: tierName,
+                  customerId,
+                  subscriptionId,
+                });
               }
             }
           }
         }
         break;
       }
+      
       case "invoice.payment_failed": {
-        const invoice = event.data.object;
-        const customerId = invoice.customer;
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as StripeCustomerId;
         if (customerId) {
           await sql`UPDATE auth_users SET subscription_status = 'past_due', last_check_subscription_status_at = now() WHERE stripe_id = ${customerId}`;
+          
+          logger.warn('Invoice payment failed', {
+            customerId,
+            invoiceId: invoice.id,
+            amount: invoice.amount_due,
+          });
         }
         break;
       }
+      
       case "customer.subscription.deleted": {
-        const subscription = event.data.object;
-        const customerId = subscription.customer;
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer as StripeCustomerId;
         if (customerId) {
           const scheduledTier = subscription.metadata?.scheduled_tier;
           
@@ -154,20 +218,32 @@ export async function POST(request) {
                   last_check_subscription_status_at = now() 
               WHERE stripe_id = ${customerId}
             `;
-            console.log(`[WEBHOOK] Finalized downgrade to free tier for customer ${customerId}`);
+            
+            logger.business(BusinessEvent.SUBSCRIPTION_CANCELLED, {
+              stripeCustomerId: customerId,
+              reason: 'downgrade_to_free',
+            });
+            
+            logger.info('Finalized downgrade to free tier', { customerId });
           } else {
             await sql`UPDATE auth_users SET subscription_status = 'canceled', last_check_subscription_status_at = now() WHERE stripe_id = ${customerId}`;
+            
+            logger.business(BusinessEvent.SUBSCRIPTION_CANCELLED, {
+              stripeCustomerId: customerId,
+              reason: 'subscription_deleted',
+            });
           }
         }
         break;
       }
+      
       case "customer.subscription.updated": {
-        const subscription = event.data.object;
-        const customerId = subscription.customer;
+        const subscription = event.data.object as Stripe.Subscription;
+        const customerId = subscription.customer as StripeCustomerId;
         const scheduledTier = subscription.metadata?.scheduled_tier;
         
         if (customerId && subscription.status === 'active') {
-          const [user] = await sql`SELECT scheduled_tier FROM auth_users WHERE stripe_id = ${customerId}`;
+          const [user] = await sql<UserRecord[]>`SELECT scheduled_tier FROM auth_users WHERE stripe_id = ${customerId}`;
           
           if (user?.scheduled_tier && scheduledTier && scheduledTier !== 'free') {
             const tierName = scheduledTier.toLowerCase();
@@ -181,57 +257,81 @@ export async function POST(request) {
                     last_check_subscription_status_at = now()
                 WHERE stripe_id = ${customerId}
               `;
-              console.log(`[WEBHOOK] Finalized scheduled downgrade to ${tierName} for customer ${customerId}`);
+              
+              logger.business(BusinessEvent.SUBSCRIPTION_UPDATED, {
+                stripeCustomerId: customerId,
+                action: 'scheduled_downgrade_applied',
+                tier: tierName,
+              });
+              
+              logger.info('Finalized scheduled downgrade', {
+                tier: tierName,
+                customerId,
+              });
             }
           }
         }
         break;
       }
+      
       default:
-        console.log(`[WEBHOOK_INFO][${timestamp}][${requestId}] Unhandled event type: ${event.type} - No action taken`);
+        logger.info('Unhandled webhook event type - no action taken', {
+          eventType: event.type,
+          requestId,
+        });
         break;
     }
     
-    console.log(`[WEBHOOK_SUCCESS][${timestamp}][${requestId}] ✅ Event processed successfully: ${event.type}`);
+    logger.info('Webhook event processed successfully', {
+      eventType: event.type,
+      eventId: event.id,
+      requestId,
+    });
     
-    // Log successful webhook processing to database for monitoring
     try {
       await sql`
         INSERT INTO webhook_events (event_id, event_type, signature_valid, processing_success, request_id, source_ip)
         VALUES (${event.id}, ${event.type}, ${true}, ${true}, ${requestId}, ${sourceIp})
         ON CONFLICT (event_id) DO UPDATE SET processing_success = true
       `;
-    } catch (logErr) {
-      console.error(`[WEBHOOK][${timestamp}][${requestId}] Failed to log successful event:`, logErr);
+    } catch (logErr: any) {
+      logger.error('Failed to log successful webhook event', {
+        error: logErr?.message || String(logErr),
+      });
     }
-  } catch (err) {
+  } catch (err: any) {
     const errorMessage = err?.message || String(err);
     const errorStack = err?.stack || "";
     
-    console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] ❌ PROCESSING ERROR`);
-    console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] Event Type: ${event?.type || "unknown"}`);
-    console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] Event ID: ${event?.id || "unknown"}`);
-    console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] Error Message: ${errorMessage}`);
-    console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] Stack Trace: ${errorStack}`);
+    logger.error('Webhook processing error', {
+      eventType: event?.type || "unknown",
+      eventId: event?.id || "unknown",
+      error: errorMessage,
+      stack: errorStack,
+      requestId,
+    });
     
     if (errorMessage.includes("database") || errorMessage.includes("sql")) {
-      console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] ⚠️ DATABASE ERROR - Check database connectivity and schema`);
+      logger.error('Database error during webhook processing - check connectivity and schema', {
+        requestId,
+      });
     }
     
-    // Log processing failure to database for monitoring
     try {
       await sql`
         INSERT INTO webhook_events (event_id, event_type, signature_valid, processing_success, error_message, request_id, source_ip)
         VALUES (${event?.id || 'unknown-' + requestId}, ${event?.type || 'unknown'}, ${true}, ${false}, ${errorMessage}, ${requestId}, ${sourceIp})
         ON CONFLICT (event_id) DO UPDATE SET processing_success = false, error_message = ${errorMessage}
       `;
-    } catch (logErr) {
-      console.error(`[WEBHOOK_ERROR][${timestamp}][${requestId}] Failed to log error event:`, logErr);
+    } catch (logErr: any) {
+      logger.error('Failed to log webhook error event', {
+        error: logErr?.message || String(logErr),
+      });
     }
     
     return Response.json({ error: "Webhook handler error" }, { status: 500 });
   }
 
-  console.log(`[WEBHOOK_COMPLETE][${timestamp}][${requestId}] Webhook processed and acknowledged`);
+  logger.info('Webhook processed and acknowledged', { requestId });
   return Response.json({ received: true });
 }
