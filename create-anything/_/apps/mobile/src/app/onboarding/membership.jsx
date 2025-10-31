@@ -21,31 +21,31 @@ const COLORS = {
 
 const TIERS = [
   {
-    key: "casual",
-    title: "Casual",
+    key: "free",
+    title: "Free",
     price: "Free",
-    desc: "Browse, see & send likes",
+    desc: "Browse, see & send likes (3 photos, 1 video)",
     highlight: false,
   },
   {
-    key: "active",
-    title: "Active User",
+    key: "casual",
+    title: "Casual",
     price: "$14.99/mo",
-    desc: "Unlock video chat & scheduling",
-    highlight: true,
+    desc: "More media uploads (5 photos, 1 video)",
+    highlight: false,
   },
   {
     key: "dating",
     title: "Dating",
     price: "$29.99/mo",
-    desc: "Priority matching & video",
-    highlight: false,
+    desc: "Priority matching & extended video (8 photos, 2 videos)",
+    highlight: true,
   },
   {
     key: "business",
     title: "Business",
     price: "$49.99/mo",
-    desc: "Max exposure & tools",
+    desc: "Max exposure & tools (10 photos, 3 videos)",
     highlight: false,
   },
 ];
@@ -83,11 +83,11 @@ export default function MembershipScreen() {
       try {
         setLoading(true);
         setError(null);
-        if (key === "casual") {
+        if (key === "free") {
           const res = await fetch("/api/profile", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ membership_tier: "casual" }),
+            body: JSON.stringify({ membership_tier: "free" }),
           });
           if (!res.ok) throw new Error("Failed to set tier");
           router.replace("/onboarding/profile");
@@ -174,7 +174,7 @@ export default function MembershipScreen() {
           Choose your plan
         </Text>
         <Text style={{ color: COLORS.text, opacity: 0.7, marginBottom: 16 }}>
-          Unlock video chat with a membership. You can upgrade anytime.
+          Select a membership to unlock features. You can upgrade anytime.
         </Text>
 
         {TIERS.map((t) => (
@@ -234,8 +234,8 @@ export default function MembershipScreen() {
               >
                 {loading
                   ? "Please wait..."
-                  : t.key === "casual"
-                    ? "Continue with Casual"
+                  : t.key === "free"
+                    ? "Continue with Free"
                     : `Choose ${t.title}`}
               </Text>
             </TouchableOpacity>

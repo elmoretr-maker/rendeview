@@ -21,6 +21,8 @@ export default function Index() {
         if (res.ok) {
           const data = await res.json();
           const user = data?.user;
+          const media = data?.media || [];
+          const photos = media.filter((m) => m.type === "photo");
 
           // NEW FLOW: Check consent first (Step 2 before membership)
           if (!user?.consent_accepted) {
@@ -35,8 +37,9 @@ export default function Index() {
             return;
           }
 
-          // Profile basics gate (Step 4 - consolidated)
-          if (!user?.name) {
+          // Profile completion gate (Step 4 - consolidated)
+          // Require name AND minimum 2 photos to ensure profile is properly completed
+          if (!user?.name || photos.length < 2) {
             router.replace("/onboarding/profile");
             return;
           }
