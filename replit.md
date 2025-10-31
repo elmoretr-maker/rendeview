@@ -20,7 +20,32 @@ The application employs a client-server architecture. The frontend, located at `
 - **Frontend Router**: React Router 7
 - **Styling**: TailwindCSS
 - **Backend Framework**: Hono (Node.js)
-## Recent Changes (October 30, 2025 - Latest)
+## Recent Changes (October 31, 2025 - Latest)
+
+- **Subscription Management & Onboarding Gate Protection** (October 31, 2025): Comprehensive structural consolidation and feature alignment
+  - **NEW Subscription Management Pages**: Created `/settings/subscription` for both web and mobile apps
+    - Displays current membership tier with icon and color coding (Free/Casual/Dating/Business)
+    - Shows tier-specific benefits: photo limits, video limits, chat duration, meeting caps
+    - Web: "Upgrade Membership" button links to `/account/billing`, "Manage Billing" button for subscription control
+    - Mobile: "Upgrade Membership" button opens native Stripe checkout screen
+  - **Navigation Updates**: Unified "Membership" navigation across platforms
+    - Web AppHeader: "Membership" link now routes to `/settings/subscription` (previously `/onboarding/membership`)
+    - Mobile Profile: Added "Manage Membership" button with CreditCard icon routing to `/settings/subscription`
+    - Consistent user experience: "Membership" always points to subscription settings, not onboarding
+  - **OnboardingGuard Component**: Critical security feature preventing post-onboarding re-entry
+    - Created for both web (`components/onboarding/OnboardingGuard.jsx`) and mobile (`components/onboarding/OnboardingGuard.jsx`)
+    - Logic: Unauthenticated users allowed on welcome page only; authenticated incomplete users continue flow; completed users redirected to main app
+    - Web redirects completed users to `/discovery`, Mobile redirects to `/(tabs)`
+    - Applied to all onboarding pages: welcome, consent, membership, profile
+    - Prevents security vulnerability of re-entering onboarding after completion
+  - **Verified Features**: 
+    - Continue/Back buttons present on all onboarding pages (consent, membership, profile)
+    - QA_BYPASS_AUTH environment variable preserved in server authentication for testing
+    - Both workflows (Web App, Mobile App) running successfully without errors
+  - Files created: web/settings/subscription/page.jsx, mobile/settings/subscription.jsx, web/components/onboarding/OnboardingGuard.jsx, mobile/components/onboarding/OnboardingGuard.jsx
+  - Files updated: web/AppHeader.jsx, mobile/profile.jsx, all onboarding pages (welcome, consent, membership, profile) for both platforms
+
+## Recent Changes (October 30, 2025)
 
 - **Photos & Videos Management Page** (October 30, 2025): Created comprehensive media management system with camera-only video recording
   - **Photo Upload**: Users can upload photos via ObjectUploader component with tier-based limits (Free: 3, Casual: 5, Dating: 8, Business: 10)
