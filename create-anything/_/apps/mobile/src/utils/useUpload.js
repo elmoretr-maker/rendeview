@@ -10,64 +10,18 @@ function useUpload() {
       if ("reactNativeAsset" in input && input.reactNativeAsset) {
         const asset = input.reactNativeAsset;
         
-        // Debug logging
-        console.log('[useUpload] Raw asset structure:', JSON.stringify(asset, null, 2));
-        
-        // Build a RN-friendly FormData file part: { uri, name, type }
-        const uri = asset.uri || asset?.file?.uri;
-        
-        if (!uri) {
-          console.error('[useUpload] Missing URI in asset:', asset);
-          throw new Error("Invalid asset: missing uri");
-        }
-
-        // Determine if this is a video or image
-        const isVideo = 
-          (asset.mimeType && asset.mimeType.startsWith("video/")) ||
-          (asset.type === "video") ||
-          uri.toLowerCase().includes(".mp4") ||
-          uri.toLowerCase().includes(".mov");
-
-        // Infer file extension from URI or asset info
-        const uriExtension = uri.split(".").pop()?.toLowerCase() || "";
-        let extension;
-        if (isVideo) {
-          extension = (uriExtension === "mp4" || uriExtension === "mov") ? uriExtension : "mp4";
+        // Use base64 upload for React Native assets (Replit upload service doesn't support RN FormData)
+        if (asset.base64) {
+          response = await fetch("/_create/api/upload/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ base64: asset.base64 }),
+          });
         } else {
-          extension = (uriExtension === "jpg" || uriExtension === "jpeg" || uriExtension === "png") ? uriExtension : "jpg";
+          throw new Error("Asset missing base64 data - ensure base64:true is set in image picker options");
         }
-
-        // Build proper filename with extension
-        const baseName = asset.fileName || asset.name || "upload";
-        const resolvedName = baseName.includes(".") ? baseName : `${baseName}.${extension}`;
-
-        // Build proper MIME type - only use asset.type if it contains a slash
-        let resolvedMime;
-        if (asset.mimeType && asset.mimeType.includes("/")) {
-          resolvedMime = asset.mimeType;
-        } else if (asset.type && asset.type.includes("/")) {
-          resolvedMime = asset.type;
-        } else if (isVideo) {
-          resolvedMime = "video/mp4";
-        } else {
-          resolvedMime = "image/jpeg";
-        }
-
-        const fileObject = {
-          uri,
-          name: resolvedName,
-          type: resolvedMime,
-        };
-        
-        console.log('[useUpload] Resolved file object for FormData:', fileObject);
-
-        const formData = new FormData();
-        formData.append("file", fileObject);
-
-        response = await fetch("/_create/api/upload/", {
-          method: "POST",
-          body: formData,
-        });
       } else if ("url" in input) {
         response = await fetch("/_create/api/upload/", {
           method: "POST",

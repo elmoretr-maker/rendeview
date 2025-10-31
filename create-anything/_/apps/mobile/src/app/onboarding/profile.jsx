@@ -129,6 +129,7 @@ function ConsolidatedProfileOnboardingContent() {
       allowsEditing: true,
       quality: 0.9,
       allowsMultipleSelection: false,
+      base64: true, // Enable base64 for upload compatibility
     });
     if (!result.canceled) {
       setPhotos((prev) => [...prev, result.assets[0]].slice(0, limits.maxPhotos));
