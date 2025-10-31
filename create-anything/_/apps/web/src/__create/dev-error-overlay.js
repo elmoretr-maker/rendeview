@@ -16,7 +16,8 @@
     }
     window.onload = () => {
       window.parent.postMessage({ type: 'sandbox:web:ready' }, '*');
-      const [fix, logs, copy] = [
+      const [restart, fix, logs, copy] = [
+        document.getElementById('restart'),
         document.getElementById('fix'),
         document.getElementById('logs'),
         document.getElementById('copy'),
@@ -24,13 +25,13 @@
       const isInIframe = window.self !== window.top;
       if (isInIframe) {
         // show all the buttons
-        [fix, copy, logs].forEach((button) => {
+        [restart, fix, copy, logs].forEach((button) => {
           button?.classList.remove('opacity-0');
           button?.classList.add('opacity-100');
         });
       } else {
         // show all the buttons
-        [copy].forEach((button) => {
+        [restart, copy].forEach((button) => {
           button?.classList.remove('opacity-0');
           button?.classList.add('opacity-100');
         });
@@ -79,11 +80,19 @@
               </p>
 
               <div class="flex gap-2">
-                <button id="fix"
+                <button id="restart"
                   class="flex flex-row items-center justify-center gap-[4px]
                          outline-none transition-all rounded-[8px] border-[1px]
                          bg-[#f9f9f9] hover:bg-[#dbdbdb] active:bg-[#c4c4c4]
                          border-[#c4c4c4] text-[#18191B] text-sm px-[8px] py-[4px] opacity-0">
+                  Restart App
+                </button>
+
+                <button id="fix"
+                  class="flex flex-row items-center justify-center gap-[4px]
+                         outline-none transition-all rounded-[8px] border-[1px]
+                         bg-[#2C2D2F] hover:bg-[#414243] active:bg-[#555658]
+                         border-[#414243] text-white text-sm px-[8px] py-[4px] opacity-0">
                   Try to fix
                 </button>
 
@@ -112,6 +121,10 @@
     panel = document.getElementById('__create_error_panel');
 
     /* button wiring --------------------------------------------------- */
+    panel.querySelector('#restart').onclick = () => {
+      window.location.reload();
+    };
+
     panel.querySelector('#copy').onclick = () =>
       navigator.clipboard.writeText(`${msg}\n${stack || ''}`);
 
