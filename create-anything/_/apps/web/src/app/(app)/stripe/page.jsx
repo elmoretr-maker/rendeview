@@ -6,6 +6,7 @@ export default function Stripe() {
   const navigate = useNavigate();
   const location = useLocation();
   const checkoutUrl = location.state?.checkoutUrl;
+  const returnTo = location.state?.returnTo || "/onboarding/profile";
   const [paymentComplete, setPaymentComplete] = useState(false);
 
   useEffect(() => {
@@ -47,6 +48,7 @@ export default function Stripe() {
   }
 
   if (paymentComplete) {
+    const isSubscriptionFlow = returnTo === "/settings/subscription";
     return (
       <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: "#F9F9F9" }}>
         <div className="text-center max-w-md">
@@ -57,23 +59,27 @@ export default function Stripe() {
               </svg>
             </div>
             <h1 className="text-2xl font-bold mb-2" style={{ color: "#2C3E50" }}>Payment Complete!</h1>
-            <p className="text-gray-600 mb-8">Your subscription is now active. Let's set up your profile.</p>
+            <p className="text-gray-600 mb-8">
+              {isSubscriptionFlow 
+                ? "Your subscription has been upgraded successfully!" 
+                : "Your subscription is now active. Let's set up your profile."}
+            </p>
           </div>
 
           <button
-            onClick={() => navigate("/onboarding/profile")}
+            onClick={() => navigate(returnTo)}
             className="w-full px-8 py-4 rounded-xl text-white font-semibold text-lg shadow-lg mb-3"
             style={{ backgroundColor: "#5B3BAF" }}
           >
-            Continue to Profile Setup
+            {isSubscriptionFlow ? "Back to Subscription" : "Continue to Profile Setup"}
           </button>
 
           <button
-            onClick={() => navigate("/onboarding/membership")}
+            onClick={() => navigate(isSubscriptionFlow ? "/settings/subscription" : "/onboarding/membership")}
             className="flex items-center justify-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mx-auto"
           >
             <ArrowLeft size={18} />
-            <span className="font-medium">Back to Membership</span>
+            <span className="font-medium">{isSubscriptionFlow ? "View Subscription" : "Back to Membership"}</span>
           </button>
         </div>
       </div>

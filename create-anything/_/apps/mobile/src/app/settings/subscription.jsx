@@ -101,7 +101,7 @@ export default function SubscriptionScreen() {
           return;
         }
 
-        const redirectURL = process.env.EXPO_PUBLIC_BASE_URL;
+        const redirectURL = `${process.env.EXPO_PUBLIC_BASE_URL}/settings/subscription`;
         const res = await fetch("/api/payments/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -132,6 +132,65 @@ export default function SubscriptionScreen() {
       }
     },
     [router],
+  );
+
+  const downgradeTier = useCallback(
+    async (key) => {
+      if (key === currentTier) {
+        Alert.alert("Current Plan", "You're already on this plan");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        const tierName = TIERS.find((t) => t.key === key)?.title;
+
+        Alert.alert(
+          "Confirm Downgrade",
+          `Are you sure you want to downgrade to the ${tierName} plan? Your subscription will be cancelled with a prorated refund.`,
+          [
+            { text: "Cancel", style: "cancel", onPress: () => setLoading(false) },
+            {
+              text: "Downgrade",
+              style: "destructive",
+              onPress: async () => {
+                try {
+                  const res = await fetch("/api/payments/downgrade", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ tier: key }),
+                  });
+
+                  if (!res.ok) {
+                    const t = await res.json().catch(() => ({}));
+                    throw new Error(t?.error || "Could not downgrade");
+                  }
+
+                  const data = await res.json();
+                  Alert.alert("Success", data.message || "Successfully downgraded");
+                  setCurrentTier(data.tier || "free");
+                  router.push("/settings/subscription");
+                } catch (e) {
+                  console.error(e);
+                  setError(e.message);
+                  Alert.alert("Error", e.message);
+                } finally {
+                  setLoading(false);
+                }
+              },
+            },
+          ]
+        );
+      } catch (e) {
+        console.error(e);
+        setError(e.message);
+        Alert.alert("Error", e.message);
+        setLoading(false);
+      }
+    },
+    [currentTier, router],
   );
 
   const getTierRank = (tierKey) => {
@@ -341,13 +400,13 @@ export default function SubscriptionScreen() {
                 </View>
               ) : (
                 <TouchableOpacity
-                  onPress={() => upgradeTier(t.key)}
-                  disabled={loading || isDowngrade}
+                  onPress={() => isDowngrade ? downgradeTier(t.key) : upgradeTier(t.key)}
+                  disabled={loading}
                   style={{
                     backgroundColor: COLORS.primary,
                     paddingVertical: 10,
                     borderRadius: 8,
-                    opacity: loading || isDowngrade ? 0.5 : 1,
+                    opacity: loading ? 0.5 : 1,
                   }}
                 >
                   <Text
@@ -361,7 +420,7 @@ export default function SubscriptionScreen() {
                     {loading
                       ? "Please wait..."
                       : isDowngrade
-                        ? "Downgrade (Contact Support)"
+                        ? `Downgrade to ${t.title}`
                         : isUpgrade
                           ? `Upgrade to ${t.title}`
                           : `Switch to ${t.title}`}

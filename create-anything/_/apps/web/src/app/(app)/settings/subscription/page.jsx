@@ -93,7 +93,7 @@ export default function SubscriptionPage() {
           return;
         }
         
-        const redirectURL = window.location.origin;
+        const redirectURL = `${window.location.origin}/settings/subscription`;
         const res = await fetch("/api/payments/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -111,7 +111,7 @@ export default function SubscriptionPage() {
         
         const { url } = await res.json();
         if (url) {
-          navigate("/stripe", { state: { checkoutUrl: url } });
+          navigate("/stripe", { state: { checkoutUrl: url, returnTo: "/settings/subscription" } });
         } else {
           throw new Error("Missing checkout url");
         }
@@ -124,6 +124,52 @@ export default function SubscriptionPage() {
       }
     },
     [navigate],
+  );
+
+  const downgradeTier = useCallback(
+    async (key) => {
+      if (key === currentTier) {
+        toast.info("You're already on this plan");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const confirmed = window.confirm(
+          `Are you sure you want to downgrade to the ${TIERS.find(t => t.key === key)?.title} plan? Your subscription will be cancelled with a prorated refund.`
+        );
+        
+        if (!confirmed) {
+          setLoading(false);
+          return;
+        }
+        
+        const res = await fetch("/api/payments/downgrade", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tier: key }),
+        });
+        
+        if (!res.ok) {
+          const t = await res.json().catch(() => ({}));
+          throw new Error(t?.error || "Could not downgrade");
+        }
+        
+        const data = await res.json();
+        toast.success(data.message || "Successfully downgraded");
+        setCurrentTier(data.tier || "free");
+        window.location.reload();
+      } catch (e) {
+        console.error(e);
+        setError(e.message);
+        toast.error(e.message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentTier],
   );
 
   const getTierRank = (tierKey) => {
@@ -254,15 +300,15 @@ export default function SubscriptionPage() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => upgradeTier(t.key)}
-                      disabled={loading || isDowngrade}
+                      onClick={() => isDowngrade ? downgradeTier(t.key) : upgradeTier(t.key)}
+                      disabled={loading}
                       className="w-full py-2 rounded-lg text-white font-semibold disabled:opacity-50"
                       style={{ backgroundColor: COLORS.primary }}
                     >
                       {loading
                         ? "Please wait..."
                         : isDowngrade
-                          ? "Downgrade (Contact Support)"
+                          ? `Downgrade to ${t.title}`
                           : isUpgrade
                             ? `Upgrade to ${t.title}`
                             : `Switch to ${t.title}`}
