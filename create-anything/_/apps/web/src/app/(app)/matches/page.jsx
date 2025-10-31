@@ -38,6 +38,33 @@ function MatchesContent() {
   });
 
   const matches = data?.matches || [];
+  
+  // Fetch notes for all matched users
+  const { data: notesData } = useQuery({
+    queryKey: ["all-notes", matches.map(m => m.user.id).join(",")],
+    queryFn: async () => {
+      if (matches.length === 0) return {};
+      
+      const notesMap = {};
+      await Promise.all(
+        matches.map(async (match) => {
+          try {
+            const res = await fetch(`/api/notes?targetUserId=${match.user.id}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data.note) {
+                notesMap[match.user.id] = data.note.note_content;
+              }
+            }
+          } catch (err) {
+            console.error(`Failed to fetch note for user ${match.user.id}:`, err);
+          }
+        })
+      );
+      return notesMap;
+    },
+    enabled: matches.length > 0,
+  });
 
   React.useEffect(() => {
     if (error?.message === "AUTH_401") {
@@ -113,32 +140,42 @@ function MatchesContent() {
           </div>
         ) : (
           <div className="space-y-3">
-            {matches.map((item) => (
-              <button
-                key={item.match_id}
-                onClick={() => navigate(`/messages/${item.match_id}`)}
-                className="w-full flex items-center py-3 px-4 rounded-lg hover:bg-white transition-colors"
-                style={{ backgroundColor: COLORS.cardBg, borderBottom: `1px solid ${COLORS.cardBg}` }}
-              >
-                {item.user.photo ? (
-                  <img
-                    src={item.user.photo}
-                    alt={item.user.name || "User"}
-                    className="w-12 h-12 rounded-full bg-gray-200"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-gray-200"></div>
-                )}
-                <div className="ml-3 text-left">
-                  <p className="font-semibold" style={{ color: COLORS.text }}>
-                    {item.user.name || `User ${item.user.id}`}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {item.last_chat_at ? "Active chat" : "New match"}
-                  </p>
-                </div>
-              </button>
-            ))}
+            {matches.map((item) => {
+              const userNote = notesData?.[item.user.id];
+              
+              return (
+                <button
+                  key={item.match_id}
+                  onClick={() => navigate(`/messages/${item.match_id}`)}
+                  className="w-full flex items-center py-3 px-4 rounded-lg hover:bg-white transition-colors"
+                  style={{ backgroundColor: COLORS.cardBg, borderBottom: `1px solid ${COLORS.cardBg}` }}
+                >
+                  {item.user.photo ? (
+                    <img
+                      src={item.user.photo}
+                      alt={item.user.name || "User"}
+                      className="w-12 h-12 rounded-full bg-gray-200"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gray-200"></div>
+                  )}
+                  <div className="ml-3 text-left flex-1">
+                    <p className="font-semibold" style={{ color: COLORS.text }}>
+                      {item.user.name || `User ${item.user.id}`}
+                    </p>
+                    {userNote ? (
+                      <p className="text-sm text-gray-600 mt-0.5 truncate">
+                        📝 {userNote}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-gray-500">
+                        {item.last_chat_at ? "Active chat" : "New match"}
+                      </p>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
