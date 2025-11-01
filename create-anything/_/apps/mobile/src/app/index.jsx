@@ -44,16 +44,16 @@ export default function Index() {
             return;
           }
 
-          // All checks passed -> main app
-          router.replace("/(tabs)/discovery");
+          // All checks passed -> main app (send returning users to Profile)
+          router.replace("/(tabs)/profile");
           return;
         }
       } catch (e) {
         console.error("/index bootstrap routeNext error", e);
       }
 
-      // Fallback to main tabs if profile fetch fails
-      router.replace("/(tabs)/discovery");
+      // Fallback to profile if profile fetch fails
+      router.replace("/(tabs)/profile");
     };
 
     routeNext();
