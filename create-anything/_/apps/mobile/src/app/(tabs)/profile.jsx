@@ -53,6 +53,23 @@ export default function Profile() {
   const [media, setMedia] = useState([]);
   const [primaryPhoto, setPrimaryPhoto] = useState(null);
 
+  // Profile information from onboarding
+  const [bio, setBio] = useState("");
+  const [interests, setInterests] = useState([]);
+  const [gender, setGender] = useState("");
+  const [sexualOrientation, setSexualOrientation] = useState("");
+  const [lookingFor, setLookingFor] = useState("");
+  const [bodyType, setBodyType] = useState("");
+  const [heightRange, setHeightRange] = useState("");
+  const [education, setEducation] = useState("");
+  const [relationshipGoals, setRelationshipGoals] = useState("");
+  const [drinking, setDrinking] = useState("");
+  const [smoking, setSmoking] = useState("");
+  const [exercise, setExercise] = useState("");
+  const [religion, setReligion] = useState("");
+  const [childrenPreference, setChildrenPreference] = useState("");
+  const [pets, setPets] = useState("");
+
   // NEW: video player
   const [videoUrl, setVideoUrl] = useState(null);
   const videoRef = useRef(null);
@@ -90,6 +107,23 @@ export default function Profile() {
         setMedia(m);
         const vid = m.find((x) => x.type === "video");
         setVideoUrl(vid?.url || null);
+        
+        // Load profile information
+        setBio(u.bio || "");
+        setInterests(Array.isArray(u.interests) ? u.interests : []);
+        setGender(u.gender || "");
+        setSexualOrientation(u.sexual_orientation || "");
+        setLookingFor(u.looking_for || "");
+        setBodyType(u.body_type || "");
+        setHeightRange(u.height_range || "");
+        setEducation(u.education || "");
+        setRelationshipGoals(u.relationship_goals || "");
+        setDrinking(u.drinking || "");
+        setSmoking(u.smoking || "");
+        setExercise(u.exercise || "");
+        setReligion(u.religion || "");
+        setChildrenPreference(u.children_preference || "");
+        setPets(u.pets || "");
       } catch (e) {
         console.error(e);
         setError("Failed to fetch profile");
@@ -457,6 +491,252 @@ export default function Profile() {
           backgroundColor: "#FFFFFF",
         }}
       />
+
+      {/* Bio Section */}
+      {bio ? (
+        <>
+          <Text
+            style={{
+              fontWeight: "600",
+              marginBottom: 6,
+              color: COLORS.text,
+              fontFamily: "Inter_600SemiBold",
+            }}
+          >
+            Bio
+          </Text>
+          <Text
+            style={{
+              borderWidth: 1,
+              borderColor: "#E5E7EB",
+              borderRadius: 10,
+              padding: 12,
+              marginBottom: 12,
+              backgroundColor: "#FFFFFF",
+              color: COLORS.text,
+              fontFamily: "Inter_400Regular",
+            }}
+          >
+            {bio}
+          </Text>
+        </>
+      ) : null}
+
+      {/* Interests Section */}
+      {interests.length > 0 ? (
+        <>
+          <Text
+            style={{
+              fontWeight: "600",
+              marginBottom: 8,
+              color: COLORS.text,
+              fontFamily: "Inter_600SemiBold",
+            }}
+          >
+            Interests ({interests.length})
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 8,
+              marginBottom: 16,
+            }}
+          >
+            {interests.map((interest, idx) => (
+              <View
+                key={idx}
+                style={{
+                  backgroundColor: COLORS.primary,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#FFFFFF",
+                    fontSize: 14,
+                    fontFamily: "Inter_400Regular",
+                  }}
+                >
+                  {interest}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </>
+      ) : null}
+
+      {/* Preferences Section */}
+      <Text
+        style={{
+          fontWeight: "700",
+          fontSize: 18,
+          marginBottom: 12,
+          marginTop: 8,
+          color: COLORS.text,
+          fontFamily: "Inter_700Bold",
+        }}
+      >
+        About Me
+      </Text>
+
+      {gender ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 4, fontFamily: "Inter_400Regular" }}>
+            Gender
+          </Text>
+          <Text style={{ fontSize: 16, color: COLORS.text, fontFamily: "Inter_600SemiBold" }}>
+            {gender}
+          </Text>
+        </View>
+      ) : null}
+
+      {sexualOrientation ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 4, fontFamily: "Inter_400Regular" }}>
+            Sexual Orientation
+          </Text>
+          <Text style={{ fontSize: 16, color: COLORS.text, fontFamily: "Inter_600SemiBold" }}>
+            {sexualOrientation}
+          </Text>
+        </View>
+      ) : null}
+
+      {lookingFor ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 4, fontFamily: "Inter_400Regular" }}>
+            Looking For
+          </Text>
+          <Text style={{ fontSize: 16, color: COLORS.text, fontFamily: "Inter_600SemiBold" }}>
+            {lookingFor}
+          </Text>
+        </View>
+      ) : null}
+
+      {relationshipGoals ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 4, fontFamily: "Inter_400Regular" }}>
+            Relationship Goals
+          </Text>
+          <Text style={{ fontSize: 16, color: COLORS.text, fontFamily: "Inter_600SemiBold" }}>
+            {relationshipGoals}
+          </Text>
+        </View>
+      ) : null}
+
+      {bodyType ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 4, fontFamily: "Inter_400Regular" }}>
+            Body Type
+          </Text>
+          <Text style={{ fontSize: 16, color: COLORS.text, fontFamily: "Inter_600SemiBold" }}>
+            {bodyType}
+          </Text>
+        </View>
+      ) : null}
+
+      {heightRange ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 4, fontFamily: "Inter_400Regular" }}>
+            Height
+          </Text>
+          <Text style={{ fontSize: 16, color: COLORS.text, fontFamily: "Inter_600SemiBold" }}>
+            {heightRange}
+          </Text>
+        </View>
+      ) : null}
+
+      {education ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 4, fontFamily: "Inter_400Regular" }}>
+            Education
+          </Text>
+          <Text style={{ fontSize: 16, color: COLORS.text, fontFamily: "Inter_600SemiBold" }}>
+            {education}
+          </Text>
+        </View>
+      ) : null}
+
+      {drinking ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 4, fontFamily: "Inter_400Regular" }}>
+            Drinking
+          </Text>
+          <Text style={{ fontSize: 16, color: COLORS.text, fontFamily: "Inter_600SemiBold" }}>
+            {drinking}
+          </Text>
+        </View>
+      ) : null}
+
+      {smoking ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 4, fontFamily: "Inter_400Regular" }}>
+            Smoking
+          </Text>
+          <Text style={{ fontSize: 16, color: COLORS.text, fontFamily: "Inter_600SemiBold" }}>
+            {smoking}
+          </Text>
+        </View>
+      ) : null}
+
+      {exercise ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 4, fontFamily: "Inter_400Regular" }}>
+            Exercise
+          </Text>
+          <Text style={{ fontSize: 16, color: COLORS.text, fontFamily: "Inter_600SemiBold" }}>
+            {exercise}
+          </Text>
+        </View>
+      ) : null}
+
+      {religion ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 4, fontFamily: "Inter_400Regular" }}>
+            Religion
+          </Text>
+          <Text style={{ fontSize: 16, color: COLORS.text, fontFamily: "Inter_600SemiBold" }}>
+            {religion}
+          </Text>
+        </View>
+      ) : null}
+
+      {childrenPreference ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 4, fontFamily: "Inter_400Regular" }}>
+            Children
+          </Text>
+          <Text style={{ fontSize: 16, color: COLORS.text, fontFamily: "Inter_600SemiBold" }}>
+            {childrenPreference}
+          </Text>
+        </View>
+      ) : null}
+
+      {pets ? (
+        <View style={{ marginBottom: 12 }}>
+          <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 4, fontFamily: "Inter_400Regular" }}>
+            Pets
+          </Text>
+          <Text style={{ fontSize: 16, color: COLORS.text, fontFamily: "Inter_600SemiBold" }}>
+            {pets}
+          </Text>
+        </View>
+      ) : null}
+
+      <Text
+        style={{
+          fontWeight: "700",
+          fontSize: 18,
+          marginBottom: 12,
+          marginTop: 16,
+          color: COLORS.text,
+          fontFamily: "Inter_700Bold",
+        }}
+      >
+        Availability Settings
+      </Text>
 
       <Text
         style={{
