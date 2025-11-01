@@ -6,12 +6,23 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Dimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Heart, Sparkles, Eye } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/utils/auth/useAuth";
+import { GestureDetector, Gesture } from "react-native-gesture-handler";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  runOnJS,
+  interpolate,
+  Extrapolate,
+} from "react-native-reanimated";
 // ADD: Inter fonts for modern typography
 import {
   useFonts,
@@ -19,6 +30,9 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from "@expo-google-fonts/inter";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
 
 // Brand palette
 const COLORS = {
@@ -307,296 +321,12 @@ export default function Discovery() {
       </View>
 
       {current ? (
-        <View style={{ flex: 1, alignItems: "center" }}>
-          <TouchableOpacity
-            onPress={() => router.push(`/profile/${current.id}`)}
-            style={{ width: "100%", position: "relative" }}
-          >
-            {current.photo ? (
-              <Image
-                source={{ uri: current.photo }}
-                style={{
-                  width: "100%",
-                  height: 360,
-                  borderRadius: 16,
-                  backgroundColor: COLORS.cardBg,
-                }}
-              />
-            ) : (
-              <View
-                style={{
-                  width: "100%",
-                  height: 360,
-                  borderRadius: 16,
-                  backgroundColor: COLORS.cardBg,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text
-                  style={{ color: COLORS.text, fontFamily: "Inter_400Regular" }}
-                >
-                  View Profile
-                </Text>
-              </View>
-            )}
-            
-            {/* Compatibility Score Badge */}
-            {current.compatibility_score !== undefined && (
-              <View
-                style={{
-                  position: "absolute",
-                  top: 12,
-                  right: 12,
-                  backgroundColor: COLORS.primary,
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  borderRadius: 20,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 3.84,
-                  elevation: 5,
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontWeight: "700",
-                    fontSize: 14,
-                    fontFamily: "Inter_700Bold",
-                  }}
-                >
-                  {Math.round(current.compatibility_score * 100)}% Match
-                </Text>
-              </View>
-            )}
-            
-            {/* Liked You Badge */}
-            {current.liked_you && (
-              <View
-                style={{
-                  position: "absolute",
-                  top: 12,
-                  left: 12,
-                  backgroundColor: "#FF69B4",
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  borderRadius: 20,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 3.84,
-                  elevation: 5,
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontWeight: "700",
-                    fontSize: 12,
-                    fontFamily: "Inter_700Bold",
-                  }}
-                >
-                  💕 Likes You
-                </Text>
-              </View>
-            )}
-            
-            {/* Tap to View Hint */}
-            <View
-              style={{
-                position: "absolute",
-                bottom: 12,
-                left: 0,
-                right: 0,
-                alignItems: "center",
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: "rgba(0, 0, 0, 0.6)",
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  borderRadius: 20,
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontSize: 13,
-                    fontFamily: "Inter_600SemiBold",
-                  }}
-                >
-                  👆 Tap to view full profile
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-          
-          {/* Name and Info */}
-          <Text
-            style={{
-              fontSize: 22,
-              fontWeight: "700",
-              marginTop: 16,
-              color: COLORS.text,
-              fontFamily: "Inter_700Bold",
-            }}
-          >
-            {current.name || "User " + current.id}
-          </Text>
-          
-          {/* Relationship Goals */}
-          {current.relationship_goals && (
-            <Text
-              style={{
-                fontSize: 14,
-                color: COLORS.text,
-                opacity: 0.7,
-                marginTop: 4,
-                fontFamily: "Inter_400Regular",
-              }}
-            >
-              Looking for: {current.relationship_goals}
-            </Text>
-          )}
-          
-          {/* Bio Preview */}
-          {current.bio && (
-            <Text
-              style={{
-                fontSize: 14,
-                color: COLORS.text,
-                opacity: 0.8,
-                marginTop: 8,
-                textAlign: "center",
-                paddingHorizontal: 24,
-                fontFamily: "Inter_400Regular",
-              }}
-              numberOfLines={2}
-            >
-              {current.bio}
-            </Text>
-          )}
-          
-          {/* Mutual Interests */}
-          {current.mutual_interests && current.mutual_interests.length > 0 && (
-            <View style={{ marginTop: 12, alignItems: "center" }}>
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: COLORS.text,
-                  opacity: 0.6,
-                  marginBottom: 6,
-                  fontFamily: "Inter_600SemiBold",
-                }}
-              >
-                {current.mutual_interests.length} Shared Interest{current.mutual_interests.length > 1 ? 's' : ''}
-              </Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  justifyContent: "center",
-                  gap: 6,
-                  maxWidth: "90%",
-                }}
-              >
-                {current.mutual_interests.slice(0, 3).map((interest, idx) => (
-                  <View
-                    key={idx}
-                    style={{
-                      backgroundColor: "#EDE9FE",
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: COLORS.primary,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: COLORS.primary,
-                        fontSize: 12,
-                        fontWeight: "600",
-                        fontFamily: "Inter_600SemiBold",
-                      }}
-                    >
-                      {interest}
-                    </Text>
-                  </View>
-                ))}
-                {current.mutual_interests.length > 3 && (
-                  <View
-                    style={{
-                      backgroundColor: COLORS.cardBg,
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                      borderRadius: 12,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: COLORS.text,
-                        fontSize: 12,
-                        opacity: 0.7,
-                        fontFamily: "Inter_400Regular",
-                      }}
-                    >
-                      +{current.mutual_interests.length - 3} more
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          )}
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "center",
-              gap: 16,
-              marginTop: 20,
-            }}
-          >
-            <TouchableOpacity
-              onPress={() => discardMutation.mutate(current.id)}
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-                backgroundColor: COLORS.cardBg,
-                alignItems: "center",
-                justifyContent: "center",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 3,
-              }}
-            >
-              <X color={COLORS.error} size={28} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => likeMutation.mutate(current.id)}
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-                backgroundColor: "#EDE7FF",
-                alignItems: "center",
-                justifyContent: "center",
-                shadowColor: COLORS.primary,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.15,
-                shadowRadius: 4,
-                elevation: 3,
-              }}
-            >
-              <Heart color={COLORS.primary} size={28} />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <SwipeableCard
+          profile={current}
+          onSwipeLeft={() => discardMutation.mutateAsync(current.id)}
+          onSwipeRight={() => likeMutation.mutateAsync(current.id)}
+          onTap={() => router.push(`/profile/${current.id}`)}
+        />
       ) : (
         <View
           style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
@@ -637,6 +367,451 @@ export default function Discovery() {
           </TouchableOpacity>
         </View>
       )}
+    </View>
+  );
+}
+
+// Swipeable Card Component
+function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap }) {
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const router = useRouter();
+
+  // Reset animation values when a new profile loads
+  useEffect(() => {
+    translateX.value = withSpring(0);
+    translateY.value = withSpring(0);
+  }, [profile.id]);
+
+  const handleSwipe = async (direction) => {
+    try {
+      await (direction > 0 ? onSwipeRight() : onSwipeLeft());
+      // Success - card will reset when new profile loads via useEffect
+    } catch (error) {
+      // Error - reset card position to allow retry
+      translateX.value = withSpring(0);
+      translateY.value = withSpring(0);
+    }
+  };
+
+  const panGesture = Gesture.Pan()
+    .onUpdate((event) => {
+      translateX.value = event.translationX;
+      translateY.value = event.translationY;
+    })
+    .onEnd((event) => {
+      if (Math.abs(translateX.value) > SWIPE_THRESHOLD) {
+        const direction = translateX.value > 0 ? 1 : -1;
+        translateX.value = withTiming(direction * SCREEN_WIDTH * 1.5, { duration: 300 }, () => {
+          runOnJS(handleSwipe)(direction);
+        });
+      } else {
+        translateX.value = withSpring(0);
+        translateY.value = withSpring(0);
+      }
+    });
+
+  const cardStyle = useAnimatedStyle(() => {
+    const rotate = interpolate(
+      translateX.value,
+      [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
+      [-30, 0, 30],
+      Extrapolate.CLAMP
+    );
+
+    const opacity = interpolate(
+      Math.abs(translateX.value),
+      [0, SWIPE_THRESHOLD],
+      [1, 0.7],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+        { rotate: `${rotate}deg` },
+      ],
+      opacity,
+    };
+  });
+
+  const likeOverlayStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      translateX.value,
+      [0, SWIPE_THRESHOLD],
+      [0, 1],
+      Extrapolate.CLAMP
+    );
+    return { opacity };
+  });
+
+  const nopeOverlayStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      translateX.value,
+      [-SWIPE_THRESHOLD, 0],
+      [1, 0],
+      Extrapolate.CLAMP
+    );
+    return { opacity };
+  });
+
+  return (
+    <View style={{ flex: 1, alignItems: "center", width: "100%" }}>
+      <GestureDetector gesture={panGesture}>
+        <Animated.View style={[{ width: "100%", position: "relative" }, cardStyle]}>
+          <TouchableOpacity
+            onPress={onTap}
+            style={{ width: "100%", position: "relative" }}
+            activeOpacity={0.9}
+          >
+            {profile.photo ? (
+              <Image
+                source={{ uri: profile.photo }}
+                style={{
+                  width: "100%",
+                  height: 360,
+                  borderRadius: 16,
+                  backgroundColor: COLORS.cardBg,
+                }}
+              />
+            ) : (
+              <View
+                style={{
+                  width: "100%",
+                  height: 360,
+                  borderRadius: 16,
+                  backgroundColor: COLORS.cardBg,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{ color: COLORS.text, fontFamily: "Inter_400Regular" }}
+                >
+                  View Profile
+                </Text>
+              </View>
+            )}
+
+            {/* LIKE Overlay */}
+            <Animated.View
+              style={[
+                {
+                  position: "absolute",
+                  top: 60,
+                  left: 30,
+                  borderWidth: 4,
+                  borderColor: "#4ADE80",
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  transform: [{ rotate: "-20deg" }],
+                },
+                likeOverlayStyle,
+              ]}
+              pointerEvents="none"
+            >
+              <Text
+                style={{
+                  color: "#4ADE80",
+                  fontSize: 32,
+                  fontWeight: "800",
+                  fontFamily: "Inter_700Bold",
+                }}
+              >
+                LIKE
+              </Text>
+            </Animated.View>
+
+            {/* NOPE Overlay */}
+            <Animated.View
+              style={[
+                {
+                  position: "absolute",
+                  top: 60,
+                  right: 30,
+                  borderWidth: 4,
+                  borderColor: "#EF4444",
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  transform: [{ rotate: "20deg" }],
+                },
+                nopeOverlayStyle,
+              ]}
+              pointerEvents="none"
+            >
+              <Text
+                style={{
+                  color: "#EF4444",
+                  fontSize: 32,
+                  fontWeight: "800",
+                  fontFamily: "Inter_700Bold",
+                }}
+              >
+                NOPE
+              </Text>
+            </Animated.View>
+            
+            {/* Compatibility Score Badge */}
+            {profile.compatibility_score !== undefined && (
+              <View
+                style={{
+                  position: "absolute",
+                  top: 12,
+                  right: 12,
+                  backgroundColor: COLORS.primary,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 20,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 3.84,
+                  elevation: 5,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontWeight: "700",
+                    fontSize: 14,
+                    fontFamily: "Inter_700Bold",
+                  }}
+                >
+                  {Math.round(profile.compatibility_score * 100)}% Match
+                </Text>
+              </View>
+            )}
+            
+            {/* Liked You Badge */}
+            {profile.liked_you && (
+              <View
+                style={{
+                  position: "absolute",
+                  top: 12,
+                  left: 12,
+                  backgroundColor: "#FF69B4",
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 20,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 3.84,
+                  elevation: 5,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontWeight: "700",
+                    fontSize: 12,
+                    fontFamily: "Inter_700Bold",
+                  }}
+                >
+                  💕 Likes You
+                </Text>
+              </View>
+            )}
+            
+            {/* Swipe Hint */}
+            <View
+              style={{
+                position: "absolute",
+                bottom: 12,
+                left: 0,
+                right: 0,
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: "rgba(0, 0, 0, 0.6)",
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 20,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 13,
+                    fontFamily: "Inter_600SemiBold",
+                  }}
+                >
+                  👈 Swipe or tap to interact 👉
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      </GestureDetector>
+      
+      {/* Name and Info Below Card */}
+      <Text
+        style={{
+          fontSize: 22,
+          fontWeight: "700",
+          marginTop: 16,
+          color: COLORS.text,
+          fontFamily: "Inter_700Bold",
+        }}
+      >
+        {profile.name || "User " + profile.id}
+      </Text>
+      
+      {/* Relationship Goals */}
+      {profile.relationship_goals && (
+        <Text
+          style={{
+            fontSize: 14,
+            color: COLORS.text,
+            opacity: 0.7,
+            marginTop: 4,
+            fontFamily: "Inter_400Regular",
+          }}
+        >
+          Looking for: {profile.relationship_goals}
+        </Text>
+      )}
+      
+      {/* Bio Preview */}
+      {profile.bio && (
+        <Text
+          style={{
+            fontSize: 14,
+            color: COLORS.text,
+            opacity: 0.8,
+            marginTop: 8,
+            textAlign: "center",
+            paddingHorizontal: 24,
+            fontFamily: "Inter_400Regular",
+          }}
+          numberOfLines={2}
+        >
+          {profile.bio}
+        </Text>
+      )}
+      
+      {/* Mutual Interests */}
+      {profile.mutual_interests && profile.mutual_interests.length > 0 && (
+        <View style={{ marginTop: 12, alignItems: "center" }}>
+          <Text
+            style={{
+              fontSize: 12,
+              color: COLORS.text,
+              opacity: 0.6,
+              marginBottom: 6,
+              fontFamily: "Inter_600SemiBold",
+            }}
+          >
+            {profile.mutual_interests.length} Shared Interest{profile.mutual_interests.length > 1 ? 's' : ''}
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              justifyContent: "center",
+              gap: 6,
+              maxWidth: "90%",
+            }}
+          >
+            {profile.mutual_interests.slice(0, 3).map((interest, idx) => (
+              <View
+                key={idx}
+                style={{
+                  backgroundColor: "#EDE9FE",
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: COLORS.primary,
+                }}
+              >
+                <Text
+                  style={{
+                    color: COLORS.primary,
+                    fontSize: 12,
+                    fontWeight: "600",
+                    fontFamily: "Inter_600SemiBold",
+                  }}
+                >
+                  {interest}
+                </Text>
+              </View>
+            ))}
+            {profile.mutual_interests.length > 3 && (
+              <View
+                style={{
+                  backgroundColor: COLORS.cardBg,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 12,
+                }}
+              >
+                <Text
+                  style={{
+                    color: COLORS.text,
+                    fontSize: 12,
+                    opacity: 0.7,
+                    fontFamily: "Inter_400Regular",
+                  }}
+                >
+                  +{profile.mutual_interests.length - 3} more
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
+      
+      {/* Action Buttons */}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "center",
+          gap: 16,
+          marginTop: 20,
+        }}
+      >
+        <TouchableOpacity
+          onPress={onSwipeLeft}
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 32,
+            backgroundColor: COLORS.cardBg,
+            alignItems: "center",
+            justifyContent: "center",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+          }}
+        >
+          <X color={COLORS.error} size={28} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={onSwipeRight}
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 32,
+            backgroundColor: "#EDE7FF",
+            alignItems: "center",
+            justifyContent: "center",
+            shadowColor: COLORS.primary,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.15,
+            shadowRadius: 4,
+            elevation: 3,
+          }}
+        >
+          <Heart color={COLORS.primary} size={28} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
