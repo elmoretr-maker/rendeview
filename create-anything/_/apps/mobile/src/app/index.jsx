@@ -25,6 +25,20 @@ export default function Index() {
         const res = await fetch("/api/profile");
         console.log("[INDEX] Profile fetch status:", res.status);
         
+        // Handle 401 as true unauth (shouldn't happen with QA_BYPASS, but handle it)
+        if (res.status === 401) {
+          console.log("[INDEX] Got 401, redirecting to welcome");
+          router.replace("/welcome");
+          return;
+        }
+
+        // Handle server errors (5xx) or network errors - keep user on profile with error state
+        if (!res.ok && res.status >= 500) {
+          console.error("[INDEX] Server error fetching profile, defaulting to profile page");
+          router.replace("/(tabs)/profile");
+          return;
+        }
+
         if (res.ok) {
           const data = await res.json();
           const user = data?.user;
@@ -68,12 +82,15 @@ export default function Index() {
           return;
         }
       } catch (e) {
-        console.error("[INDEX] Error during route logic:", e);
+        console.error("[INDEX] Network/fetch error during route logic:", e);
+        // Network error while authenticated - default to profile page
+        router.replace("/(tabs)/profile");
+        return;
       }
 
-      // Fallback - if profile fetch fails, go to welcome
-      console.log("[INDEX] Fallback triggered, redirecting to welcome");
-      router.replace("/welcome");
+      // Fallback for other 4xx errors - go to profile with degraded state
+      console.log("[INDEX] Fallback triggered (4xx error), redirecting to profile");
+      router.replace("/(tabs)/profile");
     };
 
     routeNext();

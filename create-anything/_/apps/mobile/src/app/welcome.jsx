@@ -14,11 +14,20 @@ const COLORS = {
 export default function WelcomeBackScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { signIn } = useAuth();
+  const { signIn, auth } = useAuth();
+
+  // Auto-redirect if user becomes authenticated
+  React.useEffect(() => {
+    if (auth) {
+      console.log("[WELCOME] User authenticated, redirecting to index");
+      router.replace("/");
+    }
+  }, [auth, router]);
 
   const handleSignIn = async () => {
     try {
       await signIn();
+      // After successful sign-in, useEffect will handle redirect
     } catch (error) {
       console.error("Sign in error:", error);
     }
