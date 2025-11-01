@@ -3,24 +3,70 @@ async function upload({
   buffer,
   base64
 }) {
-  const response = await fetch(`https://api.createanything.com/v0/upload`, {
+  // Get presigned upload URL from our backend
+  const uploadUrlResponse = await fetch(`/api/objects/upload`, {
     method: "POST",
-    headers: {
-      "Content-Type": buffer ? "application/octet-stream" : "application/json"
-    },
-    body: buffer ? buffer : JSON.stringify({ base64, url })
   });
   
-  if (!response.ok) {
-    const text = await response.text();
-    console.error(`Upload service error (${response.status}):`, text);
-    throw new Error(`Upload service returned ${response.status}: ${text.substring(0, 200)}`);
+  if (!uploadUrlResponse.ok) {
+    const text = await uploadUrlResponse.text();
+    console.error(`Failed to get upload URL (${uploadUrlResponse.status}):`, text);
+    throw new Error(`Failed to get upload URL: ${uploadUrlResponse.status}`);
   }
   
-  const data = await response.json();
+  const { uploadURL } = await uploadUrlResponse.json();
+  
+  // Prepare the file data
+  let fileData;
+  let contentType = "application/octet-stream";
+  
+  if (buffer) {
+    fileData = buffer;
+  } else if (base64) {
+    // Convert base64 to buffer
+    // Remove data URI prefix if present (e.g., "data:image/png;base64,")
+    const base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
+    fileData = Buffer.from(base64Data, 'base64');
+    
+    // Try to detect content type from base64 prefix
+    if (base64.startsWith('data:')) {
+      const match = base64.match(/data:([^;]+);/);
+      if (match) contentType = match[1];
+    }
+  } else if (url) {
+    // Download from URL first
+    const downloadResponse = await fetch(url);
+    if (!downloadResponse.ok) {
+      throw new Error(`Failed to download from URL: ${downloadResponse.status}`);
+    }
+    fileData = Buffer.from(await downloadResponse.arrayBuffer());
+    contentType = downloadResponse.headers.get('content-type') || contentType;
+  } else {
+    throw new Error("No upload source provided");
+  }
+  
+  // Upload to presigned URL
+  const uploadResponse = await fetch(uploadURL, {
+    method: "PUT",
+    headers: {
+      "Content-Type": contentType
+    },
+    body: fileData
+  });
+  
+  if (!uploadResponse.ok) {
+    const text = await uploadResponse.text();
+    console.error(`Upload failed (${uploadResponse.status}):`, text);
+    throw new Error(`Upload failed: ${uploadResponse.status}`);
+  }
+  
+  // Extract the object URL (remove query parameters from presigned URL)
+  const objectUrl = new URL(uploadURL);
+  const finalUrl = `${objectUrl.origin}${objectUrl.pathname}`;
+  
   return {
-    url: data.url,
-    mimeType: data.mimeType || null
+    url: finalUrl,
+    mimeType: contentType
   };
 }
 export { upload };
