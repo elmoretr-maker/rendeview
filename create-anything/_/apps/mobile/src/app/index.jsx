@@ -45,7 +45,7 @@ export default function Index() {
           }
 
           // All checks passed -> main app
-          router.replace("/(tabs)");
+          router.replace("/(tabs)/discovery");
           return;
         }
       } catch (e) {
@@ -53,7 +53,7 @@ export default function Index() {
       }
 
       // Fallback to main tabs if profile fetch fails
-      router.replace("/(tabs)");
+      router.replace("/(tabs)/discovery");
     };
 
     routeNext();
