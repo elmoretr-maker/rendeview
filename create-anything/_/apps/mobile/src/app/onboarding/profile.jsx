@@ -9,6 +9,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from "react-native";
 import * as RNImagePicker from "expo-image-picker";
 import {
@@ -30,6 +31,32 @@ const COLORS = {
   lightGray: "#F3F4F6",
   white: "#FFFFFF",
   error: "#EF4444",
+};
+
+// Interests configuration
+const INTERESTS_CONFIG = {
+  MIN_REQUIRED: 3,
+  MAX_ALLOWED: 7,
+  OPTIONS: [
+    'Anime', 'Astronomy', 'Astrology', 'BBQ & Grilling', 'Basketball', 'Baking', 
+    'Beach', 'Board Games', 'Camping', 'Career Development', 'Cars & Motorcycles',
+    'Chess', 'Clubbing', 'Coffee', 'Comics & Manga', 'Concerts', 'Cooking',
+    'Craft Beer', 'Crafts', 'Crossword Puzzles', 'Cycling', 'DIY Projects',
+    'Dance', 'Drawing', 'Entrepreneurship', 'Fashion', 'Festivals', 'Film & Movies',
+    'Fishing', 'Foodie', 'Gardening', 'Gaming', 'Golf', 'Gym', 'Hiking',
+    'History', 'Home Brewing', 'Interior Design', 'Investing', 'Karaoke',
+    'Kayaking', 'Languages', 'Live Music', 'Magic Tricks', 'Martial Arts',
+    'Meditation', 'Minimalism', 'Mountain Climbing', 'Music', 'Nature Walks',
+    'Networking', 'Networking Events', 'Painting', 'Pets & Animals', 'Philosophy',
+    'Photography', 'Playing Instrument', 'Podcasts', 'Poetry', 'Politics',
+    'Psychology', 'Public Speaking', 'Reading', 'Restaurant Hopping', 'Road Trips',
+    'Rock Climbing', 'Running', 'Science', 'Sculpting', 'Self-improvement',
+    'Singing', 'Skiing', 'Sneakers', 'Snowboarding', 'Soccer', 'Stand-up Comedy',
+    'Streaming', 'Surfing', 'Sustainable Living', 'Swimming', 'Tech & Startups',
+    'Tennis', 'Theater', 'Thrift Shopping', 'Travel', 'Trivia Nights',
+    'Vegan Cooking', 'Video Games', 'Vintage Collecting', 'Volleyball',
+    'Volunteering', 'Wine Bars', 'Wine Tasting', 'Writing', 'Yoga'
+  ]
 };
 
 function limitsForTier(tier) {
@@ -55,7 +82,7 @@ function ConsolidatedProfileOnboardingContent() {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [interests, setInterests] = useState([]);
-  const [newInterest, setNewInterest] = useState("");
+  const [showInterestsModal, setShowInterestsModal] = useState(false);
   
   // Media state
   const [photos, setPhotos] = useState([]);
@@ -250,20 +277,19 @@ function ConsolidatedProfileOnboardingContent() {
     setVideoAccepted(false);
   }, []);
 
-  const addInterest = useCallback(() => {
-    const trimmed = newInterest.trim();
-    if (!trimmed) return;
-    if (interests.length >= 10) {
-      Alert.alert("Limit Reached", "You can add up to 10 interests/hobbies");
-      return;
-    }
-    if (interests.includes(trimmed)) {
-      Alert.alert("Duplicate", "You've already added this interest");
-      return;
-    }
-    setInterests((prev) => [...prev, trimmed]);
-    setNewInterest("");
-  }, [newInterest, interests]);
+  const toggleInterest = useCallback((interest) => {
+    setInterests((prev) => {
+      if (prev.includes(interest)) {
+        return prev.filter((i) => i !== interest);
+      } else {
+        if (prev.length >= INTERESTS_CONFIG.MAX_ALLOWED) {
+          Alert.alert("Limit Reached", `You can select up to ${INTERESTS_CONFIG.MAX_ALLOWED} interests`);
+          return prev;
+        }
+        return [...prev, interest];
+      }
+    });
+  }, []);
 
   const removeInterest = useCallback((interest) => {
     setInterests((prev) => prev.filter((i) => i !== interest));
@@ -278,6 +304,13 @@ function ConsolidatedProfileOnboardingContent() {
       Alert.alert(
         "Photos Required",
         `Please add at least 2 photos (max ${limits.maxPhotos}).`
+      );
+      return;
+    }
+    if (interests.length < INTERESTS_CONFIG.MIN_REQUIRED) {
+      Alert.alert(
+        "Interests Required",
+        `Please select at least ${INTERESTS_CONFIG.MIN_REQUIRED} interests to help us find better matches for you.`
       );
       return;
     }
@@ -357,7 +390,6 @@ function ConsolidatedProfileOnboardingContent() {
             setName("");
             setBio("");
             setInterests([]);
-            setNewInterest("");
             setProgress({ done: 0, total: 0 });
             setError(null);
           },
@@ -456,38 +488,31 @@ function ConsolidatedProfileOnboardingContent() {
 
         {/* Interests field */}
         <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text }}>
-          Interests & Hobbies (Optional)
+          Interests & Hobbies *
         </Text>
-        <View style={{ flexDirection: "row", marginBottom: 8 }}>
-          <TextInput
-            style={{
-              flex: 1,
-              borderWidth: 1,
-              borderColor: "#EAEAEA",
-              borderRadius: 10,
-              padding: 12,
-              fontSize: 16,
-              marginRight: 8,
-            }}
-            placeholder="Add an interest..."
-            value={newInterest}
-            onChangeText={setNewInterest}
-            onSubmitEditing={addInterest}
-          />
-          <TouchableOpacity
-            onPress={addInterest}
-            disabled={!newInterest.trim() || interests.length >= 10}
-            style={{
-              backgroundColor: COLORS.primary,
-              paddingHorizontal: 16,
-              borderRadius: 10,
-              justifyContent: "center",
-              opacity: !newInterest.trim() || interests.length >= 10 ? 0.5 : 1,
-            }}
-          >
-            <Text style={{ color: COLORS.white, fontWeight: "600" }}>Add</Text>
-          </TouchableOpacity>
-        </View>
+        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 12 }}>
+          Select {INTERESTS_CONFIG.MIN_REQUIRED}-{INTERESTS_CONFIG.MAX_ALLOWED} interests to help us find your perfect match
+        </Text>
+        
+        <TouchableOpacity
+          onPress={() => setShowInterestsModal(true)}
+          style={{
+            borderWidth: 1,
+            borderColor: interests.length < INTERESTS_CONFIG.MIN_REQUIRED ? "#FCA5A5" : "#EAEAEA",
+            borderRadius: 10,
+            padding: 12,
+            backgroundColor: interests.length < INTERESTS_CONFIG.MIN_REQUIRED ? "#FEF2F2" : COLORS.white,
+            marginBottom: 12,
+          }}
+        >
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+            <Text style={{ color: interests.length > 0 ? COLORS.text : "#9CA3AF", fontSize: 16 }}>
+              {interests.length > 0 ? `${interests.length} selected` : "Tap to select interests"}
+            </Text>
+            <Ionicons name="chevron-down" size={20} color={COLORS.text} />
+          </View>
+        </TouchableOpacity>
+
         {interests.length > 0 && (
           <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 16 }}>
             {interests.map((interest, idx) => (
@@ -513,7 +538,9 @@ function ConsolidatedProfileOnboardingContent() {
           </View>
         )}
         <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 24 }}>
-          {interests.length}/10 interests
+          {interests.length < INTERESTS_CONFIG.MIN_REQUIRED 
+            ? `${INTERESTS_CONFIG.MIN_REQUIRED - interests.length} more required` 
+            : `${interests.length}/${INTERESTS_CONFIG.MAX_ALLOWED} selected`}
         </Text>
 
         {/* Photos section */}
@@ -836,6 +863,72 @@ function ConsolidatedProfileOnboardingContent() {
           * Required fields
         </Text>
       </ScrollView>
+
+      {/* Interests Selection Modal */}
+      <Modal
+        visible={showInterestsModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowInterestsModal(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: COLORS.white, paddingTop: insets.top }}>
+          {/* Modal Header */}
+          <View style={{ 
+            flexDirection: "row", 
+            justifyContent: "space-between", 
+            alignItems: "center",
+            padding: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: "#E5E7EB"
+          }}>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text }}>
+              Select Interests
+            </Text>
+            <TouchableOpacity onPress={() => setShowInterestsModal(false)}>
+              <Text style={{ color: COLORS.primary, fontSize: 16, fontWeight: "600" }}>Done</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Selection Counter */}
+          <View style={{ padding: 16, backgroundColor: "#F9FAFB" }}>
+            <Text style={{ fontSize: 14, color: COLORS.text, textAlign: "center" }}>
+              {interests.length < INTERESTS_CONFIG.MIN_REQUIRED 
+                ? `Select ${INTERESTS_CONFIG.MIN_REQUIRED - interests.length} more (${interests.length}/${INTERESTS_CONFIG.MIN_REQUIRED} minimum)`
+                : `${interests.length}/${INTERESTS_CONFIG.MAX_ALLOWED} selected`}
+            </Text>
+          </View>
+
+          {/* Interests List */}
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              {INTERESTS_CONFIG.OPTIONS.map((interest) => {
+                const isSelected = interests.includes(interest);
+                return (
+                  <TouchableOpacity
+                    key={interest}
+                    onPress={() => toggleInterest(interest)}
+                    style={{
+                      paddingVertical: 10,
+                      paddingHorizontal: 16,
+                      borderRadius: 20,
+                      borderWidth: 2,
+                      borderColor: isSelected ? COLORS.primary : "#E5E7EB",
+                      backgroundColor: isSelected ? "#EDE9FE" : COLORS.white,
+                    }}
+                  >
+                    <Text style={{ 
+                      color: isSelected ? COLORS.primary : COLORS.text,
+                      fontWeight: isSelected ? "600" : "400"
+                    }}>
+                      {isSelected ? "✓ " : ""}{interest}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }

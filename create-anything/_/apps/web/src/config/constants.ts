@@ -204,6 +204,227 @@ export const TIMEOUTS = {
 };
 
 // ============================================================================
+// USER INTERESTS & HOBBIES CONFIGURATION
+// ============================================================================
+
+export const INTERESTS_CONFIG = {
+  // Minimum interests required
+  MIN_REQUIRED: 3,
+  
+  // Maximum interests allowed
+  MAX_ALLOWED: 7,
+  
+  // Predefined interests/hobbies list
+  OPTIONS: [
+    // Sports & Fitness
+    'Running', 'Yoga', 'Gym', 'Swimming', 'Cycling', 'Hiking', 'Rock Climbing',
+    'Dance', 'Martial Arts', 'Tennis', 'Golf', 'Basketball', 'Soccer', 'Volleyball',
+    
+    // Arts & Creativity
+    'Photography', 'Painting', 'Drawing', 'Music', 'Singing', 'Playing Instrument',
+    'Writing', 'Poetry', 'Film & Movies', 'Theater', 'Sculpting', 'Crafts',
+    
+    // Food & Drink
+    'Cooking', 'Baking', 'Coffee', 'Wine Tasting', 'Craft Beer', 'Foodie',
+    'Vegan Cooking', 'BBQ & Grilling', 'Restaurant Hopping',
+    
+    // Entertainment & Media
+    'Gaming', 'Board Games', 'Video Games', 'Podcasts', 'Reading', 'Comics & Manga',
+    'Anime', 'Streaming', 'Stand-up Comedy', 'Karaoke',
+    
+    // Outdoors & Adventure
+    'Camping', 'Kayaking', 'Surfing', 'Skiing', 'Snowboarding', 'Fishing',
+    'Road Trips', 'Beach', 'Mountain Climbing', 'Nature Walks',
+    
+    // Social & Nightlife
+    'Live Music', 'Concerts', 'Festivals', 'Clubbing', 'Wine Bars', 'Karaoke',
+    'Trivia Nights', 'Networking Events',
+    
+    // Intellectual & Learning
+    'Tech & Startups', 'Science', 'Philosophy', 'Politics', 'Investing',
+    'Languages', 'History', 'Astronomy', 'Psychology', 'Self-improvement',
+    
+    // Lifestyle
+    'Travel', 'Fashion', 'Interior Design', 'Gardening', 'Meditation',
+    'Astrology', 'Volunteering', 'Pets & Animals', 'DIY Projects',
+    'Sustainable Living', 'Minimalism',
+    
+    // Professional
+    'Entrepreneurship', 'Public Speaking', 'Networking', 'Career Development',
+    
+    // Miscellaneous
+    'Thrift Shopping', 'Vintage Collecting', 'Cars & Motorcycles', 'Sneakers',
+    'Home Brewing', 'Crossword Puzzles', 'Chess', 'Magic Tricks'
+  ].sort() // Alphabetically sorted for easy browsing
+};
+
+// ============================================================================
+// USER PREFERENCES & MATCHING CONFIGURATION
+// ============================================================================
+
+export const PREFERENCE_OPTIONS = {
+  // Gender Identity
+  GENDER: [
+    'Man',
+    'Woman',
+    'Non-binary',
+    'Genderqueer',
+    'Genderfluid',
+    'Agender',
+    'Prefer not to say'
+  ],
+  
+  // Sexual Orientation
+  SEXUAL_ORIENTATION: [
+    'Straight',
+    'Gay',
+    'Lesbian',
+    'Bisexual',
+    'Pansexual',
+    'Asexual',
+    'Demisexual',
+    'Queer',
+    'Questioning',
+    'Prefer not to say'
+  ],
+  
+  // Looking For (Gender Preferences)
+  LOOKING_FOR: [
+    'Men',
+    'Women',
+    'Non-binary people',
+    'Everyone'
+  ],
+  
+  // Body Type
+  BODY_TYPE: [
+    'Slim',
+    'Athletic',
+    'Average',
+    'Curvy',
+    'Muscular',
+    'A few extra pounds',
+    'Plus size',
+    'Prefer not to say'
+  ],
+  
+  // Height ranges (in cm for international compatibility)
+  HEIGHT_RANGES: [
+    'Under 150cm (4\'11")',
+    '150-160cm (4\'11"-5\'3")',
+    '160-170cm (5\'3"-5\'7")',
+    '170-180cm (5\'7"-5\'11")',
+    '180-190cm (5\'11"-6\'3")',
+    '190-200cm (6\'3"-6\'7")',
+    'Over 200cm (6\'7")',
+    'Prefer not to say'
+  ],
+  
+  // Education Level
+  EDUCATION: [
+    'High school',
+    'Some college',
+    'Associate degree',
+    'Bachelor\'s degree',
+    'Master\'s degree',
+    'Doctorate/PhD',
+    'Trade school',
+    'Prefer not to say'
+  ],
+  
+  // Relationship Goals
+  RELATIONSHIP_GOALS: [
+    'Casual dating',
+    'Long-term relationship',
+    'Marriage',
+    'Friendship',
+    'Networking',
+    'Not sure yet',
+    'Prefer not to say'
+  ],
+  
+  // Drinking Habits
+  DRINKING: [
+    'Never',
+    'Rarely',
+    'Socially',
+    'Regularly',
+    'Prefer not to say'
+  ],
+  
+  // Smoking Habits
+  SMOKING: [
+    'Never',
+    'Rarely',
+    'Socially',
+    'Regularly',
+    'Trying to quit',
+    'Prefer not to say'
+  ],
+  
+  // Exercise Frequency
+  EXERCISE: [
+    'Never',
+    'Rarely',
+    '1-2 times/week',
+    '3-4 times/week',
+    '5+ times/week',
+    'Daily',
+    'Prefer not to say'
+  ],
+  
+  // Religion
+  RELIGION: [
+    'Agnostic',
+    'Atheist',
+    'Buddhist',
+    'Catholic',
+    'Christian',
+    'Hindu',
+    'Jewish',
+    'Muslim',
+    'Spiritual',
+    'Other',
+    'Prefer not to say'
+  ],
+  
+  // Children Preferences
+  CHILDREN: [
+    'Have children',
+    'Don\'t have, want someday',
+    'Don\'t have, don\'t want',
+    'Don\'t have, open to it',
+    'Prefer not to say'
+  ],
+  
+  // Pets
+  PETS: [
+    'Dog(s)',
+    'Cat(s)',
+    'Both dogs and cats',
+    'Other pets',
+    'No pets',
+    'Want pets',
+    'Allergic to pets',
+    'Prefer not to say'
+  ]
+};
+
+// Preference field importance weights for matching algorithm
+export const PREFERENCE_WEIGHTS = {
+  GENDER_MATCH: 1.0,           // Must match
+  ORIENTATION_MATCH: 1.0,      // Must match
+  INTERESTS_SHARED: 0.3,       // Up to 30% boost
+  RELATIONSHIP_GOALS: 0.2,     // 20% boost if aligned
+  BODY_TYPE_PREFERENCE: 0.1,   // 10% boost
+  EDUCATION_SIMILAR: 0.05,     // 5% boost
+  LIFESTYLE_COMPATIBLE: 0.15,  // 15% boost (drinking, smoking, exercise)
+  CHILDREN_COMPATIBLE: 0.1,    // 10% boost
+  PETS_COMPATIBLE: 0.05,       // 5% boost
+  HEIGHT_PREFERENCE: 0.05      // 5% boost
+};
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 

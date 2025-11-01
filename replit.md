@@ -57,6 +57,19 @@ The application utilizes a client-server architecture. The frontend, a React 18 
 - **Profile Onboarding UX**: Photo requirement banner (minimum 2 photos), enhanced upload progress display with purple banner showing "📤 Uploading X/Y..." with visual progress bar, completion message "✓ All X items uploaded!", 100ms throttling between uploads for smooth visibility, Start Over button with confirmation dialog to clear all photos/videos/fields, back button navigation to membership page, video playback auto-pause after acceptance
 - **Dependencies**: expo-file-system@~19.0.17 for video-to-base64 conversion
 
+**Enhanced Matching System (November 1, 2025):**
+- **Interests System**: Comprehensive dropdown selection with 80+ predefined interests across 9 categories (Sports, Arts, Food, Entertainment, Outdoors, Social, Intellectual, Lifestyle, Professional). Required: 3-7 interests minimum/maximum for profile completion. Mobile UI features full-screen modal picker with multi-select, live counter, and purple highlight for selected items
+- **Preference Fields**: Database schema extended with 13 preference columns - gender, sexual_orientation, looking_for, body_type, height_range, education, relationship_goals, drinking, smoking, exercise, religion, children_preference, pets. All stored as TEXT fields in auth_users table
+- **Matching Algorithm v2**: Enhanced calculateCompatibility function with weighted scoring system:
+  - Base score: 0.3
+  - Interests: Progressive scoring up to +0.40 (1 shared = +0.05, 2 = +0.12, 3 = +0.20, 4 = +0.27, 5+ = +0.35, plus +0.05 bonus for 3+ shared interests)
+  - Relationship goals: +0.15 exact match, +0.10 compatible (e.g., Long-term ↔ Marriage)
+  - Lifestyle compatibility: up to +0.10 (smoking +0.04, drinking +0.03, exercise +0.03)
+  - Activity boost: +0.15 online now, +0.10 active 24h, +0.05 active 7d
+  - Tier similarity: +0.05
+  - Max score: 1.0
+- **Constants Configuration**: All preference options, weights, and interests list centralized in src/config/constants.ts (INTERESTS_CONFIG, PREFERENCE_OPTIONS, PREFERENCE_WEIGHTS)
+
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)
 - **Authentication**: Auth.js

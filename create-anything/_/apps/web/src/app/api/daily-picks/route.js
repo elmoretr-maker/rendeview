@@ -2,27 +2,91 @@ import sql from "@/app/api/utils/sql";
 import { getAuthenticatedUserId, updateLastActive } from "@/app/api/utils/auth";
 
 /**
- * Calculate compatibility score between two users
- * Based on: mutual interests, activity, membership tier
+ * Enhanced compatibility score calculation between two users
+ * Factors: mutual interests (weighted), activity, membership tier, preferences
+ * Score range: 0.0 to 1.0
  */
 function calculateCompatibility(user, candidate) {
-  let score = 0.5; // Base score
+  let score = 0.3; // Base score (reduced from 0.5 to allow more room for compatibility boosts)
   
-  // Mutual interests boost (+0.1 per shared interest, max +0.3)
+  // INTERESTS MATCHING (max +0.35 boost)
   const userInterests = user.interests || [];
   const candidateInterests = candidate.interests || [];
   const mutualInterests = userInterests.filter(i => candidateInterests.includes(i));
-  score += Math.min(mutualInterests.length * 0.1, 0.3);
   
-  // Activity boost (online users get +0.15, active in last day +0.1)
-  if (candidate.immediate_available) {
-    score += 0.15;
-  } else if (candidate.last_active && 
-             new Date(candidate.last_active) > new Date(Date.now() - 24 * 60 * 60 * 1000)) {
-    score += 0.1;
+  if (mutualInterests.length > 0) {
+    // Progressive scoring: 1 shared = +0.05, 2 = +0.12, 3 = +0.20, 4 = +0.27, 5+ = +0.35
+    let interestScore = 0;
+    if (mutualInterests.length === 1) interestScore = 0.05;
+    else if (mutualInterests.length === 2) interestScore = 0.12;
+    else if (mutualInterests.length === 3) interestScore = 0.20;
+    else if (mutualInterests.length === 4) interestScore = 0.27;
+    else interestScore = 0.35; // 5+
+    
+    score += interestScore;
+    
+    // Bonus if they share 3+ interests (deep compatibility)
+    const deepCompatibilityBonus = mutualInterests.length >= 3 ? 0.05 : 0;
+    score += deepCompatibilityBonus;
   }
   
-  // Membership tier similarity (+0.05)
+  // RELATIONSHIP GOALS COMPATIBILITY (max +0.15)
+  if (user.relationship_goals && candidate.relationship_goals) {
+    // Exact match on relationship goals is important
+    if (user.relationship_goals === candidate.relationship_goals) {
+      score += 0.15;
+    } else if (
+      // Compatible goals (e.g., "Long-term relationship" and "Marriage" are compatible)
+      (user.relationship_goals === 'Long-term relationship' && candidate.relationship_goals === 'Marriage') ||
+      (user.relationship_goals === 'Marriage' && candidate.relationship_goals === 'Long-term relationship')
+    ) {
+      score += 0.10;
+    }
+  }
+  
+  // LIFESTYLE COMPATIBILITY (max +0.10)
+  let lifestyleScore = 0;
+  
+  // Smoking compatibility
+  if (user.smoking && candidate.smoking) {
+    const nonSmoker = ['Never', 'Prefer not to say'];
+    const userNonSmoker = nonSmoker.includes(user.smoking);
+    const candidateNonSmoker = nonSmoker.includes(candidate.smoking);
+    if (userNonSmoker === candidateNonSmoker) {
+      lifestyleScore += 0.04;
+    }
+  }
+  
+  // Drinking compatibility
+  if (user.drinking && candidate.drinking) {
+    if (user.drinking === candidate.drinking) {
+      lifestyleScore += 0.03;
+    }
+  }
+  
+  // Exercise compatibility
+  if (user.exercise && candidate.exercise) {
+    const userActive = ['3-4 times/week', '5+ times/week', 'Daily'].includes(user.exercise);
+    const candidateActive = ['3-4 times/week', '5+ times/week', 'Daily'].includes(candidate.exercise);
+    if (userActive === candidateActive) {
+      lifestyleScore += 0.03;
+    }
+  }
+  
+  score += lifestyleScore;
+  
+  // ACTIVITY BOOST (max +0.15)
+  if (candidate.immediate_available) {
+    score += 0.15; // Online now
+  } else if (candidate.last_active && 
+             new Date(candidate.last_active) > new Date(Date.now() - 24 * 60 * 60 * 1000)) {
+    score += 0.10; // Active in last 24 hours
+  } else if (candidate.last_active && 
+             new Date(candidate.last_active) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) {
+    score += 0.05; // Active in last week
+  }
+  
+  // MEMBERSHIP TIER SIMILARITY (+0.05)
   if (user.membership_tier === candidate.membership_tier) {
     score += 0.05;
   }
@@ -40,9 +104,9 @@ export async function GET() {
 
     await updateLastActive(userId);
 
-    // Get current user's profile
+    // Get current user's profile with preferences for matching
     const [currentUser] = await sql`
-      SELECT interests, membership_tier 
+      SELECT interests, membership_tier, relationship_goals, smoking, drinking, exercise
       FROM auth_users 
       WHERE id = ${userId}`;
 
@@ -51,7 +115,8 @@ export async function GET() {
     const existingPicks = await sql`
       SELECT dp.picked_user_id, dp.compatibility_score,
              u.id, u.name, u.image, u.immediate_available, u.bio, 
-             u.membership_tier, u.primary_photo_url, u.interests
+             u.membership_tier, u.primary_photo_url, u.interests,
+             u.relationship_goals, u.smoking, u.drinking, u.exercise
       FROM daily_picks dp
       JOIN auth_users u ON u.id = dp.picked_user_id
       WHERE dp.user_id = ${userId}
@@ -91,7 +156,8 @@ export async function GET() {
     // Get candidates (excluding blocked, liked, matched users)
     const candidates = await sql`
       SELECT u.id, u.name, u.image, u.immediate_available, u.typical_availability,
-             u.primary_photo_url, u.bio, u.membership_tier, u.last_active, u.interests
+             u.primary_photo_url, u.bio, u.membership_tier, u.last_active, u.interests,
+             u.relationship_goals, u.smoking, u.drinking, u.exercise
       FROM auth_users u
       WHERE u.id <> ${userId}
         AND NOT EXISTS (
