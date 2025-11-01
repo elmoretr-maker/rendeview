@@ -43,7 +43,7 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd create-anything/_/apps/mobile && npx --yes expo@latest start --clear --tunnel"
+args = "cd create-anything/_/apps/mobile && npx --yes expo@latest start --tunnel"
 
 [[ports]]
 localPort = 5000
