@@ -273,13 +273,16 @@ export default function SubscriptionScreen() {
           borderBottomColor: "#E5E7EB",
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 8 }}>
+          <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 4 }}>
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          </TouchableOpacity>
           <Ionicons name="diamond" size={28} color={COLORS.primary} />
           <Text style={{ fontSize: 24, fontWeight: "700", color: COLORS.text }}>
             Subscription
           </Text>
         </View>
-        <Text style={{ marginTop: 4, color: COLORS.text, opacity: 0.7 }}>
+        <Text style={{ marginLeft: 60, color: COLORS.text, opacity: 0.7 }}>
           Manage your membership plan
         </Text>
       </View>
