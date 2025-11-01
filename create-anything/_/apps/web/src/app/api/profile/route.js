@@ -11,7 +11,10 @@ export async function GET() {
       SELECT id, name, email, image, role, consent_accepted, consent_at,
              immediate_available, availability_override, timezone, typical_availability,
              membership_tier, primary_photo_url, scheduled_tier, tier_change_at,
-             video_meetings_count, last_video_meeting_at
+             video_meetings_count, last_video_meeting_at, bio, interests,
+             gender, sexual_orientation, looking_for, body_type, height_range,
+             education, relationship_goals, drinking, smoking, exercise,
+             religion, children_preference, pets
       FROM auth_users WHERE id = ${userId} LIMIT 1`;
     const media =
       await sql`SELECT id, type, url, sort_order FROM profile_media WHERE user_id = ${userId} ORDER BY sort_order ASC, id ASC`;
@@ -113,6 +116,32 @@ export async function PUT(request) {
     if (typeof body.primary_photo_url === "string") {
       setClauses.push(`primary_photo_url = $${values.length + 1}`);
       values.push(body.primary_photo_url.trim());
+    }
+    
+    // Bio
+    if (body.bio !== undefined) {
+      setClauses.push(`bio = $${values.length + 1}`);
+      values.push(body.bio);
+    }
+    
+    // Interests (JSONB array)
+    if (body.interests !== undefined) {
+      setClauses.push(`interests = $${values.length + 1}::jsonb`);
+      values.push(JSON.stringify(body.interests));
+    }
+    
+    // Preference fields (all TEXT)
+    const preferenceFields = [
+      'gender', 'sexual_orientation', 'looking_for', 'body_type', 'height_range',
+      'education', 'relationship_goals', 'drinking', 'smoking', 'exercise',
+      'religion', 'children_preference', 'pets'
+    ];
+    
+    for (const field of preferenceFields) {
+      if (body[field] !== undefined) {
+        setClauses.push(`${field} = $${values.length + 1}`);
+        values.push(body[field]);
+      }
     }
 
     if (setClauses.length) {

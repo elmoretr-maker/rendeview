@@ -59,6 +59,23 @@ const INTERESTS_CONFIG = {
   ]
 };
 
+// Preference options configuration
+const PREFERENCE_OPTIONS = {
+  GENDER: ['Man', 'Woman', 'Non-binary', 'Genderqueer', 'Genderfluid', 'Agender', 'Prefer not to say'],
+  SEXUAL_ORIENTATION: ['Straight', 'Gay', 'Lesbian', 'Bisexual', 'Pansexual', 'Asexual', 'Demisexual', 'Queer', 'Questioning', 'Prefer not to say'],
+  LOOKING_FOR: ['Men', 'Women', 'Non-binary people', 'Everyone'],
+  BODY_TYPE: ['Slim', 'Athletic', 'Average', 'Curvy', 'Muscular', 'A few extra pounds', 'Plus size', 'Prefer not to say'],
+  HEIGHT_RANGES: ['Under 150cm (4\'11")', '150-160cm (4\'11"-5\'3")', '160-170cm (5\'3"-5\'7")', '170-180cm (5\'7"-5\'11")', '180-190cm (5\'11"-6\'3")', '190-200cm (6\'3"-6\'7")', 'Over 200cm (6\'7")', 'Prefer not to say'],
+  EDUCATION: ['High school', 'Some college', 'Associate degree', 'Bachelor\'s degree', 'Master\'s degree', 'Doctorate/PhD', 'Trade school', 'Prefer not to say'],
+  RELATIONSHIP_GOALS: ['Casual dating', 'Long-term relationship', 'Marriage', 'Friendship', 'Networking', 'Not sure yet', 'Prefer not to say'],
+  DRINKING: ['Never', 'Rarely', 'Socially', 'Regularly', 'Prefer not to say'],
+  SMOKING: ['Never', 'Rarely', 'Socially', 'Regularly', 'Trying to quit', 'Prefer not to say'],
+  EXERCISE: ['Never', 'Rarely', '1-2 times/week', '3-4 times/week', '5+ times/week', 'Daily', 'Prefer not to say'],
+  RELIGION: ['Agnostic', 'Atheist', 'Buddhist', 'Catholic', 'Christian', 'Hindu', 'Jewish', 'Muslim', 'Spiritual', 'Other', 'Prefer not to say'],
+  CHILDREN: ['Have children', 'Don\'t have, want someday', 'Don\'t have, don\'t want', 'Don\'t have, open to it', 'Prefer not to say'],
+  PETS: ['Dog(s)', 'Cat(s)', 'Both dogs and cats', 'Other pets', 'No pets', 'Want pets', 'Allergic to pets', 'Prefer not to say']
+};
+
 function limitsForTier(tier) {
   const t = (tier || "free").toLowerCase();
   switch (t) {
@@ -83,6 +100,22 @@ function ConsolidatedProfileOnboardingContent() {
   const [bio, setBio] = useState("");
   const [interests, setInterests] = useState([]);
   const [showInterestsModal, setShowInterestsModal] = useState(false);
+  
+  // Preference fields
+  const [gender, setGender] = useState("");
+  const [sexualOrientation, setSexualOrientation] = useState("");
+  const [lookingFor, setLookingFor] = useState("");
+  const [bodyType, setBodyType] = useState("");
+  const [heightRange, setHeightRange] = useState("");
+  const [education, setEducation] = useState("");
+  const [relationshipGoals, setRelationshipGoals] = useState("");
+  const [drinking, setDrinking] = useState("");
+  const [smoking, setSmoking] = useState("");
+  const [exercise, setExercise] = useState("");
+  const [religion, setReligion] = useState("");
+  const [childrenPreference, setChildrenPreference] = useState("");
+  const [pets, setPets] = useState("");
+  const [showPreferenceModal, setShowPreferenceModal] = useState(null);
   
   // Media state
   const [photos, setPhotos] = useState([]);
@@ -134,6 +167,20 @@ function ConsolidatedProfileOnboardingContent() {
             if (user?.interests && Array.isArray(user.interests)) {
               setInterests(user.interests);
             }
+            // Load preference fields
+            if (user?.gender) setGender(user.gender);
+            if (user?.sexual_orientation) setSexualOrientation(user.sexual_orientation);
+            if (user?.looking_for) setLookingFor(user.looking_for);
+            if (user?.body_type) setBodyType(user.body_type);
+            if (user?.height_range) setHeightRange(user.height_range);
+            if (user?.education) setEducation(user.education);
+            if (user?.relationship_goals) setRelationshipGoals(user.relationship_goals);
+            if (user?.drinking) setDrinking(user.drinking);
+            if (user?.smoking) setSmoking(user.smoking);
+            if (user?.exercise) setExercise(user.exercise);
+            if (user?.religion) setReligion(user.religion);
+            if (user?.children_preference) setChildrenPreference(user.children_preference);
+            if (user?.pets) setPets(user.pets);
           }
         }
       } catch (e) {
@@ -344,7 +391,7 @@ function ConsolidatedProfileOnboardingContent() {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      // Save profile data with media
+      // Save profile data with media and preferences
       const res = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -353,6 +400,19 @@ function ConsolidatedProfileOnboardingContent() {
           bio: bio.trim() || null,
           interests: interests.length > 0 ? interests : null,
           media,
+          gender: gender || null,
+          sexual_orientation: sexualOrientation || null,
+          looking_for: lookingFor || null,
+          body_type: bodyType || null,
+          height_range: heightRange || null,
+          education: education || null,
+          relationship_goals: relationshipGoals || null,
+          drinking: drinking || null,
+          smoking: smoking || null,
+          exercise: exercise || null,
+          religion: religion || null,
+          children_preference: childrenPreference || null,
+          pets: pets || null,
         }),
       });
       
@@ -390,6 +450,19 @@ function ConsolidatedProfileOnboardingContent() {
             setName("");
             setBio("");
             setInterests([]);
+            setGender("");
+            setSexualOrientation("");
+            setLookingFor("");
+            setBodyType("");
+            setHeightRange("");
+            setEducation("");
+            setRelationshipGoals("");
+            setDrinking("");
+            setSmoking("");
+            setExercise("");
+            setReligion("");
+            setChildrenPreference("");
+            setPets("");
             setProgress({ done: 0, total: 0 });
             setError(null);
           },
@@ -542,6 +615,54 @@ function ConsolidatedProfileOnboardingContent() {
             ? `${INTERESTS_CONFIG.MIN_REQUIRED - interests.length} more required` 
             : `${interests.length}/${INTERESTS_CONFIG.MAX_ALLOWED} selected`}
         </Text>
+
+        {/* Preferences Section */}
+        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8, color: COLORS.text }}>
+          About You (Optional)
+        </Text>
+        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 16 }}>
+          Help us find better matches by sharing more about yourself
+        </Text>
+
+        {/* Preference Fields in Grid */}
+        <View style={{ gap: 12, marginBottom: 24 }}>
+          {[
+            { label: "Gender", value: gender, setter: setGender, options: PREFERENCE_OPTIONS.GENDER },
+            { label: "Sexual Orientation", value: sexualOrientation, setter: setSexualOrientation, options: PREFERENCE_OPTIONS.SEXUAL_ORIENTATION },
+            { label: "Looking For", value: lookingFor, setter: setLookingFor, options: PREFERENCE_OPTIONS.LOOKING_FOR },
+            { label: "Body Type", value: bodyType, setter: setBodyType, options: PREFERENCE_OPTIONS.BODY_TYPE },
+            { label: "Height", value: heightRange, setter: setHeightRange, options: PREFERENCE_OPTIONS.HEIGHT_RANGES },
+            { label: "Education", value: education, setter: setEducation, options: PREFERENCE_OPTIONS.EDUCATION },
+            { label: "Relationship Goals", value: relationshipGoals, setter: setRelationshipGoals, options: PREFERENCE_OPTIONS.RELATIONSHIP_GOALS },
+            { label: "Drinking", value: drinking, setter: setDrinking, options: PREFERENCE_OPTIONS.DRINKING },
+            { label: "Smoking", value: smoking, setter: setSmoking, options: PREFERENCE_OPTIONS.SMOKING },
+            { label: "Exercise", value: exercise, setter: setExercise, options: PREFERENCE_OPTIONS.EXERCISE },
+            { label: "Religion", value: religion, setter: setReligion, options: PREFERENCE_OPTIONS.RELIGION },
+            { label: "Children", value: childrenPreference, setter: setChildrenPreference, options: PREFERENCE_OPTIONS.CHILDREN },
+            { label: "Pets", value: pets, setter: setPets, options: PREFERENCE_OPTIONS.PETS },
+          ].map((field, idx) => (
+            <View key={idx}>
+              <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text }}>{field.label}</Text>
+              <TouchableOpacity
+                onPress={() => setShowPreferenceModal(field)}
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#EAEAEA",
+                  borderRadius: 10,
+                  padding: 12,
+                  backgroundColor: COLORS.white,
+                }}
+              >
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                  <Text style={{ color: field.value ? COLORS.text : "#9CA3AF", fontSize: 16 }}>
+                    {field.value || `Select ${field.label.toLowerCase()}`}
+                  </Text>
+                  <Ionicons name="chevron-down" size={20} color={COLORS.text} />
+                </View>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
 
         {/* Photos section */}
         <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text }}>
@@ -928,6 +1049,71 @@ function ConsolidatedProfileOnboardingContent() {
             </View>
           </ScrollView>
         </View>
+      </Modal>
+
+      {/* Preference Selection Modal */}
+      <Modal
+        visible={showPreferenceModal !== null}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowPreferenceModal(null)}
+      >
+        {showPreferenceModal && (
+          <View style={{ flex: 1, backgroundColor: COLORS.white, paddingTop: insets.top }}>
+            {/* Modal Header */}
+            <View style={{ 
+              flexDirection: "row", 
+              justifyContent: "space-between", 
+              alignItems: "center",
+              padding: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: "#E5E7EB"
+            }}>
+              <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text }}>
+                Select {showPreferenceModal.label}
+              </Text>
+              <TouchableOpacity onPress={() => setShowPreferenceModal(null)}>
+                <Text style={{ color: COLORS.primary, fontSize: 16, fontWeight: "600" }}>Done</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Options List */}
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
+              {showPreferenceModal.options.map((option) => {
+                const isSelected = showPreferenceModal.value === option;
+                return (
+                  <TouchableOpacity
+                    key={option}
+                    onPress={() => {
+                      showPreferenceModal.setter(option);
+                      setShowPreferenceModal(null);
+                    }}
+                    style={{
+                      paddingVertical: 14,
+                      paddingHorizontal: 16,
+                      borderRadius: 10,
+                      borderWidth: 1,
+                      borderColor: isSelected ? COLORS.primary : "#E5E7EB",
+                      backgroundColor: isSelected ? "#EDE9FE" : COLORS.white,
+                      marginBottom: 10,
+                    }}
+                  >
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                      <Text style={{ 
+                        color: isSelected ? COLORS.primary : COLORS.text,
+                        fontWeight: isSelected ? "600" : "400",
+                        fontSize: 16
+                      }}>
+                        {option}
+                      </Text>
+                      {isSelected && <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} />}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
       </Modal>
     </KeyboardAvoidingView>
   );
