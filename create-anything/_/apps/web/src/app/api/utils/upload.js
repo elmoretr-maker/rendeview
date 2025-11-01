@@ -1,20 +1,13 @@
+import { ObjectStorageService } from '../../../../server/objectStorage.js';
+
 async function upload({
   url,
   buffer,
   base64
 }) {
-  // Get presigned upload URL from our backend
-  const uploadUrlResponse = await fetch(`/api/objects/upload`, {
-    method: "POST",
-  });
-  
-  if (!uploadUrlResponse.ok) {
-    const text = await uploadUrlResponse.text();
-    console.error(`Failed to get upload URL (${uploadUrlResponse.status}):`, text);
-    throw new Error(`Failed to get upload URL: ${uploadUrlResponse.status}`);
-  }
-  
-  const { uploadURL } = await uploadUrlResponse.json();
+  // Get presigned upload URL directly from ObjectStorageService
+  const objectStorageService = new ObjectStorageService();
+  const uploadURL = await objectStorageService.getObjectEntityUploadURL();
   
   // Prepare the file data
   let fileData;
