@@ -11,17 +11,19 @@ The application utilizes a client-server architecture with a React 18 frontend e
 
 The system incorporates a 4-tier membership model (Free, Casual, Dating, Business) governing media limits, chat durations, and meeting caps, enforced both client-side and via backend API. A real-time video call extension system allows paid extensions with synchronized timers. Safety features include a 4-strike moderation logic. Core features include smart matching with prioritization, mutual interests highlighting, activity-based matching, conversation starters, Daily Picks, and Reverse Discovery (profile viewers). Media management supports photo uploads and camera-only video recording with tier-based limits. Revenue-protection downgrade flows are implemented for subscription management.
 
-**Authentication Flow (November 1, 2025):** The application implements a comprehensive two-step traffic check sequence at the root path (`/`) that ensures all users land on valid pages:
+**Authentication Flow (November 1, 2025):** The application implements comprehensive global authentication protection across all routes:
 
-**Step 1 - Authentication Check:** Backend-first authentication query (compatible with QA_BYPASS and real sessions). 401 response routes to `/welcome` (Sign-In page). Success proceeds to Step 2.
+**Global Authentication Guard** (`_layout.jsx`): Runs on EVERY navigation event using Expo Router's `usePathname()` and `useSegments()` hooks. The guard protects all routes except defined public pages, redirecting unauthenticated users attempting to access protected content to `/welcome`. Public routes include: `/welcome`, all `/onboarding/*` pages. All other routes (discovery, matches, messages, profile viewing, settings, video calls) require authentication.
 
-**Step 2 - Onboarding Completion Check:** Sequential gates validate consent acceptance, membership tier selection, and profile completion (name + 2 photos minimum). Incomplete onboarding routes to first missing step. Complete onboarding routes to `/discovery` (Main Application Dashboard).
+**Step 1 - Authentication Check** (Index `/`): Backend-first authentication query (compatible with QA_BYPASS and real sessions). Uses absolute URL with AbortController timeout (5s) to prevent cold-start hangs. 401 response routes to `/welcome` (Sign-In page). Success proceeds to Step 2.
+
+**Step 2 - Onboarding Completion Check** (Index `/`): Sequential gates validate consent acceptance, membership tier selection, and profile completion (name + 2 photos minimum). Incomplete onboarding routes to first missing step. Complete onboarding routes to `/discovery` (Main Application Dashboard).
 
 **Welcome Back Page** (`/welcome`): Universal entry point for unauthenticated users with "Sign In" and "Join Now" CTAs. Auto-redirects when authenticated.
 
-**Error Handling:** Distinguishes true unauthenticated state (401) from server errors (5xx), provides graceful degradation, prevents authentication loops.
+**Error Handling:** Distinguishes true unauthenticated state (401) from server errors (5xx), timeout errors from network errors, provides graceful degradation, prevents authentication loops.
 
-**Discovery-First UX:** Returning users with complete onboarding land directly on Discovery page (matching system), ready to start connecting.
+**Discovery-First UX:** Returning users with complete onboarding land directly on Discovery page (matching system), ready to start connecting. Deep links and page reloads to protected routes are properly guarded and redirect unauthenticated users to welcome page.
 
 UX enhancements include optimistic UI updates for immediate feedback, `ErrorBoundary` components for critical sections, and loading skeletons for improved perceived performance. Security measures include webhook monitoring, idempotency keys for payment processing, database-backed rate limiting on critical endpoints, and database constraints for data integrity. A unified pricing structure is sourced from configuration.
 
