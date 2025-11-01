@@ -347,7 +347,7 @@ export default function Profile() {
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => router.push("/onboarding/video")}
+              onPress={() => router.push("/onboarding/profile")}
               style={{
                 backgroundColor: COLORS.primary,
                 paddingHorizontal: 12,
@@ -362,14 +362,14 @@ export default function Profile() {
                   fontFamily: "Inter_600SemiBold",
                 }}
               >
-                Re-record
+                Edit Profile
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       ) : (
         <TouchableOpacity
-          onPress={() => router.push("/onboarding/video")}
+          onPress={() => router.push("/onboarding/profile")}
           style={{
             backgroundColor: COLORS.lightGray,
             paddingVertical: 12,
@@ -388,7 +388,7 @@ export default function Profile() {
               fontFamily: "Inter_600SemiBold",
             }}
           >
-            Record Profile Video
+            Add Profile Video
           </Text>
         </TouchableOpacity>
       )}

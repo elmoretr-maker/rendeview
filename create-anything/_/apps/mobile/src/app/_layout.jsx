@@ -80,22 +80,24 @@ function RootGate() {
       currentPath === route || currentPath.startsWith(route) || pathname === `/${route}`
     );
 
-    // Special case: index route is protected (it handles onboarding checks)
+    // Special case: index route handles its own backend auth check (supports QA_BYPASS)
     const isIndexRoute = currentPath === '' || pathname === '/';
 
     console.log("[GLOBAL AUTH GUARD] isPublicRoute:", isPublicRoute);
+    console.log("[GLOBAL AUTH GUARD] isIndexRoute:", isIndexRoute);
 
     // GUARD LOGIC: Redirect unauthenticated users trying to access protected routes
-    if (!isAuthenticated && !isPublicRoute) {
+    // EXCEPT index route, which performs its own backend authentication check
+    if (!isAuthenticated && !isPublicRoute && !isIndexRoute) {
       console.log("[GLOBAL AUTH GUARD] ❌ BLOCKED: Unauthenticated user on protected route");
       console.log("[GLOBAL AUTH GUARD] → Redirecting to /welcome");
       router.replace("/welcome");
       return;
     }
 
-    // If authenticated and on index, proceed with onboarding checks (handled in index.jsx)
-    if (isAuthenticated && isIndexRoute) {
-      console.log("[GLOBAL AUTH GUARD] ✅ Authenticated user on index - proceeding to onboarding checks");
+    // Index route always allowed - it handles backend auth check and routing
+    if (isIndexRoute) {
+      console.log("[GLOBAL AUTH GUARD] ✅ Index route - allowing backend auth check");
       return;
     }
 
