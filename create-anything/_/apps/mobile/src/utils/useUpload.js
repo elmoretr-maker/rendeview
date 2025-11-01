@@ -22,10 +22,9 @@ function useUpload() {
           });
         } else if (asset.uri) {
           // Videos or assets without base64 - convert to base64
-          const FileSystemModule = await import('expo-file-system');
-          const FileSystem = FileSystemModule.default || FileSystemModule;
-          const base64Data = await FileSystem.readAsStringAsync(asset.uri, {
-            encoding: FileSystem.EncodingType.Base64,
+          const { readAsStringAsync, EncodingType } = await import('expo-file-system');
+          const base64Data = await readAsStringAsync(asset.uri, {
+            encoding: EncodingType.Base64,
           });
           response = await fetch("/api/upload-base64", {
             method: "POST",
