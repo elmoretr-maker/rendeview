@@ -420,7 +420,43 @@ export default function RemoteProfile() {
           ))}
       </View>
 
-      {/* About / Availability */}
+      {/* Membership Tier & Status */}
+      <View style={{ flexDirection: "row", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
+        {user?.membership_tier && (
+          <View
+            style={{
+              backgroundColor: COLORS.primary,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 16,
+            }}
+          >
+            <Text style={{ color: "#fff", fontSize: 12, fontWeight: "700", fontFamily: "Inter_700Bold" }}>
+              {user.membership_tier.charAt(0).toUpperCase() + user.membership_tier.slice(1)} Member
+            </Text>
+          </View>
+        )}
+        {user?.immediate_available && (
+          <View
+            style={{
+              backgroundColor: "#10B981",
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#fff" }} />
+            <Text style={{ color: "#fff", fontSize: 12, fontWeight: "700", fontFamily: "Inter_700Bold" }}>
+              Online Now
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* About / Bio */}
       <Text
         style={{
           fontWeight: "700",
@@ -437,10 +473,212 @@ export default function RemoteProfile() {
           color: COLORS.text,
           opacity: 0.8,
           fontFamily: "Inter_400Regular",
+          lineHeight: 20,
         }}
       >
-        No bio provided.
+        {user?.bio || "No bio provided."}
       </Text>
+
+      {/* Interests */}
+      {user?.interests && Array.isArray(user.interests) && user.interests.length > 0 && (
+        <>
+          <Text
+            style={{
+              fontWeight: "700",
+              marginTop: 16,
+              marginBottom: 8,
+              color: COLORS.text,
+              fontFamily: "Inter_600SemiBold",
+            }}
+          >
+            Interests & Hobbies
+          </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {user.interests.map((interest, idx) => (
+              <View
+                key={idx}
+                style={{
+                  backgroundColor: "#EDE7FF",
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    color: COLORS.primary,
+                    fontSize: 13,
+                    fontWeight: "600",
+                    fontFamily: "Inter_600SemiBold",
+                  }}
+                >
+                  {interest}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </>
+      )}
+
+      {/* Personal Details */}
+      <Text
+        style={{
+          fontWeight: "700",
+          marginTop: 16,
+          marginBottom: 8,
+          color: COLORS.text,
+          fontFamily: "Inter_600SemiBold",
+        }}
+      >
+        Personal Details
+      </Text>
+      <View style={{ gap: 6 }}>
+        {user?.gender && (
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ color: COLORS.text, opacity: 0.6, fontFamily: "Inter_400Regular", width: 140 }}>
+              Gender:
+            </Text>
+            <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular", fontWeight: "600" }}>
+              {user.gender}
+            </Text>
+          </View>
+        )}
+        {user?.sexual_orientation && (
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ color: COLORS.text, opacity: 0.6, fontFamily: "Inter_400Regular", width: 140 }}>
+              Orientation:
+            </Text>
+            <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular", fontWeight: "600" }}>
+              {user.sexual_orientation}
+            </Text>
+          </View>
+        )}
+        {user?.looking_for && (
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ color: COLORS.text, opacity: 0.6, fontFamily: "Inter_400Regular", width: 140 }}>
+              Looking For:
+            </Text>
+            <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular", fontWeight: "600" }}>
+              {user.looking_for}
+            </Text>
+          </View>
+        )}
+        {user?.relationship_goals && (
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ color: COLORS.text, opacity: 0.6, fontFamily: "Inter_400Regular", width: 140 }}>
+              Relationship Goals:
+            </Text>
+            <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular", fontWeight: "600" }}>
+              {user.relationship_goals}
+            </Text>
+          </View>
+        )}
+        {user?.height_range && (
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ color: COLORS.text, opacity: 0.6, fontFamily: "Inter_400Regular", width: 140 }}>
+              Height:
+            </Text>
+            <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular", fontWeight: "600" }}>
+              {user.height_range}
+            </Text>
+          </View>
+        )}
+        {user?.body_type && (
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ color: COLORS.text, opacity: 0.6, fontFamily: "Inter_400Regular", width: 140 }}>
+              Body Type:
+            </Text>
+            <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular", fontWeight: "600" }}>
+              {user.body_type}
+            </Text>
+          </View>
+        )}
+        {user?.education && (
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ color: COLORS.text, opacity: 0.6, fontFamily: "Inter_400Regular", width: 140 }}>
+              Education:
+            </Text>
+            <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular", fontWeight: "600" }}>
+              {user.education}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* Lifestyle */}
+      <Text
+        style={{
+          fontWeight: "700",
+          marginTop: 16,
+          marginBottom: 8,
+          color: COLORS.text,
+          fontFamily: "Inter_600SemiBold",
+        }}
+      >
+        Lifestyle
+      </Text>
+      <View style={{ gap: 6 }}>
+        {user?.drinking && (
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ color: COLORS.text, opacity: 0.6, fontFamily: "Inter_400Regular", width: 140 }}>
+              Drinking:
+            </Text>
+            <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular", fontWeight: "600" }}>
+              {user.drinking}
+            </Text>
+          </View>
+        )}
+        {user?.smoking && (
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ color: COLORS.text, opacity: 0.6, fontFamily: "Inter_400Regular", width: 140 }}>
+              Smoking:
+            </Text>
+            <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular", fontWeight: "600" }}>
+              {user.smoking}
+            </Text>
+          </View>
+        )}
+        {user?.exercise && (
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ color: COLORS.text, opacity: 0.6, fontFamily: "Inter_400Regular", width: 140 }}>
+              Exercise:
+            </Text>
+            <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular", fontWeight: "600" }}>
+              {user.exercise}
+            </Text>
+          </View>
+        )}
+        {user?.religion && (
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ color: COLORS.text, opacity: 0.6, fontFamily: "Inter_400Regular", width: 140 }}>
+              Religion:
+            </Text>
+            <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular", fontWeight: "600" }}>
+              {user.religion}
+            </Text>
+          </View>
+        )}
+        {user?.children_preference && (
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ color: COLORS.text, opacity: 0.6, fontFamily: "Inter_400Regular", width: 140 }}>
+              Children:
+            </Text>
+            <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular", fontWeight: "600" }}>
+              {user.children_preference}
+            </Text>
+          </View>
+        )}
+        {user?.pets && (
+          <View style={{ flexDirection: "row" }}>
+            <Text style={{ color: COLORS.text, opacity: 0.6, fontFamily: "Inter_400Regular", width: 140 }}>
+              Pets:
+            </Text>
+            <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular", fontWeight: "600" }}>
+              {user.pets}
+            </Text>
+          </View>
+        )}
+      </View>
 
       <Text
         style={{
