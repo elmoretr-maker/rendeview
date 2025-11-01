@@ -18,7 +18,6 @@ import {
   useMicrophonePermissions,
 } from "expo-camera";
 import { VideoView, useVideoPlayer } from "expo-video";
-// Force re-import of useUpload hook with updated FileSystem static import
 import useUpload from "@/utils/useUpload";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
