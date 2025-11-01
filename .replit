@@ -69,10 +69,6 @@ externalPort = 3002
 localPort = 43479
 externalPort = 3000
 
-[[ports]]
-localPort = 43861
-externalPort = 4200
-
 [deployment]
 deploymentTarget = "vm"
 run = ["bash", "-c", "cd create-anything/_/apps/web && npm run dev"]
