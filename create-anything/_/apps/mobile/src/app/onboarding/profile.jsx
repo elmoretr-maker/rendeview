@@ -12,6 +12,7 @@ import {
   Modal,
 } from "react-native";
 import * as RNImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 import {
   CameraView,
   useCameraPermissions,
@@ -382,8 +383,12 @@ function ConsolidatedProfileOnboardingContent() {
 
       // Upload video if accepted
       if (videoAsset && videoAccepted) {
+        // Convert video to base64 for upload
+        const base64Data = await FileSystem.readAsStringAsync(videoAsset.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
         const { url: vurl, error: vErr } = await upload({
-          reactNativeAsset: { uri: videoAsset.uri, mimeType: "video/mp4" },
+          base64: base64Data,
         });
         if (vErr) throw new Error(vErr);
         media.push({ type: "video", url: vurl, sort_order: media.length });
