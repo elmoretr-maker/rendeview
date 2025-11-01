@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  Pressable,
   ScrollView,
   ActivityIndicator,
   Alert,
@@ -274,7 +275,7 @@ export default function SubscriptionScreen() {
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 8 }}>
-          <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 4 }}>
+          <TouchableOpacity onPress={() => router.push("/(tabs)/profile")} style={{ marginRight: 4 }}>
             <Ionicons name="arrow-back" size={24} color={COLORS.text} />
           </TouchableOpacity>
           <Ionicons name="diamond" size={28} color={COLORS.primary} />
