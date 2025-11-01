@@ -60,7 +60,7 @@ The application utilizes a client-server architecture. The frontend, a React 18 
 **Enhanced Matching System (November 1, 2025):**
 - **Interests System**: Comprehensive dropdown selection with 80+ predefined interests across 9 categories (Sports, Arts, Food, Entertainment, Outdoors, Social, Intellectual, Lifestyle, Professional). Required: 3-7 interests minimum/maximum for profile completion. Mobile UI features full-screen modal picker with multi-select, live counter, and purple highlight for selected items
 - **Preference Fields**: Database schema extended with 13 preference columns - gender, sexual_orientation, looking_for, body_type, height_range, education, relationship_goals, drinking, smoking, exercise, religion, children_preference, pets. All stored as TEXT fields in auth_users table
-- **Matching Algorithm v2**: Enhanced calculateCompatibility function with weighted scoring system:
+- **Matching Algorithm v2**: Shared compatibility calculator (src/utils/calculateCompatibility.js) with weighted scoring system used by both Discovery and Daily Picks APIs:
   - Base score: 0.3
   - Interests: Progressive scoring up to +0.40 (1 shared = +0.05, 2 = +0.12, 3 = +0.20, 4 = +0.27, 5+ = +0.35, plus +0.05 bonus for 3+ shared interests)
   - Relationship goals: +0.15 exact match, +0.10 compatible (e.g., Long-term ↔ Marriage)
@@ -68,7 +68,9 @@ The application utilizes a client-server architecture. The frontend, a React 18 
   - Activity boost: +0.15 online now, +0.10 active 24h, +0.05 active 7d
   - Tier similarity: +0.05
   - Max score: 1.0
+- **Discovery UI**: Mobile discovery cards display compatibility percentage badge (top-right), "Likes You" indicator (top-left), relationship goals, bio preview (2 lines), and shared interests (top 3 + count) with purple highlighting
 - **Constants Configuration**: All preference options, weights, and interests list centralized in src/config/constants.ts (INTERESTS_CONFIG, PREFERENCE_OPTIONS, PREFERENCE_WEIGHTS)
+- **Code Organization**: Single source of truth for compatibility calculation prevents algorithm drift between discovery and daily picks features
 
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)
