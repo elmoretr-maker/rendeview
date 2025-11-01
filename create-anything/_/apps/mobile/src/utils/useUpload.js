@@ -21,8 +21,18 @@ function useUpload() {
             body: JSON.stringify({ base64: asset.base64 }),
           });
         } else if (asset.uri) {
-          // Videos need base64 conversion - this will be handled by the caller
-          throw new Error("Video upload requires base64 data. Please convert video to base64 before uploading.");
+          // Videos or assets without base64 - convert to base64
+          const { readAsStringAsync, EncodingType } = await import('expo-file-system');
+          const base64Data = await readAsStringAsync(asset.uri, {
+            encoding: EncodingType.Base64,
+          });
+          response = await fetch("/api/upload-base64", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ base64: base64Data }),
+          });
         } else {
           throw new Error("Asset missing both base64 and uri");
         }
