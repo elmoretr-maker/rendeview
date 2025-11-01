@@ -22,7 +22,8 @@ function useUpload() {
           });
         } else if (asset.uri) {
           // Videos or assets without base64 - convert to base64
-          const FileSystem = await import('expo-file-system');
+          const FileSystemModule = await import('expo-file-system');
+          const FileSystem = FileSystemModule.default || FileSystemModule;
           const base64Data = await FileSystem.readAsStringAsync(asset.uri, {
             encoding: FileSystem.EncodingType.Base64,
           });
