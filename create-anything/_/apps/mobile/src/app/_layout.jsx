@@ -1,5 +1,5 @@
 import { useAuth } from "@/utils/auth/useAuth";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, usePathname, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -34,10 +34,12 @@ export default function RootLayout() {
   );
 }
 
-// --- NEW/REINFORCED AUTH GATE COMPONENT ---
+// --- GLOBAL AUTHENTICATION GUARD ---
 function RootGate() {
   const { initiate, isReady, isAuthenticated, auth } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const segments = useSegments();
 
   // 1. Initialize Auth on mount
   useEffect(() => {
@@ -51,42 +53,84 @@ function RootGate() {
     }
   }, [isReady]);
 
-  // 3. MAIN REDIRECTION LOGIC (Runs once when isReady becomes true)
+  // 3. GLOBAL AUTHENTICATION PROTECTION
+  // This runs on EVERY navigation to protect ALL routes
   useEffect(() => {
     if (!isReady) return;
 
-    if (isAuthenticated) {
-      // If authenticated, go to the primary profile check page (root path '/')
-      router.replace("/"); // CHANGED from "/index" to "/" to match expo-router root
-    } else {
-      // If not authenticated, go straight to the welcome screen.
-      router.replace("/onboarding/welcome");
+    // Define PUBLIC routes (accessible without authentication)
+    const PUBLIC_ROUTES = [
+      'welcome',
+      'onboarding/welcome',
+      'onboarding/consent',
+      'onboarding/data-consent-required',
+      'onboarding/membership',
+      'onboarding/profile',
+    ];
+
+    // Build current path from segments for comparison
+    const currentPath = segments.join('/');
+    
+    console.log("[GLOBAL AUTH GUARD] Checking route:", pathname);
+    console.log("[GLOBAL AUTH GUARD] Segments:", segments);
+    console.log("[GLOBAL AUTH GUARD] isAuthenticated:", isAuthenticated);
+
+    // Check if current route is public
+    const isPublicRoute = PUBLIC_ROUTES.some(route => 
+      currentPath === route || currentPath.startsWith(route) || pathname === `/${route}`
+    );
+
+    // Special case: index route is protected (it handles onboarding checks)
+    const isIndexRoute = currentPath === '' || pathname === '/';
+
+    console.log("[GLOBAL AUTH GUARD] isPublicRoute:", isPublicRoute);
+
+    // GUARD LOGIC: Redirect unauthenticated users trying to access protected routes
+    if (!isAuthenticated && !isPublicRoute) {
+      console.log("[GLOBAL AUTH GUARD] ❌ BLOCKED: Unauthenticated user on protected route");
+      console.log("[GLOBAL AUTH GUARD] → Redirecting to /welcome");
+      router.replace("/welcome");
+      return;
     }
-  }, [isReady, isAuthenticated, router]);
+
+    // If authenticated and on index, proceed with onboarding checks (handled in index.jsx)
+    if (isAuthenticated && isIndexRoute) {
+      console.log("[GLOBAL AUTH GUARD] ✅ Authenticated user on index - proceeding to onboarding checks");
+      return;
+    }
+
+    // Allow navigation for all other cases
+    console.log("[GLOBAL AUTH GUARD] ✅ Navigation allowed");
+  }, [isReady, isAuthenticated, router, pathname, segments]);
 
   if (!isReady) {
     return null; // Show nothing while state is loading
   }
 
-  // Render the stack, controlled by the redirects above.
+  // Render the stack, controlled by the guard above
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack screenOptions={{ headerShown: false }} initialRouteName="index">
-        {/* The index page will now execute the complex post-login checks */}
+        {/* The index page will execute the complex post-login checks */}
         <Stack.Screen name="index" />
 
-        {/* All onboarding/auth routes */}
+        {/* Public routes */}
+        <Stack.Screen name="welcome" />
         <Stack.Screen name="onboarding/welcome" />
         <Stack.Screen name="onboarding/profile" />
         <Stack.Screen name="onboarding/photos" />
         <Stack.Screen name="onboarding/video" />
         <Stack.Screen name="onboarding/consent" />
         <Stack.Screen name="onboarding/data-consent-required" />
+        <Stack.Screen name="onboarding/membership" />
 
-        {/* Main tabs, payments, video */}
+        {/* Protected routes */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="stripe" />
         <Stack.Screen name="video/call" />
+        <Stack.Screen name="profile/[userId]" />
+        <Stack.Screen name="settings/blockers" />
+        <Stack.Screen name="settings/subscription" />
       </Stack>
     </GestureHandlerRootView>
   );
