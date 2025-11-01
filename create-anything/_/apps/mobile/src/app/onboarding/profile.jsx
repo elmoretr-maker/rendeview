@@ -422,7 +422,7 @@ function ConsolidatedProfileOnboardingContent() {
         );
       }
       
-      router.replace("/(tabs)");
+      router.replace("/(tabs)/discovery");
     } catch (e) {
       console.error(e);
       setError("Could not save profile");
