@@ -11,7 +11,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { Heart, Video as VideoIcon, X } from "lucide-react-native";
+import { Heart, Video as VideoIcon, X, ArrowLeft } from "lucide-react-native";
 import { useAuth } from "@/utils/auth/useAuth"; // added for 401 handling
 // ADD: Inter fonts + palette
 import {
@@ -308,25 +308,55 @@ export default function RemoteProfile() {
     );
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: COLORS.bg }}
-      contentContainerStyle={{
-        paddingTop: insets.top + 12,
-        paddingHorizontal: 16,
-        paddingBottom: insets.bottom + 24,
-      }}
-    >
-      <Text
+    <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
+      {/* Header with back button */}
+      <View
         style={{
-          fontSize: 24,
-          fontWeight: "700",
-          marginBottom: 12,
-          color: COLORS.text,
-          fontFamily: "Inter_700Bold",
+          paddingTop: insets.top + 12,
+          paddingHorizontal: 16,
+          paddingBottom: 12,
+          backgroundColor: COLORS.bg,
+          borderBottomWidth: 1,
+          borderBottomColor: "#E5E7EB",
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
         }}
       >
-        {user?.name || `User ${user?.id}`}
-      </Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: "#F3F4F6",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <ArrowLeft color={COLORS.text} size={24} />
+        </TouchableOpacity>
+        <Text
+          style={{
+            fontSize: 20,
+            fontWeight: "700",
+            color: COLORS.text,
+            fontFamily: "Inter_700Bold",
+            flex: 1,
+          }}
+        >
+          {user?.name || `User ${user?.id}`}
+        </Text>
+      </View>
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingTop: 12,
+          paddingBottom: insets.bottom + 24,
+        }}
+      >
 
       {/* Primary photo at top if available */}
       {user?.primary_photo_url ? (
@@ -551,5 +581,6 @@ export default function RemoteProfile() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </View>
   );
 }

@@ -324,6 +324,36 @@ export default function Discovery() {
                 </Text>
               </View>
             )}
+            
+            {/* Tap to View Hint */}
+            <View
+              style={{
+                position: "absolute",
+                bottom: 12,
+                left: 0,
+                right: 0,
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: "rgba(0, 0, 0, 0.6)",
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 20,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontSize: 13,
+                    fontFamily: "Inter_600SemiBold",
+                  }}
+                >
+                  👆 Tap to view full profile
+                </Text>
+              </View>
+            </View>
           </TouchableOpacity>
           
           {/* Name and Info */}
