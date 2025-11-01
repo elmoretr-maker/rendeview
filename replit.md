@@ -37,6 +37,8 @@ The mobile app upload system uses base64 encoding for media uploads, resolving c
 
 An enhanced matching system incorporates a comprehensive interests system with 80+ predefined interests and extended preference fields. A weighted scoring algorithm (v2) calculates compatibility for Discovery and Daily Picks APIs, considering shared interests, relationship goals, lifestyle, activity, and tier similarity. The Discovery UI displays compatibility percentages, "Likes You" indicators, bio previews, and shared interests. All preferences, weights, and interests are centrally configured.
 
+**Mobile App UX Enhancements (November 1, 2025):** The mobile application now features full parity with the web app experience. Profile viewing pages (`/profile/[userId]`) include a back button (ArrowLeft icon) in the header, allowing users to escape profile view without being forced to make a Like/Pass decision. Discovery cards are tappable to view full profiles, with a "Tap to view full profile" hint overlay (translucent bottom overlay) to improve discoverability. The Profile tab correctly displays user photos and videos with a complete media pipeline (fetch, state management, rendering). All routing flows preserve navigation integrity while enabling browse-without-action functionality.
+
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)
 - **Authentication**: Auth.js
