@@ -10,6 +10,13 @@ async function upload({
     },
     body: buffer ? buffer : JSON.stringify({ base64, url })
   });
+  
+  if (!response.ok) {
+    const text = await response.text();
+    console.error(`Upload service error (${response.status}):`, text);
+    throw new Error(`Upload service returned ${response.status}: ${text.substring(0, 200)}`);
+  }
+  
   const data = await response.json();
   return {
     url: data.url,
