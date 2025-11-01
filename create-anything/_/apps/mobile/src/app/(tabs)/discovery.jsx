@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Heart } from "lucide-react-native";
+import { X, Heart, Sparkles, Eye } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/utils/auth/useAuth";
 // ADD: Inter fonts for modern typography
@@ -228,6 +228,84 @@ export default function Discovery() {
       >
         Discover
       </Text>
+
+      {/* Quick Access Buttons */}
+      <View
+        style={{
+          flexDirection: "row",
+          gap: 8,
+          marginBottom: 16,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => router.push("/daily-picks")}
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            backgroundColor: "#FFFFFF",
+            paddingVertical: 10,
+            paddingHorizontal: 12,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: COLORS.primary + "30",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 2,
+            elevation: 1,
+          }}
+        >
+          <Sparkles size={18} color={COLORS.primary} />
+          <Text
+            style={{
+              fontSize: 13,
+              fontWeight: "700",
+              color: COLORS.primary,
+              fontFamily: "Inter_700Bold",
+            }}
+          >
+            Daily Picks
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => router.push("/profile-viewers")}
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            backgroundColor: "#FFFFFF",
+            paddingVertical: 10,
+            paddingHorizontal: 12,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: COLORS.secondary + "30",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 2,
+            elevation: 1,
+          }}
+        >
+          <Eye size={18} color={COLORS.secondary} />
+          <Text
+            style={{
+              fontSize: 13,
+              fontWeight: "700",
+              color: COLORS.secondary,
+              fontFamily: "Inter_700Bold",
+            }}
+          >
+            Who Viewed Me
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       {current ? (
         <View style={{ flex: 1, alignItems: "center" }}>
           <TouchableOpacity
