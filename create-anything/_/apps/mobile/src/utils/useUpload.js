@@ -23,8 +23,11 @@ function useUpload() {
           });
         } else if (asset.uri) {
           // Videos or assets without base64 - convert to base64
+          console.log('FileSystem module:', FileSystem);
+          console.log('FileSystem keys:', Object.keys(FileSystem));
+          console.log('EncodingType:', FileSystem.EncodingType);
           const base64Data = await FileSystem.readAsStringAsync(asset.uri, {
-            encoding: FileSystem.EncodingType.Base64,
+            encoding: FileSystem.EncodingType?.Base64,
           });
           response = await fetch("/api/upload-base64", {
             method: "POST",
