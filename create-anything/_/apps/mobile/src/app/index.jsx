@@ -5,7 +5,7 @@ import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from "rea
 
 export default function Index() {
   const router = useRouter();
-  const { isReady, auth } = useAuth();
+  const { isReady, auth, setAuth } = useAuth();
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -65,10 +65,19 @@ export default function Index() {
         // STEP 2: ONBOARDING COMPLETION CHECK
         // ========================================
         console.log("[INDEX] ✅ STEP 1 PASSED: User is authenticated");
-        console.log("[INDEX] Step 2: Onboarding Completion Check");
-
+        
         const data = await res.json();
         const user = data?.user;
+        
+        // Set local auth state so global auth guard allows navigation
+        // This is critical for QA_BYPASS mode and real sessions
+        if (user?.id) {
+          console.log("[INDEX] Setting local auth state for user:", user.id);
+          setAuth({ userId: user.id, email: user.email });
+        }
+        
+        console.log("[INDEX] Step 2: Onboarding Completion Check");
+
         const media = data?.media || [];
         const photos = media.filter((m) => m.type === "photo");
 
