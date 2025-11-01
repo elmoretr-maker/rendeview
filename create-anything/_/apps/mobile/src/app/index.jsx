@@ -12,13 +12,14 @@ export default function Index() {
 
       console.log("[INDEX] Starting route logic, isReady:", isReady, "auth:", !!auth);
 
-      // Not authenticated -> Welcome
+      // Not authenticated -> Welcome Back page
       if (!auth) {
-        console.log("[INDEX] No auth, redirecting to welcome");
-        router.replace("/onboarding/welcome");
+        console.log("[INDEX] No auth, redirecting to welcome back page");
+        router.replace("/welcome");
         return;
       }
 
+      // User is authenticated - check onboarding completion
       try {
         console.log("[INDEX] Fetching profile...");
         const res = await fetch("/api/profile");
@@ -38,7 +39,7 @@ export default function Index() {
             photoCount: photos.length
           });
 
-          // NEW FLOW: Check consent first (Step 2 before membership)
+          // Check consent first (Step 1)
           if (!user?.consent_accepted) {
             console.log("[INDEX] No consent, redirecting to consent");
             const returnTo = "/onboarding/membership";
@@ -46,14 +47,14 @@ export default function Index() {
             return;
           }
 
-          // Membership gate (Step 3)
+          // Membership gate (Step 2)
           if (!user?.membership_tier) {
             console.log("[INDEX] No membership tier, redirecting to membership");
             router.replace("/onboarding/membership");
             return;
           }
 
-          // Profile completion gate (Step 4 - consolidated)
+          // Profile completion gate (Step 3)
           // Require name AND minimum 2 photos to ensure profile is properly completed
           if (!user?.name || photos.length < 2) {
             console.log("[INDEX] Incomplete profile (name or photos), redirecting to profile setup");
@@ -61,18 +62,18 @@ export default function Index() {
             return;
           }
 
-          // All checks passed -> main app
-          console.log("[INDEX] All checks passed, redirecting to discovery");
-          router.replace("/(tabs)/discovery");
+          // All checks passed -> Profile page for returning users
+          console.log("[INDEX] All checks passed, redirecting to profile");
+          router.replace("/(tabs)/profile");
           return;
         }
       } catch (e) {
         console.error("[INDEX] Error during route logic:", e);
       }
 
-      // Fallback
-      console.log("[INDEX] Fallback triggered, redirecting to discovery");
-      router.replace("/(tabs)/discovery");
+      // Fallback - if profile fetch fails, go to welcome
+      console.log("[INDEX] Fallback triggered, redirecting to welcome");
+      router.replace("/welcome");
     };
 
     routeNext();
