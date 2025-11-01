@@ -1,100 +1,188 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/utils/auth/useAuth";
+import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from "react-native";
 
 export default function Index() {
   const router = useRouter();
   const { isReady, auth } = useAuth();
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const routeNext = async () => {
       if (!isReady) return;
 
-      console.log("[INDEX] Starting route logic, isReady:", isReady, "auth:", !!auth);
+      console.log("[INDEX] ===== COMPREHENSIVE TRAFFIC CHECK SEQUENCE =====");
+      console.log("[INDEX] Step 1: Authentication Check - isReady:", isReady, "hasLocalAuth:", !!auth);
 
-      // Not authenticated -> Welcome Back page
-      if (!auth) {
-        console.log("[INDEX] No auth, redirecting to welcome back page");
-        router.replace("/welcome");
-        return;
-      }
-
-      // User is authenticated - check onboarding completion
+      // ========================================
+      // STEP 1: AUTHENTICATION CHECK
+      // ========================================
+      // Try to fetch profile to check if backend has valid session (QA_BYPASS or real auth)
       try {
-        console.log("[INDEX] Fetching profile...");
+        console.log("[INDEX] Checking backend authentication status...");
         const res = await fetch("/api/profile");
-        console.log("[INDEX] Profile fetch status:", res.status);
         
-        // Handle 401 as true unauth (shouldn't happen with QA_BYPASS, but handle it)
+        if (!isMounted) return;
+        
+        console.log("[INDEX] Backend responded with status:", res.status);
+
+        // TRUE UNAUTHENTICATED - No session on backend
         if (res.status === 401) {
-          console.log("[INDEX] Got 401, redirecting to welcome");
+          console.log("[INDEX] ❌ STEP 1 FAILED: No valid session (401)");
+          console.log("[INDEX] → Routing to /welcome (Sign-In page)");
           router.replace("/welcome");
           return;
         }
 
-        // Handle server errors (5xx) or network errors - keep user on profile with error state
-        if (!res.ok && res.status >= 500) {
-          console.error("[INDEX] Server error fetching profile, defaulting to profile page");
-          router.replace("/(tabs)/profile");
-          return;
-        }
-
-        if (res.ok) {
-          const data = await res.json();
-          const user = data?.user;
-          const media = data?.media || [];
-          const photos = media.filter((m) => m.type === "photo");
-
-          console.log("[INDEX] User data:", {
-            hasUser: !!user,
-            consent: user?.consent_accepted,
-            tier: user?.membership_tier,
-            name: user?.name,
-            photoCount: photos.length
+        // Server error or network issues - show error screen
+        if (!res.ok) {
+          console.error("[INDEX] ⚠️ Backend error during auth check:", res.status);
+          setError({
+            message: "Unable to connect to server. Please check your connection and try again.",
+            status: res.status
           });
-
-          // Check consent first (Step 1)
-          if (!user?.consent_accepted) {
-            console.log("[INDEX] No consent, redirecting to consent");
-            const returnTo = "/onboarding/membership";
-            router.replace(`/onboarding/consent?returnTo=${encodeURIComponent(returnTo)}`);
-            return;
-          }
-
-          // Membership gate (Step 2)
-          if (!user?.membership_tier) {
-            console.log("[INDEX] No membership tier, redirecting to membership");
-            router.replace("/onboarding/membership");
-            return;
-          }
-
-          // Profile completion gate (Step 3)
-          // Require name AND minimum 2 photos to ensure profile is properly completed
-          if (!user?.name || photos.length < 2) {
-            console.log("[INDEX] Incomplete profile (name or photos), redirecting to profile setup");
-            router.replace("/onboarding/profile");
-            return;
-          }
-
-          // All checks passed -> Profile page for returning users
-          console.log("[INDEX] All checks passed, redirecting to profile");
-          router.replace("/(tabs)/profile");
           return;
         }
+
+        // ========================================
+        // STEP 2: ONBOARDING COMPLETION CHECK
+        // ========================================
+        console.log("[INDEX] ✅ STEP 1 PASSED: User is authenticated");
+        console.log("[INDEX] Step 2: Onboarding Completion Check");
+
+        const data = await res.json();
+        const user = data?.user;
+        const media = data?.media || [];
+        const photos = media.filter((m) => m.type === "photo");
+
+        console.log("[INDEX] User profile status:", {
+          hasUser: !!user,
+          consent: user?.consent_accepted,
+          tier: user?.membership_tier,
+          name: user?.name,
+          photoCount: photos.length
+        });
+
+        // Gate 2.1: Consent Check
+        if (!user?.consent_accepted) {
+          console.log("[INDEX] ❌ STEP 2 INCOMPLETE: No consent accepted");
+          console.log("[INDEX] → Routing to /onboarding/consent");
+          const returnTo = "/onboarding/membership";
+          router.replace(`/onboarding/consent?returnTo=${encodeURIComponent(returnTo)}`);
+          return;
+        }
+
+        // Gate 2.2: Membership Check
+        if (!user?.membership_tier) {
+          console.log("[INDEX] ❌ STEP 2 INCOMPLETE: No membership tier selected");
+          console.log("[INDEX] → Routing to /onboarding/membership");
+          router.replace("/onboarding/membership");
+          return;
+        }
+
+        // Gate 2.3: Profile Completion Check (name + minimum 2 photos)
+        if (!user?.name || photos.length < 2) {
+          console.log("[INDEX] ❌ STEP 2 INCOMPLETE: Profile not complete");
+          console.log("[INDEX] → Routing to /onboarding/profile");
+          router.replace("/onboarding/profile");
+          return;
+        }
+
+        // ========================================
+        // SUCCESS: Route to Main App Dashboard
+        // ========================================
+        console.log("[INDEX] ✅ STEP 2 PASSED: Onboarding complete");
+        console.log("[INDEX] ✅✅✅ ALL CHECKS PASSED ✅✅✅");
+        console.log("[INDEX] → Routing to /discovery (Main Application Dashboard)");
+        router.replace("/(tabs)/discovery");
+        return;
+
       } catch (e) {
-        console.error("[INDEX] Network/fetch error during route logic:", e);
-        // Network error while authenticated - default to profile page
-        router.replace("/(tabs)/profile");
+        if (!isMounted) return;
+        
+        console.error("[INDEX] ⚠️ Network/fetch error during routing logic:", e);
+        setError({
+          message: "Network error. Please check your connection and try again.",
+          error: e.message
+        });
         return;
       }
-
-      // Fallback for other 4xx errors - go to profile with degraded state
-      console.log("[INDEX] Fallback triggered (4xx error), redirecting to profile");
-      router.replace("/(tabs)/profile");
     };
 
     routeNext();
+
+    return () => {
+      isMounted = false;
+    };
   }, [isReady, auth, router]);
 
-  return null;
+  // Show error screen if there's an error
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorTitle}>Connection Error</Text>
+        <Text style={styles.errorMessage}>{error.message}</Text>
+        <Text style={styles.errorHint}>
+          {error.status ? `(Error ${error.status})` : ''}
+        </Text>
+        <TouchableOpacity 
+          style={styles.retryButton}
+          onPress={() => {
+            setError(null);
+          }}
+        >
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // Show loading screen while checking auth
+  return (
+    <View style={styles.container}>
+      <ActivityIndicator size="large" color="#5B3BAF" />
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F9F9F9",
+    padding: 20,
+  },
+  errorTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#2C3E50",
+    marginBottom: 10,
+  },
+  errorMessage: {
+    fontSize: 16,
+    color: "#2C3E50",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  errorHint: {
+    fontSize: 14,
+    color: "#95a5a6",
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: "#5B3BAF",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    marginTop: 10,
+  },
+  retryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+});
