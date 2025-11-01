@@ -232,7 +232,7 @@ export default function Discovery() {
         <View style={{ flex: 1, alignItems: "center" }}>
           <TouchableOpacity
             onPress={() => router.push(`/profile/${current.id}`)}
-            style={{ width: "100%" }}
+            style={{ width: "100%", position: "relative" }}
           >
             {current.photo ? (
               <Image
@@ -262,18 +262,187 @@ export default function Discovery() {
                 </Text>
               </View>
             )}
+            
+            {/* Compatibility Score Badge */}
+            {current.compatibility_score !== undefined && (
+              <View
+                style={{
+                  position: "absolute",
+                  top: 12,
+                  right: 12,
+                  backgroundColor: COLORS.primary,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 20,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 3.84,
+                  elevation: 5,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontWeight: "700",
+                    fontSize: 14,
+                    fontFamily: "Inter_700Bold",
+                  }}
+                >
+                  {Math.round(current.compatibility_score * 100)}% Match
+                </Text>
+              </View>
+            )}
+            
+            {/* Liked You Badge */}
+            {current.liked_you && (
+              <View
+                style={{
+                  position: "absolute",
+                  top: 12,
+                  left: 12,
+                  backgroundColor: "#FF69B4",
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 20,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 3.84,
+                  elevation: 5,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontWeight: "700",
+                    fontSize: 12,
+                    fontFamily: "Inter_700Bold",
+                  }}
+                >
+                  💕 Likes You
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
+          
+          {/* Name and Info */}
           <Text
             style={{
-              fontSize: 18,
-              fontWeight: "600",
-              marginTop: 12,
+              fontSize: 22,
+              fontWeight: "700",
+              marginTop: 16,
               color: COLORS.text,
-              fontFamily: "Inter_600SemiBold",
+              fontFamily: "Inter_700Bold",
             }}
           >
             {current.name || "User " + current.id}
           </Text>
+          
+          {/* Relationship Goals */}
+          {current.relationship_goals && (
+            <Text
+              style={{
+                fontSize: 14,
+                color: COLORS.text,
+                opacity: 0.7,
+                marginTop: 4,
+                fontFamily: "Inter_400Regular",
+              }}
+            >
+              Looking for: {current.relationship_goals}
+            </Text>
+          )}
+          
+          {/* Bio Preview */}
+          {current.bio && (
+            <Text
+              style={{
+                fontSize: 14,
+                color: COLORS.text,
+                opacity: 0.8,
+                marginTop: 8,
+                textAlign: "center",
+                paddingHorizontal: 24,
+                fontFamily: "Inter_400Regular",
+              }}
+              numberOfLines={2}
+            >
+              {current.bio}
+            </Text>
+          )}
+          
+          {/* Mutual Interests */}
+          {current.mutual_interests && current.mutual_interests.length > 0 && (
+            <View style={{ marginTop: 12, alignItems: "center" }}>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: COLORS.text,
+                  opacity: 0.6,
+                  marginBottom: 6,
+                  fontFamily: "Inter_600SemiBold",
+                }}
+              >
+                {current.mutual_interests.length} Shared Interest{current.mutual_interests.length > 1 ? 's' : ''}
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  gap: 6,
+                  maxWidth: "90%",
+                }}
+              >
+                {current.mutual_interests.slice(0, 3).map((interest, idx) => (
+                  <View
+                    key={idx}
+                    style={{
+                      backgroundColor: "#EDE9FE",
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: COLORS.primary,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: COLORS.primary,
+                        fontSize: 12,
+                        fontWeight: "600",
+                        fontFamily: "Inter_600SemiBold",
+                      }}
+                    >
+                      {interest}
+                    </Text>
+                  </View>
+                ))}
+                {current.mutual_interests.length > 3 && (
+                  <View
+                    style={{
+                      backgroundColor: COLORS.cardBg,
+                      paddingHorizontal: 10,
+                      paddingVertical: 4,
+                      borderRadius: 12,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: COLORS.text,
+                        fontSize: 12,
+                        opacity: 0.7,
+                        fontFamily: "Inter_400Regular",
+                      }}
+                    >
+                      +{current.mutual_interests.length - 3} more
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
           <View
             style={{
               flexDirection: "row",
