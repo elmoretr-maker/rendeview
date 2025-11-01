@@ -22,8 +22,22 @@ export default function Index() {
       // ========================================
       // Try to fetch profile to check if backend has valid session (QA_BYPASS or real auth)
       try {
+        // Build absolute URL to avoid exp:// resolution issues on cold starts
+        const baseURL = process.env.EXPO_PUBLIC_BASE_URL;
+        const apiURL = baseURL ? `${baseURL}/api/profile` : "/api/profile";
+        
         console.log("[INDEX] Checking backend authentication status...");
-        const res = await fetch("/api/profile");
+        console.log("[INDEX] Using URL:", apiURL);
+        
+        // Create AbortController for proper timeout cancellation
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        const res = await fetch(apiURL, {
+          signal: controller.signal,
+          credentials: "include"
+        });
+        clearTimeout(timeoutId);
         
         if (!isMounted) return;
         
@@ -104,8 +118,15 @@ export default function Index() {
         if (!isMounted) return;
         
         console.error("[INDEX] ⚠️ Network/fetch error during routing logic:", e);
+        console.error("[INDEX] Error details:", e.name, e.message);
+        
+        // Check if it's a timeout/abort error
+        const isTimeout = e.name === "AbortError" || e.message === "Request timeout";
+        
         setError({
-          message: "Network error. Please check your connection and try again.",
+          message: isTimeout 
+            ? "Connection timeout. Please check your internet and try again." 
+            : "Network error. Please check your connection and try again.",
           error: e.message
         });
         return;
