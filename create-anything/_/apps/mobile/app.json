@@ -27,8 +27,7 @@
                         [
                                 "expo-router",
                                 {
-                                        "sitemap": false,
-                                        "appDir": "src/app"
+                                        "sitemap": false
                                 }
                         ],
                         [
