@@ -23,6 +23,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/utils/auth/useAuth";
+import { apiFetch, getAbsoluteUrl } from "@/utils/api/apiFetch";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -157,7 +158,7 @@ export default function Profile() {
     (async () => {
       try {
         console.log("[PROFILE TAB] Loading profile data...");
-        const res = await fetch("/api/profile");
+        const res = await apiFetch("/api/profile");
         if (res.ok) {
           const data = await res.json();
           const user = data?.user;
@@ -181,16 +182,16 @@ export default function Profile() {
               setInterests(user.interests);
             }
             
-            // Load existing media from database
+            // Load existing media from database with ABSOLUTE URLs for React Native
             const existingPhotos = media.filter(m => m.type === "photo").map(m => ({ 
-              uri: m.url, 
+              uri: getAbsoluteUrl(m.url),  // Convert to absolute URL
               existing: true,  // Mark as existing so we don't re-upload
               id: m.id 
             }));
             const existingVideo = media.find(m => m.type === "video");
             if (existingPhotos.length > 0) setPhotos(existingPhotos);
             if (existingVideo) {
-              setVideoAsset({ uri: existingVideo.url, existing: true, id: existingVideo.id });
+              setVideoAsset({ uri: getAbsoluteUrl(existingVideo.url), existing: true, id: existingVideo.id });
               setVideoAccepted(true);
             }
             
@@ -438,9 +439,8 @@ export default function Profile() {
       }
 
       // Save profile data with media and preferences
-      const res = await fetch("/api/profile", {
+      const res = await apiFetch("/api/profile", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
           bio: bio.trim() || null,
@@ -472,7 +472,7 @@ export default function Profile() {
       Alert.alert("Success", "Profile updated successfully!");
       
       // Reload fresh profile data
-      const refreshRes = await fetch("/api/profile");
+      const refreshRes = await apiFetch("/api/profile");
       if (refreshRes.ok) {
         const refreshData = await refreshRes.json();
         const refreshUser = refreshData?.user;
@@ -483,16 +483,16 @@ export default function Profile() {
         if (refreshUser?.bio) setBio(refreshUser.bio);
         setInterests(Array.isArray(refreshUser?.interests) ? refreshUser.interests : []);
         
-        // Reload media
+        // Reload media with ABSOLUTE URLs
         const freshPhotos = refreshMedia.filter(m => m.type === "photo").map(m => ({ 
-          uri: m.url, 
+          uri: getAbsoluteUrl(m.url), 
           existing: true,
           id: m.id 
         }));
         const freshVideo = refreshMedia.find(m => m.type === "video");
         setPhotos(freshPhotos);
         if (freshVideo) {
-          setVideoAsset({ uri: freshVideo.url, existing: true, id: freshVideo.id });
+          setVideoAsset({ uri: getAbsoluteUrl(freshVideo.url), existing: true, id: freshVideo.id });
           setVideoAccepted(true);
         } else {
           setVideoAsset(null);

@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { X, Heart, Sparkles, Eye } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/utils/auth/useAuth";
+import { apiFetch, getAbsoluteUrl } from "@/utils/api/apiFetch";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -57,7 +58,7 @@ export default function Discovery() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["discovery"],
     queryFn: async () => {
-      const res = await fetch("/api/discovery/list");
+      const res = await apiFetch("/api/discovery/list");
       if (res.status === 401) {
         const err = new Error("AUTH_401");
         // @ts-ignore
@@ -82,9 +83,8 @@ export default function Discovery() {
 
   const likeMutation = useMutation({
     mutationFn: async (likedId) => {
-      const res = await fetch("/api/matches/like", {
+      const res = await apiFetch("/api/matches/like", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ likedId }),
       });
       if (res.status === 401) {
@@ -114,9 +114,8 @@ export default function Discovery() {
 
   const discardMutation = useMutation({
     mutationFn: async (blockedId) => {
-      const res = await fetch("/api/blockers", {
+      const res = await apiFetch("/api/blockers", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ blockedId }),
       });
       if (res.status === 401) {
