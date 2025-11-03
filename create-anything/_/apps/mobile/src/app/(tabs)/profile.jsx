@@ -96,6 +96,9 @@ export default function Profile() {
   const router = useRouter();
   const { signOut, isReady } = useAuth();
   
+  // View/Edit mode toggle
+  const [isEditMode, setIsEditMode] = useState(false);
+  
   // Profile fields
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
@@ -153,11 +156,22 @@ export default function Profile() {
     let mounted = true;
     (async () => {
       try {
+        console.log("[PROFILE TAB] Loading profile data...");
         const res = await fetch("/api/profile");
         if (res.ok) {
           const data = await res.json();
           const user = data?.user;
           const media = data?.media || [];
+          
+          console.log("[PROFILE TAB] Profile data received:", {
+            name: user?.name,
+            bio: user?.bio,
+            interests: user?.interests,
+            gender: user?.gender,
+            looking_for: user?.looking_for,
+            photoCount: media.filter(m => m.type === "photo").length,
+            hasVideo: !!media.find(m => m.type === "video")
+          });
           
           if (mounted) {
             setTier(user?.membership_tier || "free");
@@ -194,10 +208,14 @@ export default function Profile() {
             if (user?.religion) setReligion(user.religion);
             if (user?.children_preference) setChildrenPreference(user.children_preference);
             if (user?.pets) setPets(user.pets);
+            
+            console.log("[PROFILE TAB] State updated successfully");
           }
+        } else {
+          console.error("[PROFILE TAB] Failed to load profile:", res.status);
         }
       } catch (e) {
-        console.error("Failed to load profile", e);
+        console.error("[PROFILE TAB] Error loading profile:", e);
       }
     })();
     return () => (mounted = false);
@@ -545,16 +563,16 @@ export default function Profile() {
       >
         <Text
           style={{
-            fontSize: 24,
+            fontSize: 28,
             fontWeight: "700",
             marginBottom: 8,
             color: COLORS.text,
           }}
         >
-          Edit Your Profile
+          Your Profile
         </Text>
         <Text style={{ color: COLORS.text, opacity: 0.7, marginBottom: 24 }}>
-          Tell us about yourself and add photos (minimum 2 photos required)
+          Update your profile information, photos, and preferences
         </Text>
 
         {/* Name field */}
@@ -974,7 +992,30 @@ export default function Profile() {
               fontSize: 16,
             }}
           >
-            {saving || loading ? "Saving..." : "Complete Setup"}
+            {saving || loading ? "Saving..." : "Save Changes"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Subscription button */}
+        <TouchableOpacity
+          onPress={() => router.push("/settings/subscription")}
+          style={{ 
+            paddingVertical: 14, 
+            borderRadius: 12, 
+            marginBottom: 12,
+            borderWidth: 2,
+            borderColor: COLORS.primary,
+          }}
+        >
+          <Text
+            style={{
+              textAlign: "center",
+              color: COLORS.primary,
+              fontWeight: "600",
+              fontSize: 16,
+            }}
+          >
+            Manage Subscription
           </Text>
         </TouchableOpacity>
 
@@ -992,30 +1033,12 @@ export default function Profile() {
           <Text
             style={{
               textAlign: "center",
-              color: "#E74C3C",
+              color: "#9CA3AF",
               fontWeight: "600",
               fontSize: 14,
             }}
           >
-            🔄 Start Over
-          </Text>
-        </TouchableOpacity>
-
-        {/* Back button */}
-        <TouchableOpacity
-          onPress={() => router.replace("/onboarding/membership")}
-          style={{ paddingVertical: 14, borderRadius: 12 }}
-        >
-          <Text
-            style={{
-              textAlign: "center",
-              color: COLORS.text,
-              opacity: 0.7,
-              fontWeight: "600",
-              fontSize: 16,
-            }}
-          >
-            Back to Membership
+            Reset All Fields
           </Text>
         </TouchableOpacity>
 
