@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, Sparkles, MessageCircle, ArrowLeft } from "lucide-react-native";
+import { getAbsoluteUrl } from "@/utils/api/apiFetch";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -268,7 +269,7 @@ export default function NewMatches() {
                   <View style={{ position: "relative" }}>
                     {item.user.photo ? (
                       <Image
-                        source={{ uri: item.user.photo }}
+                        source={{ uri: getAbsoluteUrl(item.user.photo) }}
                         style={{
                           width: 80,
                           height: 80,

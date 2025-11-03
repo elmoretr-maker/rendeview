@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/utils/auth/useAuth";
-import { apiFetch } from "@/utils/api/apiFetch";
+import { apiFetch, getAbsoluteUrl } from "@/utils/api/apiFetch";
 import {
   useFonts,
   Inter_400Regular,
@@ -161,7 +161,7 @@ export default function Messages() {
             >
               {item.user.photo ? (
                 <Image
-                  source={{ uri: item.user.photo }}
+                  source={{ uri: getAbsoluteUrl(item.user.photo) }}
                   style={{
                     width: 48,
                     height: 48,

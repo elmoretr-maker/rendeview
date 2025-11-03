@@ -67,7 +67,7 @@ export default function RemoteProfile() {
   const media = data?.media || [];
   const user = data?.user || {};
   const video = media.find((m) => m.type === "video");
-  const player = useVideoPlayer(video?.url || undefined, (p) => {
+  const player = useVideoPlayer(video?.url ? getAbsoluteUrl(video.url) : undefined, (p) => {
     if (!video?.url) return;
     p.loop = true;
   });
@@ -361,7 +361,7 @@ export default function RemoteProfile() {
       {/* Primary photo at top if available */}
       {user?.primary_photo_url ? (
         <Image
-          source={{ uri: user.primary_photo_url }}
+          source={{ uri: getAbsoluteUrl(user.primary_photo_url) }}
           style={{
             width: "100%",
             height: 260,
@@ -409,7 +409,7 @@ export default function RemoteProfile() {
           .map((m, idx) => (
             <Image
               key={idx}
-              source={{ uri: m.url }}
+              source={{ uri: getAbsoluteUrl(m.url) }}
               style={{
                 width: 96,
                 height: 96,

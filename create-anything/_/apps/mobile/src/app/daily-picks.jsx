@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, X, Sparkles, ArrowLeft } from "lucide-react-native";
-import { apiFetch } from "@/utils/api/apiFetch";
+import { apiFetch, getAbsoluteUrl } from "@/utils/api/apiFetch";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -243,7 +243,7 @@ export default function DailyPicks() {
                 {pick.photo ? (
                   <View style={{ position: "relative" }}>
                     <Image
-                      source={{ uri: pick.photo }}
+                      source={{ uri: getAbsoluteUrl(pick.photo) }}
                       style={{
                         width: "100%",
                         height: 320,

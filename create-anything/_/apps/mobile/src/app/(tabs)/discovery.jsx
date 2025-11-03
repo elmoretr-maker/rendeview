@@ -466,7 +466,7 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap }) {
           >
             {profile.photo ? (
               <Image
-                source={{ uri: profile.photo }}
+                source={{ uri: getAbsoluteUrl(profile.photo) }}
                 style={{
                   width: "100%",
                   height: 360,
