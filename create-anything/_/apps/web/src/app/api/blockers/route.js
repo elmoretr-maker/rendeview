@@ -1,15 +1,14 @@
 import sql from "@/app/api/utils/sql";
-import { auth } from "@/auth";
+import { getAuthenticatedUserId } from "@/app/api/utils/auth";
 import { checkRateLimit } from "@/app/api/utils/rateLimit";
 import { RATE_LIMITS } from "@/config/constants";
 
 export async function GET() {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const uid = await getAuthenticatedUserId();
+    if (!uid) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const uid = session.user.id;
 
     const rows = await sql`
       SELECT b.id, b.blocked_id, u.name, u.image, b.created_at, b.notes
@@ -27,11 +26,10 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const uid = await getAuthenticatedUserId();
+    if (!uid) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const uid = session.user.id;
     
     // Rate limiting from central config
     const { maxRequests, windowMinutes, endpoint } = RATE_LIMITS.BLOCK_USER;
@@ -105,11 +103,10 @@ export async function POST(request) {
 
 export async function PATCH(request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const uid = await getAuthenticatedUserId();
+    if (!uid) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const uid = session.user.id;
     const { blockedId, notes } = await request.json();
     if (!blockedId) {
       return Response.json({ error: "Invalid request" }, { status: 400 });
@@ -129,11 +126,10 @@ export async function PATCH(request) {
 
 export async function DELETE(request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const uid = await getAuthenticatedUserId();
+    if (!uid) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const uid = session.user.id;
     const { blockedId } = await request.json();
     if (!blockedId) {
       return Response.json({ error: "Invalid request" }, { status: 400 });
