@@ -5,7 +5,7 @@ import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from "rea
 
 export default function Index() {
   const router = useRouter();
-  const { isReady, auth } = useAuth();
+  const { isReady, auth, setAuth } = useAuth();
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -69,6 +69,12 @@ export default function Index() {
 
         const data = await res.json();
         const user = data?.user;
+        
+        // CRITICAL: Persist auth state to SecureStore so isAuthenticated becomes true
+        if (user?.id) {
+          console.log("[INDEX] Persisting auth state for user:", user.id);
+          await setAuth({ userId: user.id, email: user.email });
+        }
         const media = data?.media || [];
         const photos = media.filter((m) => m.type === "photo");
 

@@ -58,7 +58,8 @@
                 },
                 "extra": {
                         "router": {
-                                "origin": false
+                                "origin": false,
+                                "appDirectory": "./src/app"
                         }
                 },
                 "runtimeVersion": {
