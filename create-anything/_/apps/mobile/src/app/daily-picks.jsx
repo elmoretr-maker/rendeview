@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, X, Sparkles, ArrowLeft } from "lucide-react-native";
+import { apiFetch } from "@/utils/api/apiFetch";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -33,7 +34,7 @@ export default function DailyPicks() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["dailyPicks"],
     queryFn: async () => {
-      const res = await fetch("/api/daily-picks");
+      const res = await apiFetch("/api/daily-picks");
       if (!res.ok) throw new Error("Failed to load daily picks");
       return res.json();
     },
@@ -41,9 +42,8 @@ export default function DailyPicks() {
 
   const likeMutation = useMutation({
     mutationFn: async (likedId) => {
-      const res = await fetch("/api/matches/like", {
+      const res = await apiFetch("/api/matches/like", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ likedId }),
       });
       if (!res.ok) throw new Error("Failed to like");
@@ -78,9 +78,8 @@ export default function DailyPicks() {
 
   const passMutation = useMutation({
     mutationFn: async (blockedId) => {
-      const res = await fetch("/api/blockers", {
+      const res = await apiFetch("/api/blockers", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ blockedId }),
       });
       if (!res.ok) throw new Error("Failed to pass");

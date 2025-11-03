@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { Heart, Video as VideoIcon, X, ArrowLeft } from "lucide-react-native";
 import { useAuth } from "@/utils/auth/useAuth"; // added for 401 handling
+import { apiFetch, getAbsoluteUrl } from "@/utils/api/apiFetch";
 // ADD: Inter fonts + palette
 import {
   useFonts,
@@ -46,7 +47,7 @@ export default function RemoteProfile() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["remote-profile", targetId],
     queryFn: async () => {
-      const res = await fetch(`/api/profile/${targetId}`);
+      const res = await apiFetch(`/api/profile/${targetId}`);
       if (res.status === 401) {
         const err = new Error("AUTH_401");
         // @ts-ignore
@@ -77,9 +78,8 @@ export default function RemoteProfile() {
 
   const likeMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/matches/like", {
+      const res = await apiFetch("/api/matches/like", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ likedId: targetId }),
       });
       if (res.status === 401) {
