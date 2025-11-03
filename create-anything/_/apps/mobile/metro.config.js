@@ -51,6 +51,12 @@ const SHARED_ALIASES = {
 fs.mkdirSync(VIRTUAL_ROOT_UNRESOLVED, { recursive: true });
 config.watchFolders = [...config.watchFolders, VIRTUAL_ROOT, VIRTUAL_ROOT_UNRESOLVED];
 
+// Exclude web app directory to prevent route collision
+config.resolver.blockList = [
+  /\.\.\/_\/apps\/web\/.*/,
+  /.*\/apps\/web\/.*/,
+];
+
 // Add web-specific alias configuration through resolveRequest
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   try {
