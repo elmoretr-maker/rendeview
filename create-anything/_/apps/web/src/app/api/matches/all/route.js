@@ -1,13 +1,12 @@
 import sql from "@/app/api/utils/sql";
-import { auth } from "@/auth";
+import { getAuthenticatedUserId } from "@/app/api/utils/auth";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const uid = await getAuthenticatedUserId(request);
+    if (!uid) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const uid = session.user.id;
 
     const rows = await sql`
       SELECT m.id as match_id,
