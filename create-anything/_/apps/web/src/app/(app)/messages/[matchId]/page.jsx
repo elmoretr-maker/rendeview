@@ -7,6 +7,7 @@ import AppHeader from "@/components/AppHeader";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { BuyCreditsModal } from "@/components/BuyCreditsModal";
 import { SmartNudge } from "@/components/SmartNudge";
+import { Video, X, Clock, Crown } from "lucide-react";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -31,6 +32,10 @@ function ChatContent() {
   
   // Credits modal state
   const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
+  
+  // Video call modal state
+  const [showVideoCallModal, setShowVideoCallModal] = useState(false);
+  const [creatingVideoCall, setCreatingVideoCall] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["messages", matchId],
@@ -155,6 +160,54 @@ function ChatContent() {
     sendMutation.mutate(trimmed);
   }, [text, sendMutation]);
 
+  const startVideoCall = async () => {
+    if (!data?.otherUser?.id) {
+      toast.error("Unable to start video call");
+      return;
+    }
+    
+    setCreatingVideoCall(true);
+    try {
+      const res = await fetch("/api/video/room/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ matchId }),
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        if (error.upgradeRequired) {
+          toast.error(error.error || "Please upgrade to start video calls");
+          setShowVideoCallModal(false);
+          navigate("/settings/subscription");
+          return;
+        }
+        throw new Error(error.error || "Failed to create video call");
+      }
+      
+      const data = await res.json();
+      toast.success("Starting video call...");
+      setShowVideoCallModal(false);
+      
+      navigate(`/video/call?matchId=${matchId}&minutes=${getCallDuration(user?.membership_tier || 'free')}`);
+    } catch (error) {
+      console.error("Video call error:", error);
+      toast.error(error.message || "Could not start video call");
+    } finally {
+      setCreatingVideoCall(false);
+    }
+  };
+  
+  const getCallDuration = (tier) => {
+    const durations = { free: 5, casual: 15, dating: 25, business: 45 };
+    return durations[tier.toLowerCase()] || 5;
+  };
+  
+  const getTierDisplay = (tier) => {
+    const tierMap = { free: 'Free', casual: 'Casual', dating: 'Dating', business: 'Business' };
+    return tierMap[tier.toLowerCase()] || 'Free';
+  };
+
   const saveNote = async () => {
     if (!data?.otherUser?.id) return;
     
@@ -274,7 +327,20 @@ function ChatContent() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.bg }}>
       <AppHeader />
       <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col px-4 py-8">
-        <h1 className="text-xl font-bold mb-4" style={{ color: COLORS.text }}>Chat</h1>
+        {/* Header with Video Call Button */}
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-bold" style={{ color: COLORS.text }}>
+            Chat with {otherUser?.name || 'User'}
+          </h1>
+          <button
+            onClick={() => setShowVideoCallModal(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white shadow-md hover:shadow-lg transition-all"
+            style={{ backgroundColor: COLORS.secondary }}
+          >
+            <Video size={20} />
+            <span>Start Video Call</span>
+          </button>
+        </div>
         
         {/* Message Quota Counter */}
         {quotaData && (
@@ -471,6 +537,139 @@ function ChatContent() {
         onClose={() => setShowBuyCreditsModal(false)}
         currentTier={quotaData?.tier || 'free'}
       />
+      
+      {/* Video Call Confirmation Modal */}
+      {showVideoCallModal && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => !creatingVideoCall && setShowVideoCallModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxHeight: '90vh', overflowY: 'auto' }}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div 
+                  className="p-3 rounded-full"
+                  style={{ backgroundColor: COLORS.secondary + "20" }}
+                >
+                  <Video size={28} style={{ color: COLORS.secondary }} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold" style={{ color: COLORS.text }}>
+                    Start Video Call?
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Connect with {otherUser?.name || 'this user'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowVideoCallModal(false)}
+                disabled={creatingVideoCall}
+                className="p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50"
+              >
+                <X size={24} style={{ color: COLORS.text }} />
+              </button>
+            </div>
+
+            {/* Call Details */}
+            <div className="mb-6 p-4 rounded-xl" style={{ backgroundColor: COLORS.bg }}>
+              <div className="flex items-center gap-2 mb-3">
+                <Clock size={20} style={{ color: COLORS.primary }} />
+                <h3 className="font-semibold" style={{ color: COLORS.text }}>
+                  Your Call Duration
+                </h3>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-3xl font-bold" style={{ color: COLORS.primary }}>
+                    {getCallDuration(user?.membership_tier || 'free')} minutes
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {getTierDisplay(user?.membership_tier || 'free')} tier
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500">Extensions available</p>
+                  <p className="text-sm font-semibold" style={{ color: COLORS.secondary }}>
+                    +10 min for $8
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Upgrade Prompt for Free Users */}
+            {user?.membership_tier === 'free' && (
+              <div 
+                className="mb-6 p-4 rounded-xl border-2"
+                style={{ 
+                  backgroundColor: COLORS.primary + "10",
+                  borderColor: COLORS.primary + "40"
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <Crown size={24} style={{ color: COLORS.primary }} />
+                  <div className="flex-1">
+                    <h4 className="font-bold mb-1" style={{ color: COLORS.primary }}>
+                      Get More Time!
+                    </h4>
+                    <p className="text-sm text-gray-700 mb-2">
+                      Upgrade to Casual ($9.99/mo) for 15-minute calls, or Dating ($29.99/mo) for 25-minute calls.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setShowVideoCallModal(false);
+                        navigate("/settings/subscription");
+                      }}
+                      className="text-sm font-semibold hover:underline"
+                      style={{ color: COLORS.primary }}
+                    >
+                      View Plans →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Important Notes */}
+            <div className="mb-6 space-y-2">
+              <p className="text-sm text-gray-600">
+                ✓ Video call will start immediately
+              </p>
+              <p className="text-sm text-gray-600">
+                ✓ Both participants will be notified
+              </p>
+              <p className="text-sm text-gray-600">
+                ✓ You can extend the call with in-call purchases
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowVideoCallModal(false)}
+                disabled={creatingVideoCall}
+                className="flex-1 px-4 py-3 rounded-xl font-bold shadow-md transition-all disabled:opacity-50"
+                style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={startVideoCall}
+                disabled={creatingVideoCall}
+                className="flex-1 px-4 py-3 rounded-xl font-bold text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50"
+                style={{ backgroundColor: COLORS.secondary }}
+              >
+                {creatingVideoCall ? "Starting..." : "Start Call"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
