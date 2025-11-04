@@ -61,7 +61,11 @@
     "extra": {
       "router": {
         "origin": false,
-        "appDirectory": "./src/app"
+        "appDirectory": "./src/app",
+        "sitemap": false
+      },
+      "eas": {
+        "projectId": "6629f71d-ebab-4afd-b0ba-d99126d3a860"
       }
     },
     "runtimeVersion": {
