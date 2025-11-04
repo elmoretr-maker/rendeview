@@ -9,6 +9,7 @@ import MatchCelebration from "@/components/MatchCelebration";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { DiscoveryCardSkeleton } from "@/app/components/SkeletonLoader";
+import { getAbsoluteUrl } from "@/utils/urlHelpers";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -88,7 +89,7 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
           {profile.photo ? (
             <div className="relative">
               <img
-                src={profile.photo}
+                src={getAbsoluteUrl(profile.photo)}
                 alt={profile.name || `User ${profile.id}`}
                 className="w-full h-[500px] object-cover"
                 style={{ backgroundColor: COLORS.cardBg }}

@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, X, Video, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import { getAbsoluteUrl } from "@/utils/urlHelpers";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -154,7 +155,7 @@ export default function RemoteProfile() {
         {user?.primary_photo_url && (
           <div className="mb-6 shadow-lg rounded-2xl overflow-hidden">
             <img
-              src={user.primary_photo_url}
+              src={getAbsoluteUrl(user.primary_photo_url)}
               alt={user.name}
               className="w-full h-96 object-cover"
               style={{ backgroundColor: COLORS.cardBg }}
@@ -177,7 +178,7 @@ export default function RemoteProfile() {
           <div className="mb-6">
             <h3 className="font-bold text-xl mb-3" style={{ color: COLORS.text }}>Video Introduction</h3>
             <div className="rounded-2xl overflow-hidden bg-black shadow-lg">
-              <video src={video.url} controls loop className="w-full" style={{ maxHeight: "400px" }} />
+              <video src={getAbsoluteUrl(video.url)} controls loop className="w-full" style={{ maxHeight: "400px" }} />
             </div>
           </div>
         )}
@@ -194,7 +195,7 @@ export default function RemoteProfile() {
                 .map((m, idx) => (
                   <img
                     key={idx}
-                    src={m.url}
+                    src={getAbsoluteUrl(m.url)}
                     alt="Profile"
                     className="w-full h-32 rounded-xl object-cover shadow-md hover:shadow-lg transition-shadow cursor-pointer"
                     style={{ backgroundColor: COLORS.cardBg }}

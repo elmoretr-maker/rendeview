@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Heart, X } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MatchCelebration from "@/components/MatchCelebration";
+import { getAbsoluteUrl } from "@/utils/urlHelpers";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -159,7 +160,7 @@ export default function Likers() {
                   >
                     {item.user.photo ? (
                       <img
-                        src={item.user.photo}
+                        src={getAbsoluteUrl(item.user.photo)}
                         alt={item.user.name || "User"}
                         className="w-16 h-16 rounded-full object-cover bg-gray-200"
                       />

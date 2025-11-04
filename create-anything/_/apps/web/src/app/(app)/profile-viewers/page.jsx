@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Heart, X, Eye } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MatchCelebration from "@/components/MatchCelebration";
+import { getAbsoluteUrl } from "@/utils/urlHelpers";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -179,7 +180,7 @@ export default function ProfileViewers() {
                   >
                     {viewer.user.photo ? (
                       <img
-                        src={viewer.user.photo}
+                        src={getAbsoluteUrl(viewer.user.photo)}
                         alt={viewer.user.name || "User"}
                         className="w-20 h-20 rounded-full object-cover bg-gray-200"
                       />

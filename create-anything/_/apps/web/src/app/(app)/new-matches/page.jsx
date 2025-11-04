@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import { Heart, Sparkles, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { getAbsoluteUrl } from "@/utils/urlHelpers";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -195,7 +196,7 @@ export default function NewMatches() {
                       {item.user.photo ? (
                         <div className="relative">
                           <img
-                            src={item.user.photo}
+                            src={getAbsoluteUrl(item.user.photo)}
                             alt={item.user.name || "User"}
                             className="w-20 h-20 rounded-full ring-4"
                             style={{ ringColor: COLORS.secondary }}

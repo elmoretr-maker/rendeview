@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useUser } from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import { getAbsoluteUrl } from "@/utils/urlHelpers";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -112,7 +113,7 @@ export default function Messages() {
               >
                 {item.user.photo ? (
                   <img
-                    src={item.user.photo}
+                    src={getAbsoluteUrl(item.user.photo)}
                     alt={item.user.name || "User"}
                     className="w-12 h-12 rounded-full bg-gray-200"
                   />

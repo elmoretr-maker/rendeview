@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/utils/auth/useAuth";
 import { useRouter } from "expo-router";
+import { getAbsoluteUrl } from "@/utils/api/apiFetch";
 
 export default function Blockers() {
   const insets = useSafeAreaInsets();
@@ -98,7 +99,7 @@ export default function Blockers() {
             >
               {item.image ? (
                 <Image
-                  source={{ uri: item.image }}
+                  source={{ uri: getAbsoluteUrl(item.image) }}
                   style={{
                     width: 48,
                     height: 48,

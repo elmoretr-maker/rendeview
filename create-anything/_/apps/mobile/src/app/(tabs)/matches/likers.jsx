@@ -2,13 +2,14 @@ import React from "react";
 import { View, Text, Image, FlatList, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
+import { apiFetch, getAbsoluteUrl } from "@/utils/api/apiFetch";
 
 export default function Likers() {
   const insets = useSafeAreaInsets();
   const { data, isLoading, error } = useQuery({
     queryKey: ["likers"],
     queryFn: async () => {
-      const res = await fetch("/api/matches/likers");
+      const res = await apiFetch("/api/matches/likers");
       if (!res.ok) throw new Error("Failed to load likers");
       return res.json();
     },
@@ -30,7 +31,7 @@ export default function Likers() {
           renderItem={({ item }) => (
             <View style={{ flexDirection:'row', alignItems:'center', paddingVertical:12, borderBottomWidth:1, borderColor:'#F3F4F6' }}>
               {item.user.photo ? (
-                <Image source={{ uri: item.user.photo }} style={{ width:48, height:48, borderRadius:24, backgroundColor:'#EEE' }} />
+                <Image source={{ uri: getAbsoluteUrl(item.user.photo) }} style={{ width:48, height:48, borderRadius:24, backgroundColor:'#EEE' }} />
               ) : (
                 <View style={{ width:48, height:48, borderRadius:24, backgroundColor:'#EEE' }} />
               )}

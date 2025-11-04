@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Heart, X, Sparkles } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MatchCelebration from "@/components/MatchCelebration";
+import { getAbsoluteUrl } from "@/utils/urlHelpers";
 
 const COLORS = {
   primary: "#5B3BAF",

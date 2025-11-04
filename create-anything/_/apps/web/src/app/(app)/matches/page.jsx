@@ -5,6 +5,7 @@ import { useUser } from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
+import { getAbsoluteUrl } from "@/utils/urlHelpers";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -152,7 +153,7 @@ function MatchesContent() {
                 >
                   {item.user.photo ? (
                     <img
-                      src={item.user.photo}
+                      src={getAbsoluteUrl(item.user.photo)}
                       alt={item.user.name || "User"}
                       className="w-12 h-12 rounded-full bg-gray-200"
                     />
