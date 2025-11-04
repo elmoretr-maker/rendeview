@@ -332,14 +332,25 @@ function ChatContent() {
           <h1 className="text-xl font-bold" style={{ color: COLORS.text }}>
             Chat with {otherUser?.name || 'User'}
           </h1>
-          <button
-            onClick={() => setShowVideoCallModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white shadow-md hover:shadow-lg transition-all"
-            style={{ backgroundColor: COLORS.secondary }}
-          >
-            <Video size={20} />
-            <span>Start Video Call</span>
-          </button>
+          {otherUser?.video_call_available !== false ? (
+            <button
+              onClick={() => setShowVideoCallModal(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white shadow-md hover:shadow-lg transition-all"
+              style={{ backgroundColor: COLORS.secondary }}
+            >
+              <Video size={20} />
+              <span>Start Video Call</span>
+            </button>
+          ) : (
+            <div
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold"
+              style={{ backgroundColor: COLORS.cardBg, color: "#6B7280" }}
+              title="This user is not accepting video calls at the moment"
+            >
+              <X size={20} />
+              <span>Video Calls Unavailable</span>
+            </div>
+          )}
         </div>
         
         {/* Message Quota Counter */}

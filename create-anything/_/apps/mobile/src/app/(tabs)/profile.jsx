@@ -106,6 +106,11 @@ export default function Profile() {
   const [interests, setInterests] = useState([]);
   const [showInterestsModal, setShowInterestsModal] = useState(false);
   
+  // Online/Video Call Availability toggles
+  const [immediateAvailable, setImmediateAvailable] = useState(false);
+  const [availabilityOverride, setAvailabilityOverride] = useState(false);
+  const [videoCallAvailable, setVideoCallAvailable] = useState(true);
+  
   // Preference fields
   const [gender, setGender] = useState("");
   const [sexualOrientation, setSexualOrientation] = useState("");
@@ -181,6 +186,11 @@ export default function Profile() {
             if (user?.interests && Array.isArray(user.interests)) {
               setInterests(user.interests);
             }
+            
+            // Load availability toggles
+            setImmediateAvailable(!!user?.immediate_available);
+            setAvailabilityOverride(!!user?.availability_override);
+            setVideoCallAvailable(user?.video_call_available !== false);
             
             // Load existing media from database with ABSOLUTE URLs for React Native
             const existingPhotos = media.filter(m => m.type === "photo").map(m => ({ 
@@ -446,6 +456,9 @@ export default function Profile() {
           bio: bio.trim() || null,
           interests: interests.length > 0 ? interests : null,
           media,
+          immediate_available: immediateAvailable,
+          availability_override: availabilityOverride,
+          video_call_available: videoCallAvailable,
           gender: gender || null,
           sexual_orientation: sexualOrientation || null,
           looking_for: lookingFor || null,
@@ -510,7 +523,7 @@ export default function Profile() {
     } finally {
       setSaving(false);
     }
-  }, [name, bio, interests, photos, videoAsset, videoAccepted, upload, router, limits.maxPhotos]);
+  }, [name, bio, interests, photos, videoAsset, videoAccepted, upload, router, limits.maxPhotos, immediateAvailable, availabilityOverride, videoCallAvailable, gender, sexualOrientation, lookingFor, bodyType, heightRange, education, relationshipGoals, drinking, smoking, exercise, religion, childrenPreference, pets]);
 
   const resetAll = useCallback(() => {
     Alert.alert(
@@ -972,6 +985,91 @@ export default function Profile() {
           </View>
         )}
 
+        {/* Availability Settings */}
+        <View style={{ backgroundColor: COLORS.white, padding: 16, borderRadius: 12, marginBottom: 16, borderWidth: 1, borderColor: "#E5E7EB" }}>
+          <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 12 }}>
+            Availability Settings
+          </Text>
+          
+          {/* Immediate Availability Toggle */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <Text style={{ color: COLORS.text, fontSize: 14 }}>Show as Online</Text>
+            <TouchableOpacity
+              onPress={() => setImmediateAvailable(!immediateAvailable)}
+              style={{
+                width: 50,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: immediateAvailable ? COLORS.primary : "#D1D5DB",
+                justifyContent: "center",
+                paddingHorizontal: 2,
+              }}
+            >
+              <View
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: COLORS.white,
+                  transform: [{ translateX: immediateAvailable ? 22 : 2 }],
+                }}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Appear Offline Override Toggle */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <Text style={{ color: COLORS.text, fontSize: 14 }}>Appear Offline (Override)</Text>
+            <TouchableOpacity
+              onPress={() => setAvailabilityOverride(!availabilityOverride)}
+              style={{
+                width: 50,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: availabilityOverride ? COLORS.primary : "#D1D5DB",
+                justifyContent: "center",
+                paddingHorizontal: 2,
+              }}
+            >
+              <View
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: COLORS.white,
+                  transform: [{ translateX: availabilityOverride ? 22 : 2 }],
+                }}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Accept Video Calls Toggle */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+            <Text style={{ color: COLORS.text, fontSize: 14 }}>Accept Video Calls</Text>
+            <TouchableOpacity
+              onPress={() => setVideoCallAvailable(!videoCallAvailable)}
+              style={{
+                width: 50,
+                height: 28,
+                borderRadius: 14,
+                backgroundColor: videoCallAvailable ? COLORS.primary : "#D1D5DB",
+                justifyContent: "center",
+                paddingHorizontal: 2,
+              }}
+            >
+              <View
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 12,
+                  backgroundColor: COLORS.white,
+                  transform: [{ translateX: videoCallAvailable ? 22 : 2 }],
+                }}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Complete button */}
         <TouchableOpacity
           onPress={onSave}
@@ -993,6 +1091,28 @@ export default function Profile() {
             }}
           >
             {saving || loading ? "Saving..." : "Save Changes"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Preview Profile button */}
+        <TouchableOpacity
+          onPress={() => router.push("/profile-preview")}
+          style={{ 
+            paddingVertical: 14, 
+            borderRadius: 12, 
+            marginBottom: 12,
+            backgroundColor: "#EDE9FE",
+          }}
+        >
+          <Text
+            style={{
+              textAlign: "center",
+              color: COLORS.primary,
+              fontWeight: "600",
+              fontSize: 16,
+            }}
+          >
+            Preview Profile
           </Text>
         </TouchableOpacity>
 

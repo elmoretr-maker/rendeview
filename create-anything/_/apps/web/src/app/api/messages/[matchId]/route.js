@@ -25,7 +25,21 @@ export async function GET(request, { params: { matchId } }) {
       WHERE match_id = ${matchId}
       ORDER BY created_at ASC`;
 
-    return Response.json({ messages: rows });
+    const matchInfo = await sql`
+      SELECT user_a_id, user_b_id FROM matches WHERE id = ${matchId}
+    `;
+    
+    const otherId = matchInfo[0].user_a_id === uid ? matchInfo[0].user_b_id : matchInfo[0].user_a_id;
+    
+    const otherUserRows = await sql`
+      SELECT id, name, primary_photo_url, membership_tier, video_call_available
+      FROM auth_users WHERE id = ${otherId}
+    `;
+
+    return Response.json({ 
+      messages: rows,
+      otherUser: otherUserRows[0] || null
+    });
   } catch (err) {
     console.error("GET /api/messages/[matchId] error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });

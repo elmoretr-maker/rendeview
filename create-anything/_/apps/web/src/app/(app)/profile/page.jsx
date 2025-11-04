@@ -30,6 +30,7 @@ function ProfileContent() {
   const [end, setEnd] = useState("21:00");
   const [immediate, setImmediate] = useState(false);
   const [override, setOverride] = useState(false);
+  const [videoCallAvailable, setVideoCallAvailable] = useState(true);
   const [media, setMedia] = useState([]);
   const [primaryPhoto, setPrimaryPhoto] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
@@ -49,6 +50,7 @@ function ProfileContent() {
         setName(u.name || "");
         setImmediate(!!u.immediate_available);
         setOverride(!!u.availability_override);
+        setVideoCallAvailable(u.video_call_available !== false);
         setPrimaryPhoto(u.primary_photo_url || null);
         setMembershipTier(u.membership_tier || MEMBERSHIP_TIERS.FREE);
         if (u.typical_availability?.timezone) {
@@ -96,6 +98,7 @@ function ProfileContent() {
           typical,
           immediate_available: immediate,
           availability_override: override,
+          video_call_available: videoCallAvailable,
         }),
       });
       if (res.status === 401) {
@@ -110,7 +113,7 @@ function ProfileContent() {
       setError("Could not save");
       toast.error("Could not save profile");
     }
-  }, [name, timezone, days, start, end, immediate, override]);
+  }, [name, timezone, days, start, end, immediate, override, videoCallAvailable]);
 
   const deleteAccount = useCallback(async () => {
     const firstConfirm = window.confirm(
@@ -544,6 +547,22 @@ function ProfileContent() {
             </button>
           </div>
 
+          <div className="flex items-center justify-between py-2">
+            <span style={{ color: COLORS.text }}>Accept Video Calls</span>
+            <button
+              onClick={() => setVideoCallAvailable(!videoCallAvailable)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                videoCallAvailable ? "bg-purple-600" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  videoCallAvailable ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+
           {error && error !== "AUTH_401" && (
             <p style={{ color: COLORS.error }}>{error}</p>
           )}
@@ -555,6 +574,14 @@ function ProfileContent() {
           >
             Save
           </button>
+
+          <Link
+            to="/profile/preview"
+            className="w-full py-3 rounded-lg font-semibold text-center block"
+            style={{ backgroundColor: "#EDE9FE", color: COLORS.primary }}
+          >
+            Preview Profile
+          </Link>
 
           <button
             onClick={deleteAccount}

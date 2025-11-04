@@ -9,7 +9,7 @@ export async function GET(request) {
     }
     const rows = await sql`
       SELECT id, name, email, image, role, consent_accepted, consent_at,
-             immediate_available, availability_override, timezone, typical_availability,
+             immediate_available, availability_override, video_call_available, timezone, typical_availability,
              membership_tier, primary_photo_url, scheduled_tier, tier_change_at,
              video_meetings_count, last_video_meeting_at, bio, interests,
              gender, sexual_orientation, looking_for, body_type, height_range,
@@ -92,6 +92,10 @@ export async function PUT(request) {
     if (typeof body.availability_override === "boolean") {
       setClauses.push(`availability_override = $${values.length + 1}`);
       values.push(body.availability_override);
+    }
+    if (typeof body.video_call_available === "boolean") {
+      setClauses.push(`video_call_available = $${values.length + 1}`);
+      values.push(body.video_call_available);
     }
     if (typeof body.timezone === "string") {
       setClauses.push(`timezone = $${values.length + 1}`);
