@@ -7,21 +7,18 @@
                 "development": {
                         "developmentClient": true,
                         "distribution": "internal",
-                        "env": {
-                                "EXPO_PUBLIC_QA_BYPASS_AUTH": "true",
-                                "EXPO_PUBLIC_BASE_URL": "https://f0121a5d-5e80-4c70-b963-40a63b270b5b-00-oioc9jggg354.spock.replit.dev",
-                                "EXPO_PUBLIC_PROXY_BASE_URL": "https://f0121a5d-5e80-4c70-b963-40a63b270b5b-00-oioc9jggg354.spock.replit.dev"
+                        "channel": "development",
+                        "android": {
+                                "buildType": "apk"
                         }
                 },
                 "preview": {
                         "distribution": "internal",
-                        "env": {
-                                "EXPO_PUBLIC_BASE_URL": "https://f0121a5d-5e80-4c70-b963-40a63b270b5b-00-oioc9jggg354.spock.replit.dev",
-                                "EXPO_PUBLIC_PROXY_BASE_URL": "https://f0121a5d-5e80-4c70-b963-40a63b270b5b-00-oioc9jggg354.spock.replit.dev"
-                        }
+                        "channel": "preview"
                 },
                 "production": {
-                        "autoIncrement": true
+                        "autoIncrement": true,
+                        "channel": "production"
                 }
         },
         "submit": {
