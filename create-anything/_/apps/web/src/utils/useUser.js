@@ -5,10 +5,10 @@ import { useSession } from "@auth/create/react";
 // REMOVE THIS ENTIRE BLOCK TO RESTORE REAL AUTHENTICATION
 const QA_MOCK_USER = {
   id: 1,
-  email: "qa-user@test.com",
-  name: "QA Test User",
+  email: "main@example.com",
+  name: "Trae",
   role: "user",
-  membership_tier: "active",
+  membership_tier: "free",
   consent_accepted: true
 };
 
