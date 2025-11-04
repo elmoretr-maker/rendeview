@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
@@ -14,6 +13,7 @@ import { X, Heart, Sparkles, Eye } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/utils/auth/useAuth";
 import { apiFetch, getAbsoluteUrl } from "@/utils/api/apiFetch";
+import AuthenticatedImage from "@/components/AuthenticatedImage";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -465,8 +465,8 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap }) {
             activeOpacity={0.9}
           >
             {profile.photo ? (
-              <Image
-                source={{ uri: getAbsoluteUrl(profile.photo) }}
+              <AuthenticatedImage
+                source={{ uri: profile.photo }}
                 style={{
                   width: "100%",
                   height: 360,

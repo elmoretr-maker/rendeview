@@ -2,7 +2,6 @@ import React from "react";
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   ActivityIndicator,
   FlatList,
@@ -11,8 +10,9 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, Link } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/utils/auth/useAuth"; // NEW
+import { useAuth } from "@/utils/auth/useAuth";
 import { apiFetch, getAbsoluteUrl } from "@/utils/api/apiFetch";
+import AuthenticatedImage from "@/components/AuthenticatedImage";
 // Fonts + brand
 import {
   useFonts,
@@ -196,8 +196,8 @@ export default function Matches() {
               }}
             >
               {item.user.photo ? (
-                <Image
-                  source={{ uri: getAbsoluteUrl(item.user.photo) }}
+                <AuthenticatedImage
+                  source={{ uri: item.user.photo }}
                   style={{
                     width: 48,
                     height: 48,
