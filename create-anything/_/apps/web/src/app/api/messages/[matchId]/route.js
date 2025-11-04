@@ -8,7 +8,7 @@ import {
 
 export async function GET(request, { params: { matchId } }) {
   try {
-    const uid = await getAuthenticatedUserId();
+    const uid = await getAuthenticatedUserId(request);
     if (!uid) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -34,7 +34,7 @@ export async function GET(request, { params: { matchId } }) {
 
 export async function POST(request, { params: { matchId } }) {
   try {
-    const uid = await getAuthenticatedUserId();
+    const uid = await getAuthenticatedUserId(request);
     if (!uid) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }

@@ -1,9 +1,9 @@
 import sql from "@/app/api/utils/sql";
 import { getAuthenticatedUserId } from "@/app/api/utils/auth";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const userId = await getAuthenticatedUserId();
+    const userId = await getAuthenticatedUserId(request);
     if (!userId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -30,7 +30,7 @@ export async function GET() {
 // It does not persist anything; callers should subsequently save via PUT /api/profile.
 export async function POST(request) {
   try {
-    const userId = await getAuthenticatedUserId();
+    const userId = await getAuthenticatedUserId(request);
     if (!userId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -63,7 +63,7 @@ export async function POST(request) {
 
 export async function PUT(request) {
   try {
-    const userId = await getAuthenticatedUserId();
+    const userId = await getAuthenticatedUserId(request);
     if (!userId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }

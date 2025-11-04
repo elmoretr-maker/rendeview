@@ -6,7 +6,7 @@ import { getAuthenticatedUserId, updateLastActive } from "@/app/api/utils/auth";
  */
 export async function POST(request) {
   try {
-    const userId = await getAuthenticatedUserId();
+    const userId = await getAuthenticatedUserId(request);
 
     if (!userId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -36,9 +36,9 @@ export async function POST(request) {
 /**
  * GET - Get users who viewed your profile (reverse discovery)
  */
-export async function GET() {
+export async function GET(request) {
   try {
-    const userId = await getAuthenticatedUserId();
+    const userId = await getAuthenticatedUserId(request);
 
     if (!userId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });

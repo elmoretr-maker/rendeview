@@ -2,9 +2,9 @@ import sql from "@/app/api/utils/sql";
 import { getAuthenticatedUserId, updateLastActive } from "@/app/api/utils/auth";
 import { calculateCompatibility } from "@/utils/calculateCompatibility";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const userId = await getAuthenticatedUserId();
+    const userId = await getAuthenticatedUserId(request);
 
     if (!userId) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });

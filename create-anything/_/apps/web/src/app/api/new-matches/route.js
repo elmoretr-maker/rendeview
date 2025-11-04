@@ -3,7 +3,7 @@ import { getAuthenticatedUserId } from "../utils/auth";
 
 export async function GET(request) {
   try {
-    const uid = await getAuthenticatedUserId();
+    const uid = await getAuthenticatedUserId(request);
     if (!uid) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }

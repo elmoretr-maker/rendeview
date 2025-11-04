@@ -4,14 +4,18 @@ import sql from "./sql";
 /**
  * Get authenticated user ID with QA bypass support
  * 
- * QA_BYPASS: When process.env.QA_BYPASS_AUTH === 'true', 
+ * QA_BYPASS: When process.env.QA_BYPASS_AUTH === 'true' OR X-QA-Bypass header is 'true',
  * returns user ID 1 (admin) for testing without authentication
  * 
+ * @param {Request} [request] - Optional Request object to check headers
  * @returns {Promise<number|null>} User ID or null if not authenticated
  */
-export async function getAuthenticatedUserId() {
-  // QA_BYPASS: Check for testing bypass
-  if (process.env.QA_BYPASS_AUTH === 'true') {
+export async function getAuthenticatedUserId(request = null) {
+  // QA_BYPASS: Check environment variable OR request header
+  const envBypass = process.env.QA_BYPASS_AUTH === 'true';
+  const headerBypass = request?.headers?.get('X-QA-Bypass') === 'true';
+  
+  if (envBypass || headerBypass) {
     console.log('[QA_BYPASS] Authentication bypassed - using admin user ID 1');
     return 1;
   }

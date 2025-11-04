@@ -1,9 +1,9 @@
 import sql from "@/app/api/utils/sql";
 import { getAuthenticatedUserId } from "@/app/api/utils/auth";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const uid = await getAuthenticatedUserId();
+    const uid = await getAuthenticatedUserId(request);
     if (!uid) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
