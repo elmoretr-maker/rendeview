@@ -46,6 +46,8 @@ export default function Index() {
         // TRUE UNAUTHENTICATED - No session on backend
         if (res.status === 401) {
           console.log("[INDEX] ❌ STEP 1 FAILED: No valid session (401)");
+          console.log("[INDEX] Clearing any cached auth data from previous session");
+          await setAuth(null); // Clear stale auth from SecureStore
           console.log("[INDEX] → Routing to /welcome (Sign-In page)");
           router.replace("/welcome");
           return;
