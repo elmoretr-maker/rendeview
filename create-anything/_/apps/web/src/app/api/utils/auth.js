@@ -2,25 +2,12 @@ import { auth } from "@/auth";
 import sql from "./sql";
 
 /**
- * Get authenticated user ID with QA bypass support
+ * Get authenticated user ID from session
  * 
- * QA_BYPASS: When process.env.QA_BYPASS_AUTH === 'true' OR X-QA-Bypass header is 'true',
- * returns user ID 1 (admin) for testing without authentication
- * 
- * @param {Request} [request] - Optional Request object to check headers
+ * @param {Request} [request] - Optional Request object (unused, kept for API compatibility)
  * @returns {Promise<number|null>} User ID or null if not authenticated
  */
 export async function getAuthenticatedUserId(request = null) {
-  // QA_BYPASS: Check environment variable OR request header
-  const envBypass = process.env.QA_BYPASS_AUTH === 'true';
-  const headerBypass = request?.headers?.get('X-QA-Bypass') === 'true';
-  
-  if (envBypass || headerBypass) {
-    console.log('[QA_BYPASS] Authentication bypassed - using admin user ID 1');
-    return 1;
-  }
-  
-  // Normal authentication flow
   const session = await auth();
   return session?.user?.id || null;
 }

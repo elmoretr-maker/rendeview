@@ -3,8 +3,6 @@ import { Image } from 'expo-image';
 import { View } from 'react-native';
 import { getAbsoluteUrl } from '@/utils/api/apiFetch';
 
-const QA_BYPASS = process.env.QA_BYPASS_AUTH || process.env.EXPO_PUBLIC_QA_BYPASS_AUTH;
-
 /**
  * AuthenticatedImage component that uses expo-image to load images
  * with proper authentication headers.
@@ -25,11 +23,6 @@ export default function AuthenticatedImage({ source, style, contentFit = 'cover'
   const headers = {
     'Cache-Control': 'no-cache',
   };
-  
-  // Add QA bypass header if needed
-  if (QA_BYPASS === 'true') {
-    headers['X-QA-Bypass'] = 'true';
-  }
 
   return (
     <Image

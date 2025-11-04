@@ -1,12 +1,10 @@
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-const QA_BYPASS = process.env.QA_BYPASS_AUTH || process.env.EXPO_PUBLIC_QA_BYPASS_AUTH;
 
 if (!BASE_URL) {
   console.error('[apiFetch] EXPO_PUBLIC_BASE_URL is not set!');
 }
 
-console.log('[apiFetch] ✅ NEW CODE LOADED - apiFetch helper is active!');
-console.log('[apiFetch] QA_BYPASS mode:', QA_BYPASS === 'true' ? 'ENABLED' : 'disabled');
+console.log('[apiFetch] API helper loaded - Base URL:', BASE_URL ? 'configured' : 'NOT SET');
 
 export async function apiFetch(path, options = {}) {
   const url = path.startsWith('http') ? path : `${BASE_URL}${path}`;
@@ -19,11 +17,6 @@ export async function apiFetch(path, options = {}) {
     'Pragma': 'no-cache',
     ...options.headers,
   };
-  
-  if (QA_BYPASS === 'true') {
-    headers['X-QA-Bypass'] = 'true';
-    console.log('[apiFetch] Adding QA bypass header');
-  }
   
   const response = await fetch(url, {
     ...options,
