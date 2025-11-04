@@ -396,11 +396,11 @@ export function Layout({ children }: { children: ReactNode }) {
         <meta property="og:description" content="Modern dating platform with video calling, messaging, and smart matching" />
         <meta property="og:type" content="website" />
         <Links />
-        <ClientOnly loader={() => <LoadFonts />} />
         <script type="module" src="/src/__create/dev-error-overlay.js"></script>
         <link rel="icon" href="/src/__create/favicon.png" />
       </head>
       <body>
+        <ClientOnly loader={() => <LoadFonts />} />
         {children}
         <HotReloadIndicator />
         <Toaster position="bottom-right" />
