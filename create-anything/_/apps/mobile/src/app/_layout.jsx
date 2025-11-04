@@ -120,8 +120,6 @@ function RootGate() {
         <Stack.Screen name="welcome" />
         <Stack.Screen name="onboarding/welcome" />
         <Stack.Screen name="onboarding/profile" />
-        <Stack.Screen name="onboarding/photos" />
-        <Stack.Screen name="onboarding/video" />
         <Stack.Screen name="onboarding/consent" />
         <Stack.Screen name="onboarding/data-consent-required" />
         <Stack.Screen name="onboarding/membership" />

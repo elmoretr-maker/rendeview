@@ -1,5 +1,5 @@
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-const QA_BYPASS = process.env.QA_BYPASS_AUTH;
+const QA_BYPASS = process.env.QA_BYPASS_AUTH || process.env.EXPO_PUBLIC_QA_BYPASS_AUTH;
 
 if (!BASE_URL) {
   console.error('[apiFetch] EXPO_PUBLIC_BASE_URL is not set!');
