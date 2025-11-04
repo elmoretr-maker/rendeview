@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
   RefreshControl,
   Alert,
@@ -14,6 +13,7 @@ import { useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, X, Eye, ArrowLeft } from "lucide-react-native";
 import { getAbsoluteUrl } from "@/utils/api/apiFetch";
+import AuthenticatedImage from "@/components/AuthenticatedImage";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -245,14 +245,15 @@ export default function ProfileViewers() {
                 }}
               >
                 {viewer.user.photo ? (
-                  <Image
-                    source={{ uri: getAbsoluteUrl(viewer.user.photo) }}
+                  <AuthenticatedImage
+                    source={{ uri: viewer.user.photo }}
                     style={{
                       width: 80,
                       height: 80,
                       borderRadius: 40,
                       backgroundColor: "#E5E7EB",
                     }}
+                    contentFit="cover"
                   />
                 ) : (
                   <View
