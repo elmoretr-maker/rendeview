@@ -15,6 +15,8 @@ export async function apiFetch(path, options = {}) {
   
   const headers = {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
     ...options.headers,
   };
   
@@ -27,6 +29,7 @@ export async function apiFetch(path, options = {}) {
     ...options,
     credentials: 'include',
     headers,
+    cache: 'no-store',
   });
   
   console.log('[apiFetch] Response status:', response.status, 'for', path);

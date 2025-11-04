@@ -1,10 +1,18 @@
 import sql from "@/app/api/utils/sql";
 import { getAuthenticatedUserId } from "@/app/api/utils/auth";
 
+console.log('🔥🔥🔥 [ROUTE MODULE LOADED] /api/matches/list/route.js loaded at', new Date().toISOString());
+
 export async function GET(request) {
+  console.log('[/api/matches/list] === REQUEST RECEIVED ===');
+  console.log('[/api/matches/list] Headers:', Object.fromEntries(request.headers.entries()));
+  
   try {
     const uid = await getAuthenticatedUserId(request);
+    console.log('[/api/matches/list] Authenticated user ID:', uid);
+    
     if (!uid) {
+      console.log('[/api/matches/list] ❌ RETURNING 401 - No user ID');
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 

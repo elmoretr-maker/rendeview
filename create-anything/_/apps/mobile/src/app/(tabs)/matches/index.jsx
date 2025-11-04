@@ -151,7 +151,7 @@ export default function Matches() {
               Session expired. Please sign in.
             </Text>
             <TouchableOpacity
-              onPress={() => isReady && signIn()}
+              onPress={() => router.push("/welcome")}
               style={{
                 backgroundColor: COLORS.primary,
                 paddingHorizontal: 16,
