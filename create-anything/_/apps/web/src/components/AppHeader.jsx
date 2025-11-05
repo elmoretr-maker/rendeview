@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router";
 import { Home, Users, MessageCircle, User, Crown, Heart } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import logoImage from "@/assets/logo-centered.png";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -58,7 +59,7 @@ export default function AppHeader() {
             onClick={() => navigate("/discovery")}
           >
             <img
-              src={new URL("@/assets/logo-centered.png", import.meta.url).href}
+              src={logoImage}
               alt="Rende-VIEW"
               className="logo-image"
               style={{ width: '32px', height: '32px' }}
