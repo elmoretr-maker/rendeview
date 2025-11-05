@@ -135,8 +135,7 @@ function ConsolidatedProfileOnboardingContent() {
   const [showPreferenceModal, setShowPreferenceModal] = useState(null);
   
   // Location preferences
-  const [location, setLocation] = useState("");
-  const [maxDistance, setMaxDistance] = useState(50);
+  const [maxDistance, setMaxDistance] = useState(100);
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   
@@ -182,7 +181,6 @@ function ConsolidatedProfileOnboardingContent() {
     if (user.children_preference) setChildrenPreference(user.children_preference);
     if (user.pets) setPets(user.pets);
     
-    if (user.location) setLocation(user.location);
     if (typeof user.max_distance === 'number') setMaxDistance(user.max_distance);
     if (user.latitude != null) setLatitude(user.latitude);
     if (user.longitude != null) setLongitude(user.longitude);
@@ -312,8 +310,7 @@ function ConsolidatedProfileOnboardingContent() {
           religion: religion || null,
           children_preference: childrenPreference || null,
           pets: pets || null,
-          location: location || null,
-          max_distance: maxDistance || null,
+          max_distance: maxDistance,
           latitude: latitude,
           longitude: longitude,
           typical_availability: availabilityGridToTypical(availabilityGrid),

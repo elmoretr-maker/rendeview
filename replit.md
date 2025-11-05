@@ -4,6 +4,7 @@
 This project is a feature-rich dating/matching application providing video calling, messaging, scheduling, and media uploads. It aims to deliver a robust and scalable platform focused on user engagement and seamless communication. The business vision is to capture a significant share of the online dating market by offering a superior user experience and advanced features, driving high user retention and monetization through a tiered membership model. The mobile application is production-ready, transitioning to EAS (Expo Application Services) for deployment with full native functionality. **As of November 2025, the project has achieved 100% aesthetic parity between web and mobile platforms, with consistent Inter font family implementation across all 8 mobile screens.**
 
 ## Recent Changes (November 2025)
+- **Location-Based Discovery Filter**: Complete GPS-based proximity matching system implemented across web and mobile. Users can set location via interactive maps (React Leaflet web, React Native Maps mobile), adjust search radius (1-200km), and discovery automatically filters matches by proximity using Haversine formula. Location setup available in onboarding and profile pages. Location is optional; users without coordinates see all matches.
 - **Dynamic Pricing System**: All membership pricing now pulls from Admin Dashboard (`/api/admin/settings`) as single source of truth. Admin pricing changes reflect immediately across web and mobile without redeployment.
 - **Enhanced Admin Dashboard**: Safety Management section now displays flagged user profile photos, membership tiers, and location/timezone alongside existing block counts and account status.
 - **User Availability**: Fully implemented day/time availability selection visible on profile views for scheduling assistance.
@@ -27,7 +28,7 @@ The application utilizes a client-server architecture. The frontend uses React 1
 
 Key features include:
 - **UI/UX**: Mobile-first design with Tinder-style profile cards, gradient overlays, and a consistent purple brand theme (`#7c3aed` web, `#5B3BAF` mobile). **100% aesthetic parity achieved** with Inter font family (Inter_400Regular, Inter_600SemiBold, Inter_700Bold) implemented across all 8 mobile screens: welcome, onboarding (consent, membership, profile), tabs (membership, profile), profile-preview, and settings/subscription. All text components include font loading guards to prevent system font flash.
-- **Core Features**: Discovery, Matches, Messages with real-time chat, Profile management, and a consolidated onboarding flow. Includes smart matching with prioritization, mutual interests, activity-based matching, conversation starters, Daily Picks, and Reverse Discovery.
+- **Core Features**: Discovery with location-based proximity filtering, Matches, Messages with real-time chat, Profile management, and a consolidated onboarding flow. Includes smart matching with prioritization, mutual interests, activity-based matching, conversation starters, Daily Picks, and Reverse Discovery. Location filtering is optional (null coordinates disable proximity filter).
 - **Membership Model**: A 4-tier system (Free, Casual, Dating, Business) governs media limits, chat durations, and meeting caps, enforced client-side and via API.
 - **Video Calling**: Real-time video call extension system with synchronized timers and integration for paid extensions.
 - **Media Management**: Supports photo uploads and camera-only video recording with tier-based limits.
@@ -48,4 +49,5 @@ Key features include:
 - **Styling**: Chakra UI (web), TailwindCSS (being phased out), Native React Native (mobile)
 - **Typography**: Inter font family across web and mobile for consistent brand identity
 - **Backend Framework**: Hono (Node.js)
-- **Mobile UI Components**: @react-native-community/slider, @expo-google-fonts/inter
+- **Mobile UI Components**: @react-native-community/slider, @expo-google-fonts/inter, react-native-maps, expo-location
+- **Web Mapping**: React Leaflet, Leaflet CSS

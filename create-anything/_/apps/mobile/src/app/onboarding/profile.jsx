@@ -24,6 +24,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
+import LocationSettings from "@/components/LocationSettings";
 import {
   useFonts,
   Inter_400Regular,
@@ -195,8 +196,9 @@ function ConsolidatedProfileOnboardingContent() {
   const [religion, setReligion] = useState("");
   const [childrenPreference, setChildrenPreference] = useState("");
   const [pets, setPets] = useState("");
-  const [location, setLocation] = useState("");
-  const [maxDistance, setMaxDistance] = useState(50);
+  const [maxDistance, setMaxDistance] = useState(100);
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
   const [showPreferenceModal, setShowPreferenceModal] = useState(null);
   
   // Media state
@@ -263,10 +265,11 @@ function ConsolidatedProfileOnboardingContent() {
             if (user?.religion) setReligion(user.religion);
             if (user?.children_preference) setChildrenPreference(user.children_preference);
             if (user?.pets) setPets(user.pets);
-            if (user?.location) setLocation(user.location);
             if (user?.max_distance !== undefined && user?.max_distance !== null) {
               setMaxDistance(user.max_distance);
             }
+            if (user?.latitude != null) setLatitude(user.latitude);
+            if (user?.longitude != null) setLongitude(user.longitude);
           }
         }
       } catch (e) {
@@ -499,8 +502,9 @@ function ConsolidatedProfileOnboardingContent() {
           religion: religion || null,
           children_preference: childrenPreference || null,
           pets: pets || null,
-          location: location.trim() || null,
           max_distance: maxDistance,
+          latitude: latitude,
+          longitude: longitude,
         }),
       });
       
@@ -551,8 +555,9 @@ function ConsolidatedProfileOnboardingContent() {
             setReligion("");
             setChildrenPreference("");
             setPets("");
-            setLocation("");
-            setMaxDistance(50);
+            setMaxDistance(100);
+            setLatitude(null);
+            setLongitude(null);
             setProgress({ done: 0, total: 0 });
             setError(null);
           },
@@ -736,34 +741,18 @@ function ConsolidatedProfileOnboardingContent() {
             </View>
           ))}
           
-          {/* Location field */}
+          {/* Location Settings */}
           <View style={{ marginTop: 12 }}>
-            <Text style={STYLES.label}>Location</Text>
-            <TextInput
-              style={STYLES.input}
-              placeholder="City, Country"
-              placeholderTextColor="#A0AEC0"
-              value={location}
-              onChangeText={setLocation}
-            />
-          </View>
-
-          {/* Max Distance slider */}
-          <View style={{ marginTop: 12 }}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-              <Text style={STYLES.label}>Maximum Distance</Text>
-              <Text style={{ color: COLORS.primary, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>{maxDistance} km</Text>
-            </View>
-            <Slider
-              style={{ height: 40 }}
-              minimumValue={5}
-              maximumValue={100}
-              step={5}
-              value={maxDistance}
-              onValueChange={setMaxDistance}
-              minimumTrackTintColor={COLORS.primary}
-              maximumTrackTintColor="#E2E8F0"
-              thumbTintColor={COLORS.primary}
+            <LocationSettings
+              initialLatitude={latitude}
+              initialLongitude={longitude}
+              initialMaxDistance={maxDistance}
+              fontLoaded={loaded}
+              onSave={(newLatitude, newLongitude, newMaxDistance) => {
+                setLatitude(newLatitude);
+                setLongitude(newLongitude);
+                setMaxDistance(newMaxDistance);
+              }}
             />
           </View>
           </View>
