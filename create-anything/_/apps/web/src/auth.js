@@ -257,7 +257,32 @@ const adapter = Adapter(pool);
 export const { auth } = CreateAuth({
   adapter: adapter,
   session: {
-    strategy: 'database',
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60,
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+        token.role = user.role;
+        token.membership_tier = user.membership_tier;
+        token.consent_accepted = user.consent_accepted;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.id = token.id;
+        session.user.email = token.email;
+        session.user.name = token.name;
+        session.user.role = token.role;
+        session.user.membership_tier = token.membership_tier;
+        session.user.consent_accepted = token.consent_accepted;
+      }
+      return session;
+    },
   },
   providers: [Credentials({
   id: 'credentials-signin',
