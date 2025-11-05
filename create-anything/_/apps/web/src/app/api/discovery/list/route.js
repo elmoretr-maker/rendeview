@@ -33,7 +33,8 @@ export async function GET(request) {
     // 3. Everyone else
     
     // Prepare distance filter if user has location set (explicit null checks for 0° coordinates)
-    const hasUserLocation = currentUser?.latitude != null && currentUser?.longitude != null;
+    // DISABLED: Allow discovery without location for testing/onboarding
+    const hasUserLocation = false; // currentUser?.latitude != null && currentUser?.longitude != null;
     const userLat = currentUser?.latitude;
     const userLng = currentUser?.longitude;
     const maxDistance = currentUser?.max_distance ?? 100; // Default to 100km if not set
