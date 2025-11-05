@@ -4,11 +4,11 @@ import sql from "./sql";
 /**
  * Get authenticated user ID from session
  * 
- * @param {Request} [request] - Optional Request object (unused, kept for API compatibility)
+ * @param {Request} [request] - Request object needed to read JWT cookies
  * @returns {Promise<number|null>} User ID or null if not authenticated
  */
 export async function getAuthenticatedUserId(request = null) {
-  const session = await auth();
+  const session = request ? await auth(request) : await auth();
   return session?.user?.id || null;
 }
 
@@ -16,10 +16,11 @@ export async function getAuthenticatedUserId(request = null) {
  * Require authentication for an API route
  * Returns user ID if authenticated, or returns a 401 Response if not
  * 
+ * @param {Request} [request] - Request object needed to read JWT cookies
  * @returns {Promise<number|Response>} User ID or 401 Response
  */
-export async function requireAuth() {
-  const userId = await getAuthenticatedUserId();
+export async function requireAuth(request = null) {
+  const userId = await getAuthenticatedUserId(request);
   
   if (!userId) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
