@@ -292,8 +292,8 @@ export default function ProfileMediaPage() {
             }}
           />
         )}
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 }
 
