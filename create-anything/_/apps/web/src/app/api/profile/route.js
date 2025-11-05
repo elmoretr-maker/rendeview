@@ -14,7 +14,7 @@ export async function GET(request) {
              video_meetings_count, last_video_meeting_at, bio, interests,
              gender, sexual_orientation, looking_for, body_type, height_range,
              education, relationship_goals, drinking, smoking, exercise,
-             religion, children_preference, pets
+             religion, children_preference, pets, location, max_distance
       FROM auth_users WHERE id = ${userId} LIMIT 1`;
     const media =
       await sql`SELECT id, type, url, sort_order FROM profile_media WHERE user_id = ${userId} ORDER BY sort_order ASC, id ASC`;
@@ -138,7 +138,7 @@ export async function PUT(request) {
     const preferenceFields = [
       'gender', 'sexual_orientation', 'looking_for', 'body_type', 'height_range',
       'education', 'relationship_goals', 'drinking', 'smoking', 'exercise',
-      'religion', 'children_preference', 'pets'
+      'religion', 'children_preference', 'pets', 'location'
     ];
     
     for (const field of preferenceFields) {
@@ -146,6 +146,12 @@ export async function PUT(request) {
         setClauses.push(`${field} = $${values.length + 1}`);
         values.push(body[field]);
       }
+    }
+    
+    // max_distance is an INTEGER field
+    if (typeof body.max_distance === 'number') {
+      setClauses.push(`max_distance = $${values.length + 1}`);
+      values.push(body.max_distance);
     }
 
     if (setClauses.length) {

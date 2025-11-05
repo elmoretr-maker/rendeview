@@ -46,6 +46,22 @@ const INTERESTS_CONFIG = {
   ]
 };
 
+const PREFERENCE_OPTIONS = {
+  GENDER: ['Man', 'Woman', 'Non-binary', 'Genderqueer', 'Genderfluid', 'Agender', 'Prefer not to say'],
+  SEXUAL_ORIENTATION: ['Straight', 'Gay', 'Lesbian', 'Bisexual', 'Pansexual', 'Asexual', 'Demisexual', 'Queer', 'Questioning', 'Prefer not to say'],
+  LOOKING_FOR: ['Men', 'Women', 'Non-binary people', 'Everyone'],
+  BODY_TYPE: ['Slim', 'Athletic', 'Average', 'Curvy', 'Muscular', 'A few extra pounds', 'Plus size', 'Prefer not to say'],
+  HEIGHT_RANGES: ['Under 150cm (4\'11")', '150-160cm (4\'11"-5\'3")', '160-170cm (5\'3"-5\'7")', '170-180cm (5\'7"-5\'11")', '180-190cm (5\'11"-6\'3")', '190-200cm (6\'3"-6\'7")', 'Over 200cm (6\'7")', 'Prefer not to say'],
+  EDUCATION: ['High school', 'Some college', 'Associate degree', 'Bachelor\'s degree', 'Master\'s degree', 'Doctorate/PhD', 'Trade school', 'Prefer not to say'],
+  RELATIONSHIP_GOALS: ['Casual dating', 'Long-term relationship', 'Marriage', 'Friendship', 'Networking', 'Not sure yet', 'Prefer not to say'],
+  DRINKING: ['Never', 'Rarely', 'Socially', 'Regularly', 'Prefer not to say'],
+  SMOKING: ['Never', 'Rarely', 'Socially', 'Regularly', 'Trying to quit', 'Prefer not to say'],
+  EXERCISE: ['Never', 'Rarely', '1-2 times/week', '3-4 times/week', '5+ times/week', 'Daily', 'Prefer not to say'],
+  RELIGION: ['Agnostic', 'Atheist', 'Buddhist', 'Catholic', 'Christian', 'Hindu', 'Jewish', 'Muslim', 'Spiritual', 'Other', 'Prefer not to say'],
+  CHILDREN: ['Have children', 'Don\'t have, want someday', 'Don\'t have, don\'t want', 'Don\'t have, open to it', 'Prefer not to say'],
+  PETS: ['Dog(s)', 'Cat(s)', 'Both dogs and cats', 'Other pets', 'No pets', 'Want pets', 'Allergic to pets', 'Prefer not to say']
+};
+
 function ConsolidatedProfileOnboardingContent() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -57,6 +73,26 @@ function ConsolidatedProfileOnboardingContent() {
   const [showInterestsModal, setShowInterestsModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  
+  // Preference fields
+  const [gender, setGender] = useState("");
+  const [sexualOrientation, setSexualOrientation] = useState("");
+  const [lookingFor, setLookingFor] = useState("");
+  const [bodyType, setBodyType] = useState("");
+  const [heightRange, setHeightRange] = useState("");
+  const [education, setEducation] = useState("");
+  const [relationshipGoals, setRelationshipGoals] = useState("");
+  const [drinking, setDrinking] = useState("");
+  const [smoking, setSmoking] = useState("");
+  const [exercise, setExercise] = useState("");
+  const [religion, setReligion] = useState("");
+  const [childrenPreference, setChildrenPreference] = useState("");
+  const [pets, setPets] = useState("");
+  const [showPreferenceModal, setShowPreferenceModal] = useState(null);
+  
+  // Location preferences
+  const [location, setLocation] = useState("");
+  const [maxDistance, setMaxDistance] = useState(50); // Default 50km
 
   const totalSteps = 4;
   const stepIndex = 4;
@@ -82,6 +118,25 @@ function ConsolidatedProfileOnboardingContent() {
     if (user.name) setName(user.name);
     if (user.bio) setBio(user.bio);
     if (user.interests && Array.isArray(user.interests)) setInterests(user.interests);
+    
+    // Load preference fields
+    if (user.gender) setGender(user.gender);
+    if (user.sexual_orientation) setSexualOrientation(user.sexual_orientation);
+    if (user.looking_for) setLookingFor(user.looking_for);
+    if (user.body_type) setBodyType(user.body_type);
+    if (user.height_range) setHeightRange(user.height_range);
+    if (user.education) setEducation(user.education);
+    if (user.relationship_goals) setRelationshipGoals(user.relationship_goals);
+    if (user.drinking) setDrinking(user.drinking);
+    if (user.smoking) setSmoking(user.smoking);
+    if (user.exercise) setExercise(user.exercise);
+    if (user.religion) setReligion(user.religion);
+    if (user.children_preference) setChildrenPreference(user.children_preference);
+    if (user.pets) setPets(user.pets);
+    
+    // Load location preferences
+    if (user.location) setLocation(user.location);
+    if (typeof user.max_distance === 'number') setMaxDistance(user.max_distance);
   }, [user]);
 
   const handlePhotoUpload = useCallback(async () => {
@@ -192,7 +247,22 @@ function ConsolidatedProfileOnboardingContent() {
         body: JSON.stringify({ 
           name: name.trim(), 
           bio: bio.trim(), 
-          interests: interests 
+          interests: interests,
+          gender: gender || null,
+          sexual_orientation: sexualOrientation || null,
+          looking_for: lookingFor || null,
+          body_type: bodyType || null,
+          height_range: heightRange || null,
+          education: education || null,
+          relationship_goals: relationshipGoals || null,
+          drinking: drinking || null,
+          smoking: smoking || null,
+          exercise: exercise || null,
+          religion: religion || null,
+          children_preference: childrenPreference || null,
+          pets: pets || null,
+          location: location || null,
+          max_distance: maxDistance || null,
         }),
       });
       if (!res.ok) throw new Error("Failed to save profile");
@@ -456,6 +526,92 @@ function ConsolidatedProfileOnboardingContent() {
           <p className="text-sm mt-4" style={{ color: COLORS.textLight }}>
             Max duration: {Math.floor(limits.videoMaxDuration / 60)}:{String(limits.videoMaxDuration % 60).padStart(2, "0")} minutes
           </p>
+        </div>
+
+        {/* About You & Preferences Section */}
+        <div className="bg-white rounded-2xl shadow-sm border p-6 sm:p-8 mb-8" style={{ borderColor: COLORS.border }}>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.text }}>
+              About You & Preferences
+            </h2>
+            <p className="text-base" style={{ color: COLORS.textLight }}>
+              Share more details to find better matches <span className="text-sm">(optional)</span>
+            </p>
+          </div>
+
+          {/* Location & Distance Preferences */}
+          <div className="mb-6 pb-6 border-b" style={{ borderColor: COLORS.border }}>
+            <label className="block mb-2 text-sm font-semibold" style={{ color: COLORS.text }}>
+              Location
+            </label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full border-2 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:border-purple-500 transition-colors mb-6"
+              style={{ borderColor: location ? COLORS.primary : COLORS.border }}
+              placeholder="City, State or Postal Code"
+            />
+
+            <label className="block mb-3 text-sm font-semibold" style={{ color: COLORS.text }}>
+              Maximum Distance: {maxDistance} km
+            </label>
+            <input
+              type="range"
+              min="5"
+              max="100"
+              step="5"
+              value={maxDistance}
+              onChange={(e) => setMaxDistance(parseInt(e.target.value))}
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+              style={{
+                background: `linear-gradient(to right, ${COLORS.primary} 0%, ${COLORS.primary} ${maxDistance}%, ${COLORS.border} ${maxDistance}%, ${COLORS.border} 100%)`
+              }}
+            />
+            <div className="flex justify-between text-xs mt-2" style={{ color: COLORS.textLight }}>
+              <span>5 km</span>
+              <span>100 km</span>
+            </div>
+          </div>
+
+          {/* Preference Fields Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              { label: "Gender", value: gender, setter: setGender, options: PREFERENCE_OPTIONS.GENDER },
+              { label: "Sexual Orientation", value: sexualOrientation, setter: setSexualOrientation, options: PREFERENCE_OPTIONS.SEXUAL_ORIENTATION },
+              { label: "Looking For", value: lookingFor, setter: setLookingFor, options: PREFERENCE_OPTIONS.LOOKING_FOR },
+              { label: "Body Type", value: bodyType, setter: setBodyType, options: PREFERENCE_OPTIONS.BODY_TYPE },
+              { label: "Height", value: heightRange, setter: setHeightRange, options: PREFERENCE_OPTIONS.HEIGHT_RANGES },
+              { label: "Education", value: education, setter: setEducation, options: PREFERENCE_OPTIONS.EDUCATION },
+              { label: "Relationship Goals", value: relationshipGoals, setter: setRelationshipGoals, options: PREFERENCE_OPTIONS.RELATIONSHIP_GOALS },
+              { label: "Drinking", value: drinking, setter: setDrinking, options: PREFERENCE_OPTIONS.DRINKING },
+              { label: "Smoking", value: smoking, setter: setSmoking, options: PREFERENCE_OPTIONS.SMOKING },
+              { label: "Exercise", value: exercise, setter: setExercise, options: PREFERENCE_OPTIONS.EXERCISE },
+              { label: "Religion", value: religion, setter: setReligion, options: PREFERENCE_OPTIONS.RELIGION },
+              { label: "Children", value: childrenPreference, setter: setChildrenPreference, options: PREFERENCE_OPTIONS.CHILDREN },
+              { label: "Pets", value: pets, setter: setPets, options: PREFERENCE_OPTIONS.PETS },
+            ].map((field, idx) => (
+              <div key={idx}>
+                <label className="block mb-2 text-sm font-semibold" style={{ color: COLORS.text }}>
+                  {field.label}
+                </label>
+                <select
+                  value={field.value}
+                  onChange={(e) => field.setter(e.target.value)}
+                  className="w-full border-2 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:border-purple-500 transition-colors cursor-pointer appearance-none bg-white"
+                  style={{ 
+                    borderColor: field.value ? COLORS.primary : COLORS.border,
+                    color: field.value ? COLORS.text : COLORS.textLight 
+                  }}
+                >
+                  <option value="">Select {field.label.toLowerCase()}</option>
+                  {field.options.map((option, optIdx) => (
+                    <option key={optIdx} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Submit Button */}
