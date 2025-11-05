@@ -1,0 +1,15 @@
+MANDATE FROM ARCHITECT: The aesthetic refactoring must be COMPLETED FIRST. Once finished, execute the following new, comprehensive location filtering system and integration integrity check:
+
+1.  **LOCATION-BASED DISCOVERY FILTER (CRITICAL FEATURE):** Implement a precise proximity filter interface on BOTH the Web App and Mobile App.
+    * **CRITICAL REQUIREMENT (NEW):** The mobile application must include the necessary **Native Code and Permission Request Logic** (using Expo Location/Permissions) to **prompt the user for and acquire their current geolocation (Latitude/Longitude)**. The app must handle permission denial gracefully.
+    * **UI/UX (WEB):** Implement the map, slider, and location display using **Chakra UI components** for styling and layout.
+    * **UI/UX (MOBILE):** Implement the map and slider using a suitable React Native map library.
+    * **ALGORITHM INTEGRATION:** Update the matching algorithm (in the /api/discovery/list endpoint) to strictly use the user's selected radius and current geographic coordinates (latitude/longitude) to filter potential matches.
+
+2.  **CHAT MESSAGE LIMIT (VERIFICATION AUDIT):** **Verify** that the **280-character limit** on all outgoing chat messages is **correctly implemented and enforced** on both the frontend (UI prevents typing past the limit) and the backend (API rejects oversized messages).
+
+3.  **INTEGRATION INTEGRITY MANDATE (HIGH PRIORITY FIX):** Audit the codebase and the build process to resolve the persistent **"Update Failed"** issue on the test pages. This mandate ensures that:
+    * **Database Integration:** Any new database fields required for the map feature are correctly added and finalized.
+    * **Visibility Guarantee:** All UI components (map, slider) are correctly rendered and integrated into the **Discovery Settings** page for both Web and Mobile platforms.
+
+4.  **FINAL INTEGRITY CHECKS:** Complete all remaining data integrity fixes, real-time pricing control, and navigation cleanup as previously audited.
