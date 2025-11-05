@@ -72,10 +72,15 @@ export async function DELETE(request, { params }) {
       });
     }
 
+    // Strip /api/objects/ prefix if present to get the database path
+    const dbPath = mediaUrl.startsWith('/api/objects/') 
+      ? mediaUrl.replace('/api/objects/', '') 
+      : mediaUrl;
+
     // Delete from database
     await sql`
       DELETE FROM profile_media
-      WHERE user_id = ${userId} AND url = ${mediaUrl}
+      WHERE user_id = ${userId} AND url = ${dbPath}
     `;
 
     return new Response(JSON.stringify({ success: true }), {

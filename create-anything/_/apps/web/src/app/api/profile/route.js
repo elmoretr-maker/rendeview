@@ -16,8 +16,15 @@ export async function GET(request) {
              education, relationship_goals, drinking, smoking, exercise,
              religion, children_preference, pets, location, max_distance, latitude, longitude
       FROM auth_users WHERE id = ${userId} LIMIT 1`;
-    const media =
+    const mediaRows =
       await sql`SELECT id, type, url, sort_order FROM profile_media WHERE user_id = ${userId} ORDER BY sort_order ASC, id ASC`;
+    
+    // Transform media URLs to include /api/objects/ prefix for display
+    const media = mediaRows.map(m => ({
+      ...m,
+      url: `/api/objects/${m.url}`
+    }));
+    
     return Response.json({ user: rows?.[0] || null, media });
   } catch (err) {
     console.error("GET /api/profile error", err);

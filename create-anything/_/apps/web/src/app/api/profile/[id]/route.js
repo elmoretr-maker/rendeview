@@ -18,9 +18,15 @@ export async function GET(request, { params }) {
     if (!rows?.[0]) {
       return Response.json({ error: "Not found" }, { status: 404 });
     }
-    const media = await sql`
+    const mediaRows = await sql`
       SELECT id, type, url, sort_order FROM profile_media WHERE user_id = ${userId}
       ORDER BY sort_order ASC, id ASC`;
+    
+    // Transform media URLs to include /api/objects/ prefix for display
+    const media = mediaRows.map(m => ({
+      ...m,
+      url: `/api/objects/${m.url}`
+    }));
 
     return Response.json({ user: rows[0], media });
   } catch (err) {
