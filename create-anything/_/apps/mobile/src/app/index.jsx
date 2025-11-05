@@ -10,9 +10,21 @@ export default function Index() {
 
   useEffect(() => {
     let isMounted = true;
+    let safetyTimeoutId = null;
 
     const routeNext = async () => {
       if (!isReady) return;
+
+      // Safety timeout: if routing takes longer than 10 seconds, show error
+      safetyTimeoutId = setTimeout(() => {
+        if (isMounted) {
+          console.error("[INDEX] ⚠️ SAFETY TIMEOUT: Routing took too long");
+          setError({
+            message: "Taking too long to connect. Please check your internet connection.",
+            error: "Timeout after 10 seconds"
+          });
+        }
+      }, 10000);
 
       console.log("[INDEX] ===== COMPREHENSIVE TRAFFIC CHECK SEQUENCE =====");
       console.log("[INDEX] Step 1: Authentication Check - isReady:", isReady, "hasLocalAuth:", !!auth);
@@ -119,11 +131,18 @@ export default function Index() {
         console.log("[INDEX] ✅ STEP 2 PASSED: Onboarding complete");
         console.log("[INDEX] ✅✅✅ ALL CHECKS PASSED ✅✅✅");
         console.log("[INDEX] → Routing to /discovery (Main Application Dashboard)");
+        
+        // Clear safety timeout before routing
+        if (safetyTimeoutId) clearTimeout(safetyTimeoutId);
+        
         router.replace("/(tabs)/discovery");
         return;
 
       } catch (e) {
         if (!isMounted) return;
+        
+        // Clear safety timeout on error
+        if (safetyTimeoutId) clearTimeout(safetyTimeoutId);
         
         console.error("[INDEX] ⚠️ Network/fetch error during routing logic:", e);
         console.error("[INDEX] Error details:", e.name, e.message);
@@ -145,6 +164,7 @@ export default function Index() {
 
     return () => {
       isMounted = false;
+      if (safetyTimeoutId) clearTimeout(safetyTimeoutId);
     };
   }, [isReady, auth, router]);
 
@@ -173,6 +193,7 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color="#5B3BAF" />
+      <Text style={styles.loadingText}>Loading...</Text>
     </View>
   );
 }
@@ -182,8 +203,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F9F9F9",
+    backgroundColor: "#FFFFFF",
     padding: 20,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#5B3BAF",
+    fontWeight: "600",
   },
   errorTitle: {
     fontSize: 24,
