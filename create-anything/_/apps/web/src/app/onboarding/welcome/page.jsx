@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router";
-import { CheckCircle, Shield, Heart, Users } from "lucide-react";
+import { CheckCircle, Shield, Heart, Users, ChevronLeft } from "lucide-react";
 import logoImage from "@/assets/logo-centered.png";
 import {
   Box,
@@ -44,7 +44,35 @@ export default function Welcome() {
   ];
 
   return (
-    <Box minH="100vh" display="flex" flexDirection="column" bg="gray.50">
+    <Box minH="100vh" display="flex" flexDirection="column" bg="gray.50" position="relative">
+      <Button
+        leftIcon={<ChevronLeft size={20} />}
+        variant="outline"
+        size="sm"
+        position="absolute"
+        top={6}
+        left={6}
+        colorScheme="purple"
+        borderWidth={2}
+        borderColor="purple.500"
+        color="purple.600"
+        fontFamily="'Inter', sans-serif"
+        fontWeight="semibold"
+        bg="white"
+        zIndex={10}
+        _hover={{ 
+          bg: "purple.50", 
+          borderColor: "purple.600",
+          color: "purple.700"
+        }}
+        _active={{
+          bg: "purple.100"
+        }}
+        onClick={() => navigate("/welcome")}
+      >
+        Back
+      </Button>
+      
       <Container maxW="4xl" px={8} py={12} flex={1}>
         <VStack spacing={12} mb={12}>
           <VStack textAlign="center" spacing={3}>
