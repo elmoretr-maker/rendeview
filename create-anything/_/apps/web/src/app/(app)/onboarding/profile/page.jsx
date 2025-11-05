@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Camera, Upload, X, Trash2, Video, PlayCircle, ArrowLeft } from "lucide-react";
+import { Camera, Upload, X, Trash2, Video, PlayCircle, ArrowLeft, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { getTierLimits, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
@@ -17,6 +17,31 @@ const COLORS = {
   cardBg: "#F3F4F6",
 };
 
+const INTERESTS_CONFIG = {
+  MIN_REQUIRED: 0,
+  MAX_ALLOWED: 10,
+  OPTIONS: [
+    'Anime', 'Astronomy', 'Astrology', 'BBQ & Grilling', 'Basketball', 'Baking', 
+    'Beach', 'Board Games', 'Camping', 'Career Development', 'Cars & Motorcycles',
+    'Chess', 'Clubbing', 'Coffee', 'Comics & Manga', 'Concerts', 'Cooking',
+    'Craft Beer', 'Crafts', 'Crossword Puzzles', 'Cycling', 'DIY Projects',
+    'Dance', 'Drawing', 'Entrepreneurship', 'Fashion', 'Festivals', 'Film & Movies',
+    'Fishing', 'Foodie', 'Gardening', 'Gaming', 'Golf', 'Gym', 'Hiking',
+    'History', 'Home Brewing', 'Interior Design', 'Investing', 'Karaoke',
+    'Kayaking', 'Languages', 'Live Music', 'Magic Tricks', 'Martial Arts',
+    'Meditation', 'Minimalism', 'Mountain Climbing', 'Music', 'Nature Walks',
+    'Networking', 'Networking Events', 'Painting', 'Pets & Animals', 'Philosophy',
+    'Photography', 'Playing Instrument', 'Podcasts', 'Poetry', 'Politics',
+    'Psychology', 'Public Speaking', 'Reading', 'Restaurant Hopping', 'Road Trips',
+    'Rock Climbing', 'Running', 'Science', 'Sculpting', 'Self-improvement',
+    'Singing', 'Skiing', 'Sneakers', 'Snowboarding', 'Soccer', 'Stand-up Comedy',
+    'Streaming', 'Surfing', 'Sustainable Living', 'Swimming', 'Tech & Startups',
+    'Tennis', 'Theater', 'Thrift Shopping', 'Travel', 'Trivia Nights',
+    'Vegan Cooking', 'Video Games', 'Vintage Collecting', 'Volleyball',
+    'Volunteering', 'Wine Bars', 'Wine Tasting', 'Writing', 'Yoga'
+  ]
+};
+
 function ConsolidatedProfileOnboardingContent() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -25,7 +50,9 @@ function ConsolidatedProfileOnboardingContent() {
   const [interests, setInterests] = useState([]);
   const [newInterest, setNewInterest] = useState("");
   const [showVideoRecorder, setShowVideoRecorder] = useState(false);
+  const [showInterestsModal, setShowInterestsModal] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const totalSteps = 4;
   const stepIndex = 4;
@@ -77,27 +104,39 @@ function ConsolidatedProfileOnboardingContent() {
     }
   }, [photos.length, limits.photos]);
 
+  const handlePhotoStart = useCallback(() => {
+    setUploadingPhoto(true);
+  }, []);
+
   const handlePhotoComplete = useCallback(
     async (result) => {
-      if (result.successful && result.successful.length > 0) {
-        const uploadURL = result.successful[0].uploadURL;
-        try {
+      try {
+        if (result.successful && result.successful.length > 0) {
+          const uploadURL = result.successful[0].uploadURL;
           const res = await fetch("/api/profile/media", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ mediaURL: uploadURL, type: "photo" }),
           });
           if (!res.ok) throw new Error("Failed to save photo");
-          toast.success("Photo uploaded successfully");
+          toast.success("Photo uploaded successfully!");
           queryClient.invalidateQueries({ queryKey: ["profile"] });
-        } catch (e) {
-          console.error(e);
-          toast.error("Failed to save photo");
         }
+      } catch (e) {
+        console.error(e);
+        toast.error("Failed to save photo");
+      } finally {
+        setUploadingPhoto(false);
       }
     },
     [queryClient]
   );
+
+  const handlePhotoError = useCallback((error) => {
+    console.error("Upload error:", error);
+    toast.error("Failed to upload photo");
+    setUploadingPhoto(false);
+  }, []);
 
   const deleteMutation = useMutation({
     mutationFn: async ({ mediaUrl }) => {
@@ -238,30 +277,22 @@ function ConsolidatedProfileOnboardingContent() {
           <label className="block mb-2 font-semibold" style={{ color: COLORS.text }}>
             Interests & Hobbies (optional)
           </label>
-          <div className="flex gap-2 mb-3">
-            <input
-              type="text"
-              className="flex-1 border border-gray-300 rounded-lg px-4 py-2"
-              placeholder="Add an interest..."
-              value={newInterest}
-              onChange={(e) => setNewInterest(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addInterest())}
-            />
-            <button
-              onClick={addInterest}
-              disabled={!newInterest.trim() || interests.length >= 10}
-              className="px-4 py-2 rounded-lg text-white font-semibold disabled:opacity-50"
-              style={{ backgroundColor: COLORS.primary }}
-            >
-              Add
-            </button>
-          </div>
+          
+          <button
+            onClick={() => setShowInterestsModal(true)}
+            className="w-full border-2 border-dashed border-gray-300 rounded-lg px-4 py-3 hover:border-purple-400 transition-colors flex items-center justify-center gap-2 mb-3"
+            style={{ color: COLORS.primary }}
+          >
+            <Plus size={20} />
+            <span className="font-medium">Choose from {INTERESTS_CONFIG.OPTIONS.length} interests</span>
+          </button>
+
           {interests.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-3">
               {interests.map((interest, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 px-3 py-1 rounded-full text-sm"
+                  className="flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium"
                   style={{ backgroundColor: COLORS.lightGray, color: COLORS.text }}
                 >
                   <span>{interest}</span>
@@ -272,33 +303,42 @@ function ConsolidatedProfileOnboardingContent() {
               ))}
             </div>
           )}
-          <p className="text-sm text-gray-500 mt-2">{interests.length}/10 interests</p>
+          <p className="text-sm text-gray-500">{interests.length}/{INTERESTS_CONFIG.MAX_ALLOWED} interests selected</p>
         </div>
 
         {/* Photos Section */}
         <div className="mb-6 p-6 rounded-2xl shadow-md" style={{ backgroundColor: COLORS.cardBg }}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold" style={{ color: COLORS.text }}>
-              Photos ({photos.length}/{limits.photos}) *
-            </h2>
+            <div>
+              <h2 className="text-xl font-bold" style={{ color: COLORS.text }}>
+                Photos *
+              </h2>
+              <p className="text-sm mt-1" style={{ color: photos.length >= 2 ? "#10B981" : COLORS.error }}>
+                {photos.length >= 2 ? `✓ ${photos.length} photos uploaded` : `${photos.length}/2 photos (${2 - photos.length} more needed)`}
+              </p>
+            </div>
             <ObjectUploader
               maxNumberOfFiles={1}
               maxFileSize={10485760}
               allowedFileTypes={["image/*"]}
               onGetUploadParameters={handlePhotoUpload}
+              onUploadStart={handlePhotoStart}
               onComplete={handlePhotoComplete}
-              buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
+              onUploadError={handlePhotoError}
+              buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2 disabled:opacity-50"
               buttonStyle={{ backgroundColor: COLORS.primary }}
+              disabled={uploadingPhoto || photos.length >= limits.photos}
             >
               <Upload size={18} />
-              Add Photo
+              {uploadingPhoto ? "Uploading..." : "Add Photo"}
             </ObjectUploader>
           </div>
 
           {photos.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Upload size={48} className="mx-auto mb-3 opacity-40" />
-              <p>Add at least 2 photos to continue</p>
+              <p className="font-medium">No photos yet</p>
+              <p className="text-sm mt-1">Click "Add Photo" above to upload</p>
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-3">
@@ -309,18 +349,33 @@ function ConsolidatedProfileOnboardingContent() {
                     alt={`Photo ${idx + 1}`}
                     className="w-full h-32 object-cover"
                   />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs py-1 px-2">
+                    Photo {idx + 1}
+                  </div>
                   <button
                     onClick={() => deleteMutation.mutate({ mediaUrl: photo.url })}
                     disabled={deleteMutation.isPending}
-                    className="absolute top-1 right-1 p-1.5 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600"
+                    className="absolute top-1 right-1 p-1.5 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 opacity-90"
                   >
                     <Trash2 size={14} />
                   </button>
                 </div>
               ))}
+              {uploadingPhoto && (
+                <div className="relative rounded-xl overflow-hidden shadow-md bg-gray-200 flex items-center justify-center h-32">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-2" style={{ borderColor: COLORS.primary }}></div>
+                    <p className="text-xs text-gray-600">Uploading...</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
-          <p className="text-sm text-gray-500 mt-3">Minimum 2 photos required to continue</p>
+          <p className="text-sm text-gray-500 mt-3">
+            {photos.length >= limits.photos 
+              ? `Photo limit reached (${limits.photos}/${limits.photos})` 
+              : `You can upload up to ${limits.photos} photos`}
+          </p>
         </div>
 
         {/* Videos Section */}
@@ -395,6 +450,95 @@ function ConsolidatedProfileOnboardingContent() {
           }}
         />
       )}
+
+      {showInterestsModal && (
+        <InterestsModal
+          selectedInterests={interests}
+          onSelect={(newInterests) => {
+            setInterests(newInterests);
+            setShowInterestsModal(false);
+          }}
+          onClose={() => setShowInterestsModal(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+function InterestsModal({ selectedInterests, onSelect, onClose }) {
+  const [tempSelected, setTempSelected] = useState([...selectedInterests]);
+
+  const toggleInterest = (interest) => {
+    if (tempSelected.includes(interest)) {
+      setTempSelected(tempSelected.filter(i => i !== interest));
+    } else {
+      if (tempSelected.length < INTERESTS_CONFIG.MAX_ALLOWED) {
+        setTempSelected([...tempSelected, interest]);
+      } else {
+        toast.error(`Maximum ${INTERESTS_CONFIG.MAX_ALLOWED} interests allowed`);
+      }
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[85vh] overflow-hidden flex flex-col">
+        <div className="p-6 border-b">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-2xl font-bold" style={{ color: COLORS.text }}>
+              Choose Interests
+            </h2>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <X size={24} />
+            </button>
+          </div>
+          <p className="text-sm text-gray-600">
+            Select up to {INTERESTS_CONFIG.MAX_ALLOWED} interests that describe you
+          </p>
+          <p className="text-sm mt-1" style={{ color: tempSelected.length > 0 ? COLORS.primary : COLORS.text }}>
+            {tempSelected.length} selected
+          </p>
+        </div>
+
+        <div className="p-6 overflow-y-auto flex-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {INTERESTS_CONFIG.OPTIONS.map((interest) => {
+              const isSelected = tempSelected.includes(interest);
+              return (
+                <button
+                  key={interest}
+                  onClick={() => toggleInterest(interest)}
+                  className="px-4 py-3 rounded-lg font-medium text-sm transition-all border-2"
+                  style={{
+                    backgroundColor: isSelected ? COLORS.primary : COLORS.white,
+                    borderColor: isSelected ? COLORS.primary : "#E5E7EB",
+                    color: isSelected ? COLORS.white : COLORS.text,
+                  }}
+                >
+                  {interest}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="p-6 border-t bg-gray-50 flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 px-6 py-3 rounded-lg border-2 border-gray-300 font-semibold hover:bg-gray-100 transition-colors"
+            style={{ color: COLORS.text }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onSelect(tempSelected)}
+            className="flex-1 px-6 py-3 rounded-lg text-white font-semibold shadow-md"
+            style={{ backgroundColor: COLORS.primary }}
+          >
+            Done ({tempSelected.length})
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

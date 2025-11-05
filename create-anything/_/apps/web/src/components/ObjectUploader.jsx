@@ -13,10 +13,13 @@ export function ObjectUploader({
   maxFileSize = 10485760, // 10MB default
   onGetUploadParameters,
   onComplete,
+  onUploadStart,
+  onUploadError,
   buttonClassName,
   buttonStyle,
   children,
   allowedFileTypes = null,
+  disabled = false,
 }) {
   const [showModal, setShowModal] = useState(false);
   const [uppy] = useState(() => {
@@ -34,6 +37,16 @@ export function ObjectUploader({
         shouldUseMultipart: false,
         getUploadParameters: onGetUploadParameters,
       })
+      .on("upload", () => {
+        if (onUploadStart) {
+          onUploadStart();
+        }
+      })
+      .on("upload-error", (file, error) => {
+        if (onUploadError) {
+          onUploadError(error);
+        }
+      })
       .on("complete", (result) => {
         if (onComplete) {
           onComplete(result);
@@ -48,6 +61,7 @@ export function ObjectUploader({
         onClick={() => setShowModal(true)} 
         className={buttonClassName}
         style={buttonStyle}
+        disabled={disabled}
       >
         {children}
       </button>
