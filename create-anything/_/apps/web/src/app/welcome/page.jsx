@@ -1,12 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router";
-import { CheckCircle, Shield, Heart, Users } from "lucide-react";
 import logoImage from "@/assets/logo-centered.png";
 import {
   Box,
   Container,
   VStack,
-  HStack,
   Heading,
   Text,
   Button,
@@ -16,101 +14,63 @@ import {
 export default function Welcome() {
   const navigate = useNavigate();
 
-  const valueProps = [
-    {
-      icon: CheckCircle,
-      title: "Video-First Dating",
-      description:
-        "The only dating app where you see who you're really meeting. Built for authentic introductions and real-time conversations.",
-    },
-    {
-      icon: Shield,
-      title: "Safety First",
-      description:
-        "Advanced verification and safety features to protect your time and ensure a secure experience.",
-    },
-    {
-      icon: Heart,
-      title: "Meaningful Connections",
-      description:
-        "Quality matches based on compatibility and genuine connections.",
-    },
-    {
-      icon: Users,
-      title: "Inclusive Community",
-      description:
-        "A welcoming space for everyone to find authentic relationships.",
-    },
-  ];
-
   return (
-    <Box minH="100vh" display="flex" flexDirection="column" bg="gray.50">
-      <Container maxW="4xl" px={8} py={12} flex={1}>
-        <VStack spacing={12} mb={12}>
-          <VStack textAlign="center" spacing={3}>
+    <Box minH="100vh" display="flex" flexDirection="column" bg="white">
+      <Container maxW="md" px={8} py={16} flex={1} display="flex" alignItems="center">
+        <VStack spacing={8} w="full" textAlign="center">
+          <VStack spacing={4}>
             <Image
               src={logoImage}
               alt="Rende-View Logo"
-              w="12"
-              h="12"
+              w="20"
+              h="20"
               objectFit="contain"
             />
             <Heading
-              size="2xl"
+              size="xl"
               fontFamily="'Playfair Display', serif"
               fontWeight="bold"
-              color="purple.600"
+              color="gray.800"
             >
-              Date Smarter, Not Harder
+              Rende-View
             </Heading>
-            <Text fontSize="lg" opacity={0.8} color="gray.700">
-              No Catfishing. Know who they are before you meet. Your time is valuable—only pay for connections that matter.
-            </Text>
           </VStack>
 
-          <VStack spacing={6} w="full" mb={12}>
-            {valueProps.map((prop, index) => (
-              <HStack key={index} align="start" spacing={4} w="full">
-                <Box as={prop.icon} w={7} h={7} flexShrink={0} color="purple.600" />
-                <VStack align="start" spacing={1} flex={1}>
-                  <Heading size="md" fontWeight="semibold" color="gray.700">
-                    {prop.title}
-                  </Heading>
-                  <Text fontSize="sm" opacity={0.7} color="gray.700">
-                    {prop.description}
-                  </Text>
-                </VStack>
-              </HStack>
-            ))}
-          </VStack>
-
-          <VStack spacing={4} textAlign="center" mb={6}>
-            <Button
-              onClick={() => navigate("/account/signup")}
-              px={10}
-              py={6}
-              borderRadius="full"
-              colorScheme="purple"
-              fontSize="lg"
-              shadow="lg"
-            >
-              Join Now
-            </Button>
+          <VStack spacing={3} w="full" pt={4}>
             <Button
               onClick={() => navigate("/account/signin")}
-              variant="link"
-              fontSize="sm"
+              w="full"
+              size="lg"
+              variant="outline"
+              colorScheme="purple"
+              borderWidth={2}
+              fontSize="md"
               fontWeight="semibold"
-              color="purple.600"
             >
               Sign In
             </Button>
+            <Button
+              onClick={() => navigate("/onboarding/welcome")}
+              w="full"
+              size="lg"
+              colorScheme="purple"
+              fontSize="md"
+              fontWeight="semibold"
+            >
+              Join Now
+            </Button>
           </VStack>
 
-          <Text fontSize="xs" textAlign="center" opacity={0.6} color="gray.700">
+          <Text fontSize="xs" textAlign="center" opacity={0.6} color="gray.600" pt={8}>
             By continuing, you agree to our{" "}
-            <Text as="span" color="purple.600" textDecoration="underline" cursor="pointer">Terms of Service</Text> and{" "}
-            <Text as="span" color="purple.600" textDecoration="underline" cursor="pointer">Privacy Policy</Text>.
+            <Text as="span" color="purple.600" textDecoration="underline" cursor="pointer">
+              Terms of Service
+            </Text>{" "}
+            and{" "}
+            <Text as="span" color="purple.600" textDecoration="underline" cursor="pointer">
+              Privacy Policy
+            </Text>
+            .
           </Text>
         </VStack>
       </Container>
