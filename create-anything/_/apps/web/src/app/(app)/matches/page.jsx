@@ -173,12 +173,29 @@ function MatchesContent() {
                 >
                   <CardBody p={4}>
                     <HStack spacing={3}>
-                      <Avatar
-                        size="md"
-                        src={item.user.photo ? getAbsoluteUrl(item.user.photo) : undefined}
-                        name={item.user.name || `User ${item.user.id}`}
+                      <Box
+                        w="48px"
+                        h="48px"
+                        borderRadius="full"
+                        overflow="hidden"
+                        flexShrink={0}
                         bg="gray.200"
-                      />
+                      >
+                        {item.user.photo ? (
+                          <Box
+                            as="img"
+                            src={getAbsoluteUrl(item.user.photo)}
+                            alt={item.user.name || `User ${item.user.id}`}
+                            w="full"
+                            h="full"
+                            objectFit="cover"
+                          />
+                        ) : (
+                          <Flex w="full" h="full" align="center" justify="center" bg="gray.300" color="gray.600" fontWeight="semibold" fontSize="lg">
+                            {(item.user.name || 'U').charAt(0).toUpperCase()}
+                          </Flex>
+                        )}
+                      </Box>
                       <VStack align="start" spacing={0} flex={1}>
                         <Text fontWeight="semibold" color="gray.800">
                           {item.user.name || `User ${item.user.id}`}

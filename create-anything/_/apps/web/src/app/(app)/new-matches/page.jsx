@@ -213,13 +213,30 @@ export default function NewMatches() {
                     
                     <HStack spacing={4} w="full" align="center">
                       <Box position="relative">
-                        <Avatar
-                          size="lg"
-                          src={item.user.photo ? getAbsoluteUrl(item.user.photo) : undefined}
-                          name={item.user.name || `User ${item.user.id}`}
+                        <Box
+                          w="56px"
+                          h="56px"
+                          borderRadius="full"
+                          overflow="hidden"
                           ring={4}
                           ringColor="teal.500"
-                        />
+                          bg="gray.200"
+                        >
+                          {item.user.photo ? (
+                            <Box
+                              as="img"
+                              src={getAbsoluteUrl(item.user.photo)}
+                              alt={item.user.name || `User ${item.user.id}`}
+                              w="full"
+                              h="full"
+                              objectFit="cover"
+                            />
+                          ) : (
+                            <Flex w="full" h="full" align="center" justify="center" bg="teal.100" color="teal.700" fontWeight="bold">
+                              {(item.user.name || 'U').charAt(0).toUpperCase()}
+                            </Flex>
+                          )}
+                        </Box>
                         <Flex
                           position="absolute"
                           bottom={-1}
