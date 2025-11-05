@@ -9,7 +9,7 @@ export default function Page() {
   }
   
   if (!user) {
-    return <Navigate to="/onboarding/welcome" replace />;
+    return <Navigate to="/welcome" replace />;
   }
   
   if (user.role === 'admin') {
