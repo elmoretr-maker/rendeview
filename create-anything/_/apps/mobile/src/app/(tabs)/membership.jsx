@@ -11,6 +11,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -76,6 +82,11 @@ export default function Membership() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [selectedTier, setSelectedTier] = useState(null);
+  const [loaded, errorFont] = useFonts({
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
 
   const { data: userData, isLoading } = useQuery({
     queryKey: ["user"],
@@ -143,12 +154,12 @@ export default function Membership() {
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 8 }}>
           <Ionicons name="diamond" size={28} color={COLORS.primary} />
-          <Text style={{ fontSize: 24, fontWeight: "700", color: COLORS.text }}>
+          <Text style={{ fontSize: 24, fontWeight: "700", color: COLORS.text, fontFamily: "Inter_700Bold" }}>
             Membership
           </Text>
         </View>
-        <Text style={{ fontSize: 14, color: "#666", marginBottom: 24 }}>
-          Your current tier: <Text style={{ fontWeight: "700", color: COLORS.primary }}>{TIERS[currentTier].name}</Text>
+        <Text style={{ fontSize: 14, color: "#666", marginBottom: 24, fontFamily: "Inter_400Regular" }}>
+          Your current tier: <Text style={{ fontWeight: "700", color: COLORS.primary, fontFamily: "Inter_700Bold" }}>{TIERS[currentTier].name}</Text>
         </Text>
 
         {Object.entries(TIERS).map(([key, tier]) => (
@@ -182,21 +193,21 @@ export default function Membership() {
                   borderRadius: 12,
                 }}
               >
-                <Text style={{ color: "#FFFFFF", fontSize: 11, fontWeight: "700" }}>
+                <Text style={{ color: "#FFFFFF", fontSize: 11, fontWeight: "700", fontFamily: "Inter_700Bold" }}>
                   MOST POPULAR
                 </Text>
               </View>
             )}
 
             <View style={{ marginBottom: 12 }}>
-              <Text style={{ fontSize: 20, fontWeight: "700", color: COLORS.text }}>
+              <Text style={{ fontSize: 20, fontWeight: "700", color: COLORS.text, fontFamily: "Inter_700Bold" }}>
                 {tier.name}
               </Text>
               <View style={{ flexDirection: "row", alignItems: "baseline", marginTop: 4 }}>
-                <Text style={{ fontSize: 28, fontWeight: "700", color: COLORS.primary }}>
+                <Text style={{ fontSize: 28, fontWeight: "700", color: COLORS.primary, fontFamily: "Inter_700Bold" }}>
                   {tier.price}
                 </Text>
-                <Text style={{ fontSize: 14, color: "#666", marginLeft: 4 }}>
+                <Text style={{ fontSize: 14, color: "#666", marginLeft: 4, fontFamily: "Inter_400Regular" }}>
                   {tier.period}
                 </Text>
               </View>
@@ -206,7 +217,7 @@ export default function Membership() {
               {tier.features.map((feature, idx) => (
                 <View key={idx} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                   <Ionicons name="checkmark-circle" size={20} color={COLORS.secondary} />
-                  <Text style={{ fontSize: 14, color: COLORS.text }}>
+                  <Text style={{ fontSize: 14, color: COLORS.text, fontFamily: "Inter_400Regular" }}>
                     {feature}
                   </Text>
                 </View>
@@ -222,7 +233,7 @@ export default function Membership() {
                   alignItems: "center",
                 }}
               >
-                <Text style={{ color: COLORS.primary, fontWeight: "700" }}>
+                <Text style={{ color: COLORS.primary, fontWeight: "700", fontFamily: "Inter_700Bold" }}>
                   Current Plan
                 </Text>
               </View>
@@ -238,7 +249,7 @@ export default function Membership() {
                   opacity: upgradeMutation.isPending ? 0.6 : 1,
                 }}
               >
-                <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700" }}>
+                <Text style={{ color: "#FFFFFF", fontSize: 15, fontWeight: "700", fontFamily: "Inter_700Bold" }}>
                   {key === "free" ? "Downgrade" : "Upgrade to " + tier.name}
                 </Text>
               </TouchableOpacity>
@@ -247,7 +258,7 @@ export default function Membership() {
         ))}
 
         <View style={{ marginTop: 16, paddingVertical: 12, alignItems: "center" }}>
-          <Text style={{ fontSize: 13, color: "#999", textAlign: "center" }}>
+          <Text style={{ fontSize: 13, color: "#999", textAlign: "center", fontFamily: "Inter_400Regular" }}>
             Need help? Contact support from Profile → Settings
           </Text>
         </View>

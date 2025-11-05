@@ -24,6 +24,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/utils/auth/useAuth";
 import { apiFetch, getAbsoluteUrl } from "@/utils/api/apiFetch";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -32,6 +38,14 @@ const COLORS = {
   lightGray: "#F3F4F6",
   white: "#FFFFFF",
   error: "#EF4444",
+};
+
+const STYLES = {
+  text: {
+    regular: { fontFamily: "Inter_400Regular" },
+    semiBold: { fontFamily: "Inter_600SemiBold" },
+    bold: { fontFamily: "Inter_700Bold" },
+  },
 };
 
 // Interests configuration
@@ -96,6 +110,11 @@ export default function Profile() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { signOut, isReady } = useAuth();
+  const [loaded, errorFont] = useFonts({
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
   
   // View/Edit mode toggle
   const [isEditMode, setIsEditMode] = useState(false);
