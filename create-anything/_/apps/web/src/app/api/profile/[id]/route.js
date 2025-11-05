@@ -18,6 +18,15 @@ export async function GET(request, { params }) {
     if (!rows?.[0]) {
       return Response.json({ error: "Not found" }, { status: 404 });
     }
+    
+    // Transform primary_photo_url: /objects/... -> /api/objects/...
+    const user = {
+      ...rows[0],
+      primary_photo_url: rows[0].primary_photo_url && rows[0].primary_photo_url.startsWith('/objects/')
+        ? `/api${rows[0].primary_photo_url}`
+        : rows[0].primary_photo_url
+    };
+    
     const mediaRows = await sql`
       SELECT id, type, url, sort_order FROM profile_media WHERE user_id = ${userId}
       ORDER BY sort_order ASC, id ASC`;
@@ -29,7 +38,7 @@ export async function GET(request, { params }) {
       url: m.url.startsWith('/objects/') ? `/api${m.url}` : m.url
     }));
 
-    return Response.json({ user: rows[0], media });
+    return Response.json({ user, media });
   } catch (err) {
     console.error("GET /api/profile/[id] error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });

@@ -16,6 +16,15 @@ export async function GET(request) {
              education, relationship_goals, drinking, smoking, exercise,
              religion, children_preference, pets, location, max_distance, latitude, longitude
       FROM auth_users WHERE id = ${userId} LIMIT 1`;
+    
+    // Transform primary_photo_url: /objects/... -> /api/objects/...
+    const user = rows?.[0] ? {
+      ...rows[0],
+      primary_photo_url: rows[0].primary_photo_url && rows[0].primary_photo_url.startsWith('/objects/')
+        ? `/api${rows[0].primary_photo_url}`
+        : rows[0].primary_photo_url
+    } : null;
+    
     const mediaRows =
       await sql`SELECT id, type, url, sort_order FROM profile_media WHERE user_id = ${userId} ORDER BY sort_order ASC, id ASC`;
     
@@ -26,7 +35,7 @@ export async function GET(request) {
       url: m.url.startsWith('/objects/') ? `/api${m.url}` : m.url
     }));
     
-    return Response.json({ user: rows?.[0] || null, media });
+    return Response.json({ user, media });
   } catch (err) {
     console.error("GET /api/profile error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
