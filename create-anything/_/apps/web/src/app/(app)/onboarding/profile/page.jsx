@@ -3,6 +3,48 @@ import { useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Camera, Upload, X, Trash2, Video, PlayCircle, ArrowLeft, Plus } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Box,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Container,
+  FormControl,
+  FormLabel,
+  Grid,
+  GridItem,
+  Heading,
+  Input,
+  Select,
+  Textarea,
+  Text,
+  Tag,
+  TagLabel,
+  TagCloseButton,
+  Progress,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
+  VStack,
+  HStack,
+  Flex,
+  IconButton,
+  Badge,
+  Divider,
+  AspectRatio,
+  useDisclosure,
+  Wrap,
+  WrapItem,
+} from "@chakra-ui/react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { getTierLimits, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
@@ -92,11 +134,11 @@ function ConsolidatedProfileOnboardingContent() {
   
   // Location preferences
   const [location, setLocation] = useState("");
-  const [maxDistance, setMaxDistance] = useState(50); // Default 50km
+  const [maxDistance, setMaxDistance] = useState(50);
 
   const totalSteps = 4;
   const stepIndex = 4;
-  const progressPct = `${(stepIndex / totalSteps) * 100}%`;
+  const progressPct = (stepIndex / totalSteps) * 100;
 
   const { data: profileData, isLoading } = useQuery({
     queryKey: ["profile"],
@@ -119,7 +161,6 @@ function ConsolidatedProfileOnboardingContent() {
     if (user.bio) setBio(user.bio);
     if (user.interests && Array.isArray(user.interests)) setInterests(user.interests);
     
-    // Load preference fields
     if (user.gender) setGender(user.gender);
     if (user.sexual_orientation) setSexualOrientation(user.sexual_orientation);
     if (user.looking_for) setLookingFor(user.looking_for);
@@ -134,7 +175,6 @@ function ConsolidatedProfileOnboardingContent() {
     if (user.children_preference) setChildrenPreference(user.children_preference);
     if (user.pets) setPets(user.pets);
     
-    // Load location preferences
     if (user.location) setLocation(user.location);
     if (typeof user.max_distance === 'number') setMaxDistance(user.max_distance);
   }, [user]);
@@ -228,14 +268,12 @@ function ConsolidatedProfileOnboardingContent() {
       toast.error("Please enter your name");
       return;
     }
-
     if (photos.length < 2) {
-      toast.error("Please add at least 2 photos to continue");
+      toast.error("Please upload at least 2 photos");
       return;
     }
-
     if (interests.length < INTERESTS_CONFIG.MIN_REQUIRED) {
-      toast.error(`Please select at least ${INTERESTS_CONFIG.MIN_REQUIRED} interests for better matches`);
+      toast.error(`Please select at least ${INTERESTS_CONFIG.MIN_REQUIRED} interests`);
       return;
     }
 
@@ -268,9 +306,9 @@ function ConsolidatedProfileOnboardingContent() {
       if (!res.ok) throw new Error("Failed to save profile");
       toast.success("Profile saved!");
       navigate("/discovery");
-    } catch (e) {
-      console.error(e);
-      toast.error("Could not save profile");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save profile");
     } finally {
       setSaving(false);
     }
@@ -278,356 +316,385 @@ function ConsolidatedProfileOnboardingContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: COLORS.white }}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: COLORS.primary }}></div>
-          <p className="mt-4" style={{ color: COLORS.text }}>Loading...</p>
-        </div>
-      </div>
+      <Container maxW="container.lg" py={8}>
+        <Text>Loading...</Text>
+      </Container>
     );
   }
 
+  const meetsRequirements = name.trim() && photos.length >= 2 && interests.length >= INTERESTS_CONFIG.MIN_REQUIRED;
+
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLORS.lightGray }}>
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate("/onboarding/membership")}
-          className="mb-6 flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white transition-all"
-          style={{ color: COLORS.textLight }}
-        >
-          <ArrowLeft size={20} />
-          <span className="font-medium">Back</span>
-        </button>
-
-        {/* Progress bar */}
-        <div className="mb-8">
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-2 rounded-full transition-all duration-500"
-              style={{ backgroundColor: COLORS.primary, width: progressPct }}
+    <Box minH="100vh" bg="gray.50">
+      <Box bg="white" borderBottom="1px" borderColor="gray.200" position="sticky" top={0} zIndex={10}>
+        <Container maxW="container.lg" py={4}>
+          <Flex alignItems="center" gap={4} mb={2}>
+            <IconButton
+              icon={<ArrowLeft />}
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
             />
-          </div>
-          <p className="text-sm mt-3 font-medium" style={{ color: COLORS.textLight }}>
-            Step {stepIndex} of {totalSteps} • Profile Setup
-          </p>
-        </div>
+            <Box flex={1}>
+              <Heading size="md" color="gray.800">Complete Your Profile</Heading>
+              <Text fontSize="sm" color="gray.600">Step {stepIndex} of {totalSteps}</Text>
+            </Box>
+          </Flex>
+          <Progress value={progressPct} colorScheme="purple" size="sm" borderRadius="full" />
+        </Container>
+      </Box>
 
-        {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4" style={{ color: COLORS.text }}>
-            Create Your Profile
-          </h1>
-          <p className="text-lg" style={{ color: COLORS.textLight }}>
-            Tell us about yourself to find compatible matches. {membershipTier.charAt(0).toUpperCase() + membershipTier.slice(1)} members can add up to {limits.photos} photos.
-          </p>
-        </div>
-
-        {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6 sm:p-8 mb-6" style={{ borderColor: COLORS.border }}>
-          {/* Name */}
-          <div className="mb-8">
-            <label className="block mb-3 text-base font-semibold" style={{ color: COLORS.text }}>
-              Display Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              className="w-full border-2 rounded-xl px-5 py-4 text-lg focus:outline-none focus:border-purple-500 transition-colors"
-              style={{ borderColor: COLORS.border }}
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          {/* Bio */}
-          <div className="mb-8">
-            <label className="block mb-3 text-base font-semibold" style={{ color: COLORS.text }}>
-              About Me <span className="text-sm font-normal text-gray-400">(optional)</span>
-            </label>
-            <textarea
-              className="w-full border-2 rounded-xl px-5 py-4 text-base focus:outline-none focus:border-purple-500 resize-none transition-colors"
-              style={{ borderColor: COLORS.border }}
-              rows={5}
-              placeholder="Share a bit about yourself, your hobbies, what you're looking for..."
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              maxLength={500}
-            />
-            <p className="text-sm mt-2" style={{ color: COLORS.textLight }}>{bio.length}/500 characters</p>
-          </div>
-
-          {/* Interests */}
-          <div className="mb-0">
-            <label className="block mb-3 text-base font-semibold" style={{ color: COLORS.text }}>
-              Interests & Hobbies <span className="text-red-500">*</span>
-              <span className="text-sm font-normal ml-2" style={{ color: COLORS.textLight }}>
-                (Select at least {INTERESTS_CONFIG.MIN_REQUIRED} for matching)
-              </span>
-            </label>
-            
-            <button
-              onClick={() => setShowInterestsModal(true)}
-              className="w-full border-2 border-dashed rounded-xl px-6 py-5 hover:border-purple-400 hover:bg-purple-50 transition-all flex items-center justify-center gap-3 mb-4"
-              style={{ borderColor: COLORS.border, color: COLORS.primary }}
-            >
-              <Plus size={24} strokeWidth={2.5} />
-              <span className="font-semibold text-base">Choose from {INTERESTS_CONFIG.OPTIONS.length} interests</span>
-            </button>
-
-            {interests.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {interests.map((interest, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium shadow-sm border"
-                    style={{ backgroundColor: COLORS.lightGray, color: COLORS.text, borderColor: COLORS.border }}
-                  >
-                    <span>{interest}</span>
-                    <button onClick={() => removeInterest(idx)} className="hover:text-red-500 transition-colors">
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div className="flex items-center justify-between">
-              <p className="text-sm" style={{ color: interests.length >= INTERESTS_CONFIG.MIN_REQUIRED ? COLORS.success : COLORS.textLight }}>
-                {interests.length >= INTERESTS_CONFIG.MIN_REQUIRED ? `✓ ${interests.length} interests selected` : `${interests.length}/${INTERESTS_CONFIG.MIN_REQUIRED} required`}
-              </p>
-              <p className="text-sm" style={{ color: COLORS.textLight }}>
-                Max {INTERESTS_CONFIG.MAX_ALLOWED}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Photos Section */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6 sm:p-8 mb-6" style={{ borderColor: COLORS.border }}>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.text }}>
-                Profile Photos <span className="text-red-500">*</span>
-              </h2>
-              <p className="text-base font-medium" style={{ color: photos.length >= 2 ? COLORS.success : COLORS.textLight }}>
-                {photos.length >= 2 ? `✓ ${photos.length} photos uploaded` : `${photos.length}/2 required (${2 - photos.length} more needed)`}
-              </p>
-            </div>
-            <ObjectUploader
-              maxNumberOfFiles={1}
-              maxFileSize={10485760}
-              allowedFileTypes={["image/*"]}
-              onGetUploadParameters={handlePhotoUpload}
-              onUploadStart={handlePhotoStart}
-              onComplete={handlePhotoComplete}
-              onUploadError={handlePhotoError}
-              buttonClassName="px-6 py-3.5 rounded-xl text-white font-semibold shadow-md flex items-center gap-2 disabled:opacity-50 hover:opacity-90 transition-opacity text-base whitespace-nowrap"
-              buttonStyle={{ backgroundColor: COLORS.primary }}
-              disabled={uploadingPhoto || photos.length >= limits.photos}
-            >
-              <Upload size={20} />
-              {uploadingPhoto ? "Uploading..." : "Add Photo"}
-            </ObjectUploader>
-          </div>
-
-          {photos.length === 0 ? (
-            <div className="text-center py-12 px-4 rounded-xl border-2 border-dashed" style={{ borderColor: COLORS.border, backgroundColor: COLORS.lightGray }}>
-              <Upload size={56} className="mx-auto mb-4 opacity-30" style={{ color: COLORS.textLight }} />
-              <p className="font-semibold text-lg mb-1" style={{ color: COLORS.text }}>No photos yet</p>
-              <p className="text-sm" style={{ color: COLORS.textLight }}>Click "Add Photo" above to get started</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {photos.map((photo, idx) => (
-                <div key={idx} className="relative group rounded-2xl overflow-hidden shadow-sm border aspect-square" style={{ borderColor: COLORS.border }}>
-                  <img
-                    src={photo.url}
-                    alt={`Photo ${idx + 1}`}
-                    className="w-full h-full object-cover"
+      <Container maxW="container.lg" py={8}>
+        <VStack spacing={6} align="stretch">
+          {/* Basic Info Card */}
+          <Card>
+            <CardHeader>
+              <Heading size="lg" color="gray.800">Basic Information</Heading>
+              <Text color="gray.600" mt={2}>Tell us about yourself</Text>
+            </CardHeader>
+            <CardBody>
+              <VStack spacing={6} align="stretch">
+                <FormControl isRequired>
+                  <FormLabel fontWeight="semibold" color="gray.700">Name</FormLabel>
+                  <Input
+                    variant="filled"
+                    size="lg"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter your name"
+                    focusBorderColor="brand.500"
+                    _hover={{ bg: "gray.100" }}
                   />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                    <p className="text-white text-sm font-medium">Photo {idx + 1}</p>
-                  </div>
-                  <button
-                    onClick={() => deleteMutation.mutate({ mediaUrl: photo.url })}
-                    disabled={deleteMutation.isPending}
-                    className="absolute top-2 right-2 p-2 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              ))}
-              {uploadingPhoto && (
-                <div className="relative rounded-2xl overflow-hidden shadow-sm border bg-gray-100 flex items-center justify-center aspect-square" style={{ borderColor: COLORS.border }}>
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-3 mx-auto mb-3" style={{ borderColor: COLORS.primary }}></div>
-                    <p className="text-sm font-medium" style={{ color: COLORS.textLight }}>Uploading...</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          <p className="text-sm mt-4" style={{ color: COLORS.textLight }}>
-            {photos.length >= limits.photos 
-              ? `✓ Photo limit reached (${limits.photos}/${limits.photos})` 
-              : `Upload up to ${limits.photos} photos • At least 2 required`}
-          </p>
-        </div>
+                </FormControl>
 
-        {/* Videos Section */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6 sm:p-8 mb-8" style={{ borderColor: COLORS.border }}>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div>
-              <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.text }}>
-                Video Introduction
-              </h2>
-              <p className="text-base font-medium" style={{ color: COLORS.textLight }}>
-                {videos.length > 0 ? `✓ ${videos.length} video uploaded` : 'Optional • Stand out with a video'}
-              </p>
-            </div>
-            <button
-              onClick={() => setShowVideoRecorder(true)}
-              disabled={videos.length >= limits.videos}
-              className="px-6 py-3.5 rounded-xl text-white font-semibold shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity text-base whitespace-nowrap"
-              style={{ backgroundColor: COLORS.secondary }}
-            >
-              <Camera size={20} />
-              Record Video
-            </button>
-          </div>
-
-          {videos.length === 0 ? (
-            <div className="text-center py-12 px-4 rounded-xl border-2 border-dashed" style={{ borderColor: COLORS.border, backgroundColor: COLORS.lightGray }}>
-              <Video size={56} className="mx-auto mb-4 opacity-30" style={{ color: COLORS.textLight }} />
-              <p className="font-semibold text-lg mb-1" style={{ color: COLORS.text }}>No video yet</p>
-              <p className="text-sm" style={{ color: COLORS.textLight }}>Record a short intro to stand out</p>
-              <p className="text-xs mt-2" style={{ color: COLORS.textLight }}>Camera-only recording prevents catfishing</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {videos.map((video, idx) => (
-                <div key={idx} className="relative group rounded-2xl overflow-hidden shadow-sm border bg-black" style={{ borderColor: COLORS.border }}>
-                  <video
-                    src={video.url}
-                    controls
-                    className="w-full h-64 object-contain"
+                <FormControl>
+                  <FormLabel fontWeight="semibold" color="gray.700">Bio</FormLabel>
+                  <Textarea
+                    variant="filled"
+                    size="lg"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Tell us about yourself (optional)"
+                    rows={4}
+                    focusBorderColor="brand.500"
+                    _hover={{ bg: "gray.100" }}
                   />
-                  <button
-                    onClick={() => deleteMutation.mutate({ mediaUrl: video.url })}
-                    disabled={deleteMutation.isPending}
-                    className="absolute top-3 right-3 p-2.5 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel fontWeight="semibold" color="gray.700">
+                    Interests & Hobbies {interests.length >= INTERESTS_CONFIG.MIN_REQUIRED && <Badge colorScheme="green" ml={2}>✓ {interests.length} selected</Badge>}
+                  </FormLabel>
+                  <Button
+                    onClick={() => setShowInterestsModal(true)}
+                    colorScheme="purple"
+                    variant="outline"
+                    size="lg"
+                    width="full"
+                    leftIcon={<Plus size={20} />}
                   >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          <p className="text-sm mt-4" style={{ color: COLORS.textLight }}>
-            Max duration: {Math.floor(limits.videoMaxDuration / 60)}:{String(limits.videoMaxDuration % 60).padStart(2, "0")} minutes
-          </p>
-        </div>
+                    Choose from {INTERESTS_CONFIG.OPTIONS.length} interests
+                  </Button>
 
-        {/* About You & Preferences Section */}
-        <div className="bg-white rounded-2xl shadow-sm border p-6 sm:p-8 mb-8" style={{ borderColor: COLORS.border }}>
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.text }}>
-              About You & Preferences
-            </h2>
-            <p className="text-base" style={{ color: COLORS.textLight }}>
-              Share more details to find better matches <span className="text-sm">(optional)</span>
-            </p>
-          </div>
+                  {interests.length > 0 && (
+                    <Wrap mt={4} spacing={2}>
+                      {interests.map((interest, idx) => (
+                        <WrapItem key={idx}>
+                          <Tag size="lg" colorScheme="gray" borderRadius="full">
+                            <TagLabel>{interest}</TagLabel>
+                            <TagCloseButton onClick={() => removeInterest(idx)} />
+                          </Tag>
+                        </WrapItem>
+                      ))}
+                    </Wrap>
+                  )}
 
-          {/* Location & Distance Preferences */}
-          <div className="mb-6 pb-6 border-b" style={{ borderColor: COLORS.border }}>
-            <label className="block mb-2 text-sm font-semibold" style={{ color: COLORS.text }}>
-              Location
-            </label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full border-2 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:border-purple-500 transition-colors mb-6"
-              style={{ borderColor: location ? COLORS.primary : COLORS.border }}
-              placeholder="City, State or Postal Code"
-            />
+                  <Flex justifyContent="space-between" mt={2}>
+                    <Text fontSize="sm" color={interests.length >= INTERESTS_CONFIG.MIN_REQUIRED ? "green.500" : "gray.500"}>
+                      {interests.length >= INTERESTS_CONFIG.MIN_REQUIRED ? `✓ ${interests.length} interests selected` : `${interests.length}/${INTERESTS_CONFIG.MIN_REQUIRED} required`}
+                    </Text>
+                    <Text fontSize="sm" color="gray.500">Max {INTERESTS_CONFIG.MAX_ALLOWED}</Text>
+                  </Flex>
+                </FormControl>
+              </VStack>
+            </CardBody>
+          </Card>
 
-            <label className="block mb-3 text-sm font-semibold" style={{ color: COLORS.text }}>
-              Maximum Distance: {maxDistance} km
-            </label>
-            <input
-              type="range"
-              min="5"
-              max="100"
-              step="5"
-              value={maxDistance}
-              onChange={(e) => setMaxDistance(parseInt(e.target.value))}
-              className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-              style={{
-                background: `linear-gradient(to right, ${COLORS.primary} 0%, ${COLORS.primary} ${maxDistance}%, ${COLORS.border} ${maxDistance}%, ${COLORS.border} 100%)`
-              }}
-            />
-            <div className="flex justify-between text-xs mt-2" style={{ color: COLORS.textLight }}>
-              <span>5 km</span>
-              <span>100 km</span>
-            </div>
-          </div>
-
-          {/* Preference Fields Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { label: "Gender", value: gender, setter: setGender, options: PREFERENCE_OPTIONS.GENDER },
-              { label: "Sexual Orientation", value: sexualOrientation, setter: setSexualOrientation, options: PREFERENCE_OPTIONS.SEXUAL_ORIENTATION },
-              { label: "Looking For", value: lookingFor, setter: setLookingFor, options: PREFERENCE_OPTIONS.LOOKING_FOR },
-              { label: "Body Type", value: bodyType, setter: setBodyType, options: PREFERENCE_OPTIONS.BODY_TYPE },
-              { label: "Height", value: heightRange, setter: setHeightRange, options: PREFERENCE_OPTIONS.HEIGHT_RANGES },
-              { label: "Education", value: education, setter: setEducation, options: PREFERENCE_OPTIONS.EDUCATION },
-              { label: "Relationship Goals", value: relationshipGoals, setter: setRelationshipGoals, options: PREFERENCE_OPTIONS.RELATIONSHIP_GOALS },
-              { label: "Drinking", value: drinking, setter: setDrinking, options: PREFERENCE_OPTIONS.DRINKING },
-              { label: "Smoking", value: smoking, setter: setSmoking, options: PREFERENCE_OPTIONS.SMOKING },
-              { label: "Exercise", value: exercise, setter: setExercise, options: PREFERENCE_OPTIONS.EXERCISE },
-              { label: "Religion", value: religion, setter: setReligion, options: PREFERENCE_OPTIONS.RELIGION },
-              { label: "Children", value: childrenPreference, setter: setChildrenPreference, options: PREFERENCE_OPTIONS.CHILDREN },
-              { label: "Pets", value: pets, setter: setPets, options: PREFERENCE_OPTIONS.PETS },
-            ].map((field, idx) => (
-              <div key={idx}>
-                <label className="block mb-2 text-sm font-semibold" style={{ color: COLORS.text }}>
-                  {field.label}
-                </label>
-                <select
-                  value={field.value}
-                  onChange={(e) => field.setter(e.target.value)}
-                  className="w-full border-2 rounded-xl px-4 py-3.5 text-base focus:outline-none focus:border-purple-500 transition-colors cursor-pointer appearance-none bg-white"
-                  style={{ 
-                    borderColor: field.value ? COLORS.primary : COLORS.border,
-                    color: field.value ? COLORS.text : COLORS.textLight 
-                  }}
+          {/* Photos Card */}
+          <Card>
+            <CardHeader>
+              <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
+                <Box>
+                  <Heading size="lg" color="gray.800">
+                    Profile Photos <Badge colorScheme="red" ml={2}>Required</Badge>
+                  </Heading>
+                  <Text color={photos.length >= 2 ? "green.500" : "gray.600"} mt={2} fontWeight="medium">
+                    {photos.length >= 2 ? `✓ ${photos.length} photos uploaded` : `${photos.length}/2 required (${2 - photos.length} more needed)`}
+                  </Text>
+                </Box>
+                <ObjectUploader
+                  maxNumberOfFiles={1}
+                  maxFileSize={10485760}
+                  allowedFileTypes={["image/*"]}
+                  onGetUploadParameters={handlePhotoUpload}
+                  onUploadStart={handlePhotoStart}
+                  onComplete={handlePhotoComplete}
+                  onUploadError={handlePhotoError}
+                  buttonClassName="px-6 py-3.5 rounded-xl text-white font-semibold shadow-md flex items-center gap-2 disabled:opacity-50 hover:opacity-90 transition-opacity text-base whitespace-nowrap"
+                  buttonStyle={{ backgroundColor: COLORS.primary }}
+                  disabled={uploadingPhoto || photos.length >= limits.photos}
                 >
-                  <option value="">Select {field.label.toLowerCase()}</option>
-                  {field.options.map((option, optIdx) => (
-                    <option key={optIdx} value={option}>{option}</option>
+                  <Upload size={20} />
+                  {uploadingPhoto ? "Uploading..." : "Add Photo"}
+                </ObjectUploader>
+              </Flex>
+            </CardHeader>
+            <CardBody>
+              {photos.length === 0 ? (
+                <Box textAlign="center" py={12} px={4} borderRadius="xl" border="2px dashed" borderColor="gray.300" bg="gray.50">
+                  <Upload size={56} color="gray" style={{ margin: "0 auto", opacity: 0.3, marginBottom: "1rem" }} />
+                  <Text fontWeight="semibold" fontSize="lg" mb={1} color="gray.700">No photos yet</Text>
+                  <Text fontSize="sm" color="gray.500">Click "Add Photo" above to get started</Text>
+                </Box>
+              ) : (
+                <Grid templateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={4}>
+                  {photos.map((photo, idx) => (
+                    <GridItem key={idx}>
+                      <Box position="relative" borderRadius="xl" overflow="hidden" shadow="sm" role="group">
+                        <AspectRatio ratio={1}>
+                          <img src={photo.url} alt={`Photo ${idx + 1}`} style={{ objectFit: "cover" }} />
+                        </AspectRatio>
+                        <Box
+                          position="absolute"
+                          bottom={0}
+                          left={0}
+                          right={0}
+                          bg="linear-gradient(to top, rgba(0,0,0,0.7), transparent)"
+                          p={3}
+                        >
+                          <Text color="white" fontSize="sm" fontWeight="medium">Photo {idx + 1}</Text>
+                        </Box>
+                        <IconButton
+                          icon={<Trash2 size={16} />}
+                          colorScheme="red"
+                          position="absolute"
+                          top={2}
+                          right={2}
+                          size="sm"
+                          borderRadius="full"
+                          opacity={0}
+                          _groupHover={{ opacity: 1 }}
+                          onClick={() => deleteMutation.mutate({ mediaUrl: photo.url })}
+                          isLoading={deleteMutation.isPending}
+                          aria-label="Delete photo"
+                        />
+                      </Box>
+                    </GridItem>
                   ))}
-                </select>
-              </div>
-            ))}
-          </div>
-        </div>
+                  {uploadingPhoto && (
+                    <GridItem>
+                      <Box borderRadius="xl" bg="gray.100" display="flex" alignItems="center" justifyContent="center" aspectRatio={1}>
+                        <VStack>
+                          <Box
+                            as="span"
+                            display="inline-block"
+                            w="40px"
+                            h="40px"
+                            border="3px solid"
+                            borderColor="gray.200"
+                            borderBottomColor="brand.500"
+                            borderRadius="full"
+                            animation="spin 1s linear infinite"
+                            sx={{
+                              '@keyframes spin': {
+                                '0%': { transform: 'rotate(0deg)' },
+                                '100%': { transform: 'rotate(360deg)' },
+                              },
+                            }}
+                          />
+                          <Text fontSize="sm" fontWeight="medium" color="gray.600" mt={3}>Uploading...</Text>
+                        </VStack>
+                      </Box>
+                    </GridItem>
+                  )}
+                </Grid>
+              )}
+              <Text fontSize="sm" mt={4} color="gray.500">
+                {photos.length >= limits.photos 
+                  ? `✓ Photo limit reached (${limits.photos}/${limits.photos})` 
+                  : `Upload up to ${limits.photos} photos • At least 2 required`}
+              </Text>
+            </CardBody>
+          </Card>
 
-        {/* Submit Button */}
-        <button
-          onClick={handleContinue}
-          disabled={saving || !name.trim() || photos.length < 2 || interests.length < INTERESTS_CONFIG.MIN_REQUIRED}
-          className="w-full py-5 rounded-2xl text-white font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl transition-all text-lg"
-          style={{ backgroundColor: COLORS.primary }}
-        >
-          {saving ? "Saving Your Profile..." : "Complete Profile Setup"}
-        </button>
+          {/* Videos Card */}
+          <Card>
+            <CardHeader>
+              <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
+                <Box>
+                  <Heading size="lg" color="gray.800">Video Introduction</Heading>
+                  <Text color="gray.600" mt={2} fontWeight="medium">
+                    {videos.length > 0 ? `✓ ${videos.length} video uploaded` : 'Optional • Stand out with a video'}
+                  </Text>
+                </Box>
+                <Button
+                  onClick={() => setShowVideoRecorder(true)}
+                  isDisabled={videos.length >= limits.videos}
+                  colorScheme="purple"
+                  size="lg"
+                  leftIcon={<Camera size={20} />}
+                >
+                  Record Video
+                </Button>
+              </Flex>
+            </CardHeader>
+            <CardBody>
+              {videos.length === 0 ? (
+                <Box textAlign="center" py={12} px={4} borderRadius="xl" border="2px dashed" borderColor="gray.300" bg="gray.50">
+                  <Video size={56} color="gray" style={{ margin: "0 auto", opacity: 0.3, marginBottom: "1rem" }} />
+                  <Text fontWeight="semibold" fontSize="lg" mb={1} color="gray.700">No video yet</Text>
+                  <Text fontSize="sm" color="gray.500">Record a short intro to stand out</Text>
+                  <Text fontSize="xs" mt={2} color="gray.400">Camera-only recording prevents catfishing</Text>
+                </Box>
+              ) : (
+                <VStack spacing={4}>
+                  {videos.map((video, idx) => (
+                    <Box key={idx} position="relative" borderRadius="xl" overflow="hidden" shadow="sm" bg="black" w="full" role="group">
+                      <video src={video.url} controls style={{ width: "100%", height: "256px", objectFit: "contain" }} />
+                      <IconButton
+                        icon={<Trash2 size={18} />}
+                        colorScheme="red"
+                        position="absolute"
+                        top={3}
+                        right={3}
+                        size="md"
+                        borderRadius="full"
+                        opacity={0}
+                        _groupHover={{ opacity: 1 }}
+                        onClick={() => deleteMutation.mutate({ mediaUrl: video.url })}
+                        isLoading={deleteMutation.isPending}
+                        aria-label="Delete video"
+                      />
+                    </Box>
+                  ))}
+                </VStack>
+              )}
+              <Text fontSize="sm" mt={4} color="gray.500">
+                Max duration: {Math.floor(limits.videoMaxDuration / 60)}:{String(limits.videoMaxDuration % 60).padStart(2, "0")} minutes
+              </Text>
+            </CardBody>
+          </Card>
 
-        <p className="text-sm text-center mt-6 mb-4" style={{ color: COLORS.textLight }}>
-          <span className="text-red-500">*</span> Required fields
-        </p>
-      </div>
+          {/* Preferences Card */}
+          <Card>
+            <CardHeader>
+              <Heading size="lg" color="gray.800">About You & Preferences</Heading>
+              <Text color="gray.600" mt={2}>
+                Share more details to find better matches <Badge ml={2} colorScheme="gray">optional</Badge>
+              </Text>
+            </CardHeader>
+            <CardBody>
+              <VStack spacing={6} align="stretch">
+                {/* Location & Distance */}
+                <Box pb={6} borderBottom="1px" borderColor="gray.200">
+                  <FormControl>
+                    <FormLabel fontWeight="semibold" color="gray.700">Location</FormLabel>
+                    <Input
+                      variant="filled"
+                      size="lg"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="City, State or Postal Code"
+                      focusBorderColor="brand.500"
+                      _hover={{ bg: "gray.100" }}
+                      mb={6}
+                    />
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel fontWeight="semibold" color="gray.700">Maximum Distance: {maxDistance} km</FormLabel>
+                    <Slider
+                      value={maxDistance}
+                      onChange={setMaxDistance}
+                      min={5}
+                      max={100}
+                      step={5}
+                      colorScheme="purple"
+                    >
+                      <SliderTrack>
+                        <SliderFilledTrack />
+                      </SliderTrack>
+                      <SliderThumb boxSize={6} />
+                    </Slider>
+                    <Flex justifyContent="space-between" mt={2}>
+                      <Text fontSize="xs" color="gray.500">5 km</Text>
+                      <Text fontSize="xs" color="gray.500">100 km</Text>
+                    </Flex>
+                  </FormControl>
+                </Box>
+
+                {/* Preference Fields Grid */}
+                <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
+                  {[
+                    { label: "Gender", value: gender, setter: setGender, options: PREFERENCE_OPTIONS.GENDER },
+                    { label: "Sexual Orientation", value: sexualOrientation, setter: setSexualOrientation, options: PREFERENCE_OPTIONS.SEXUAL_ORIENTATION },
+                    { label: "Looking For", value: lookingFor, setter: setLookingFor, options: PREFERENCE_OPTIONS.LOOKING_FOR },
+                    { label: "Body Type", value: bodyType, setter: setBodyType, options: PREFERENCE_OPTIONS.BODY_TYPE },
+                    { label: "Height", value: heightRange, setter: setHeightRange, options: PREFERENCE_OPTIONS.HEIGHT_RANGES },
+                    { label: "Education", value: education, setter: setEducation, options: PREFERENCE_OPTIONS.EDUCATION },
+                    { label: "Relationship Goals", value: relationshipGoals, setter: setRelationshipGoals, options: PREFERENCE_OPTIONS.RELATIONSHIP_GOALS },
+                    { label: "Drinking", value: drinking, setter: setDrinking, options: PREFERENCE_OPTIONS.DRINKING },
+                    { label: "Smoking", value: smoking, setter: setSmoking, options: PREFERENCE_OPTIONS.SMOKING },
+                    { label: "Exercise", value: exercise, setter: setExercise, options: PREFERENCE_OPTIONS.EXERCISE },
+                    { label: "Religion", value: religion, setter: setReligion, options: PREFERENCE_OPTIONS.RELIGION },
+                    { label: "Children", value: childrenPreference, setter: setChildrenPreference, options: PREFERENCE_OPTIONS.CHILDREN },
+                    { label: "Pets", value: pets, setter: setPets, options: PREFERENCE_OPTIONS.PETS },
+                  ].map((field, idx) => (
+                    <FormControl key={idx}>
+                      <FormLabel fontWeight="semibold" color="gray.700">{field.label}</FormLabel>
+                      <Select
+                        variant="filled"
+                        size="lg"
+                        value={field.value}
+                        onChange={(e) => field.setter(e.target.value)}
+                        placeholder={`Select ${field.label.toLowerCase()}`}
+                        focusBorderColor="brand.500"
+                        _hover={{ bg: "gray.100" }}
+                        color={field.value ? "gray.800" : "gray.500"}
+                      >
+                        {field.options.map((option, optIdx) => (
+                          <option key={optIdx} value={option}>{option}</option>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  ))}
+                </Grid>
+              </VStack>
+            </CardBody>
+          </Card>
+
+          {/* Submit Button */}
+          <Button
+            onClick={handleContinue}
+            isDisabled={!meetsRequirements}
+            isLoading={saving}
+            loadingText="Saving Your Profile..."
+            colorScheme="purple"
+            size="lg"
+            fontSize="lg"
+            fontWeight="bold"
+            py={7}
+            shadow="lg"
+            _hover={{ shadow: "xl" }}
+          >
+            {saving ? "Saving Your Profile..." : "Complete Profile Setup"}
+          </Button>
+
+          <Text fontSize="sm" textAlign="center" color="gray.500">
+            <Badge colorScheme="red" mr={1}>*</Badge> Required fields
+          </Text>
+        </VStack>
+      </Container>
 
       {showVideoRecorder && (
         <VideoRecorderModal
@@ -650,7 +717,7 @@ function ConsolidatedProfileOnboardingContent() {
           onClose={() => setShowInterestsModal(false)}
         />
       )}
-    </div>
+    </Box>
   );
 }
 
@@ -672,78 +739,60 @@ function InterestsModal({ selectedInterests, onSelect, onClose }) {
   const meetsMinimum = tempSelected.length >= INTERESTS_CONFIG.MIN_REQUIRED;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="p-6 sm:p-8 border-b" style={{ borderColor: COLORS.border }}>
-          <div className="flex items-start justify-between mb-3">
-            <div>
-              <h2 className="text-3xl font-bold mb-2" style={{ color: COLORS.text }}>
-                Choose Your Interests
-              </h2>
-              <p className="text-base" style={{ color: COLORS.textLight }}>
-                Select at least {INTERESTS_CONFIG.MIN_REQUIRED} interests for better matches
-              </p>
-            </div>
-            <button 
-              onClick={onClose} 
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-              style={{ color: COLORS.textLight }}
-            >
-              <X size={28} />
-            </button>
-          </div>
-          <div className="flex items-center gap-4 mt-4">
-            <p className="text-lg font-semibold" style={{ color: meetsMinimum ? COLORS.success : COLORS.textLight }}>
+    <Modal isOpen={true} onClose={onClose} size="4xl" scrollBehavior="inside">
+      <ModalOverlay backdropFilter="blur(4px)" />
+      <ModalContent>
+        <ModalHeader>
+          <Heading size="lg" color="gray.800">Choose Your Interests</Heading>
+          <Text fontSize="md" color="gray.600" fontWeight="normal" mt={2}>
+            Select at least {INTERESTS_CONFIG.MIN_REQUIRED} interests for better matches
+          </Text>
+          <Flex gap={4} mt={4}>
+            <Text fontSize="lg" fontWeight="semibold" color={meetsMinimum ? "green.500" : "gray.500"}>
               {meetsMinimum ? `✓ ${tempSelected.length} selected` : `${tempSelected.length}/${INTERESTS_CONFIG.MIN_REQUIRED} required`}
-            </p>
-            <p className="text-sm" style={{ color: COLORS.textLight }}>
-              Max {INTERESTS_CONFIG.MAX_ALLOWED}
-            </p>
-          </div>
-        </div>
-
-        <div className="p-6 sm:p-8 overflow-y-auto flex-1" style={{ backgroundColor: COLORS.lightGray }}>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            </Text>
+            <Text fontSize="sm" color="gray.500" alignSelf="center">Max {INTERESTS_CONFIG.MAX_ALLOWED}</Text>
+          </Flex>
+        </ModalHeader>
+        <ModalCloseButton />
+        <ModalBody bg="gray.50">
+          <Grid templateColumns={{ base: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" }} gap={3}>
             {INTERESTS_CONFIG.OPTIONS.map((interest) => {
               const isSelected = tempSelected.includes(interest);
               return (
-                <button
+                <Button
                   key={interest}
                   onClick={() => toggleInterest(interest)}
-                  className="px-4 py-3.5 rounded-xl font-semibold text-sm transition-all border-2 hover:scale-105"
-                  style={{
-                    backgroundColor: isSelected ? COLORS.primary : COLORS.white,
-                    borderColor: isSelected ? COLORS.primary : COLORS.border,
-                    color: isSelected ? COLORS.white : COLORS.text,
-                    boxShadow: isSelected ? '0 4px 6px -1px rgba(91, 59, 175, 0.3)' : 'none',
-                  }}
+                  colorScheme={isSelected ? "purple" : "gray"}
+                  variant={isSelected ? "solid" : "outline"}
+                  size="md"
+                  fontWeight="semibold"
+                  fontSize="sm"
+                  _hover={{ transform: "scale(1.05)" }}
+                  transition="all 0.2s"
                 >
                   {interest}
-                </button>
+                </Button>
               );
             })}
-          </div>
-        </div>
-
-        <div className="p-6 sm:p-8 border-t bg-white flex flex-col sm:flex-row gap-3" style={{ borderColor: COLORS.border }}>
-          <button
-            onClick={onClose}
-            className="flex-1 px-6 py-4 rounded-xl border-2 font-semibold hover:bg-gray-50 transition-colors text-base"
-            style={{ borderColor: COLORS.border, color: COLORS.text }}
-          >
+          </Grid>
+        </ModalBody>
+        <ModalFooter gap={3}>
+          <Button variant="outline" size="lg" onClick={onClose} flex={1}>
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
+            colorScheme="purple"
+            size="lg"
             onClick={() => onSelect(tempSelected)}
-            disabled={!meetsMinimum}
-            className="flex-1 px-6 py-4 rounded-xl text-white font-bold shadow-lg hover:shadow-xl transition-all text-base disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: COLORS.primary }}
+            isDisabled={!meetsMinimum}
+            flex={1}
           >
             {meetsMinimum ? `Done (${tempSelected.length})` : `Select ${INTERESTS_CONFIG.MIN_REQUIRED - tempSelected.length} more`}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 }
 
@@ -852,34 +901,33 @@ function VideoRecorderModal({ onClose, maxDuration, onComplete }) {
   const uploadVideo = async () => {
     if (!recordedVideoURL) return;
 
-    setUploading(true);
     try {
-      const res = await fetch("/api/objects/upload", { method: "POST" });
-      if (!res.ok) throw new Error("Failed to get upload URL");
-      const { uploadURL } = await res.json();
-
-      const blob = await fetch(recordedVideoURL).then((r) => r.blob());
-
-      const uploadRes = await fetch(uploadURL, {
-        method: "PUT",
-        body: blob,
-        headers: {
-          "Content-Type": "video/webm",
-        },
+      setUploading(true);
+      const response = await fetch(recordedVideoURL);
+      const blob = await response.blob();
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result.split(',')[1];
+          resolve(base64String);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
       });
 
-      if (!uploadRes.ok) throw new Error("Failed to upload video");
-
-      const saveRes = await fetch("/api/profile/media", {
+      const res = await fetch("/api/upload-base64", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mediaURL: uploadURL, type: "video" }),
+        body: JSON.stringify({
+          type: "video",
+          base64: base64,
+          filename: `video-${Date.now()}.webm`,
+        }),
       });
 
-      if (!saveRes.ok) throw new Error("Failed to save video");
-
+      if (!res.ok) throw new Error("Upload failed");
+      const data = await res.json();
       toast.success("Video uploaded successfully!");
-      URL.revokeObjectURL(recordedVideoURL);
       onComplete();
     } catch (err) {
       console.error("Upload error:", err);
@@ -889,112 +937,108 @@ function VideoRecorderModal({ onClose, maxDuration, onComplete }) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold" style={{ color: COLORS.text }}>
-              {recordedVideoURL ? "Review Your Video" : "Record Video Introduction"}
-            </h2>
-            <button
-              onClick={onClose}
-              disabled={uploading}
-              className="p-2 rounded-full hover:bg-gray-100 transition-all"
-            >
-              <X size={24} />
-            </button>
-          </div>
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${String(secs).padStart(2, "0")}`;
+  };
 
-          <div className="mb-4 rounded-xl overflow-hidden bg-black">
-            {recordedVideoURL ? (
-              <video src={recordedVideoURL} controls className="w-full" style={{ maxHeight: "400px" }} />
-            ) : (
-              <div className="relative">
+  return (
+    <Modal isOpen={true} onClose={onClose} size="2xl">
+      <ModalOverlay backdropFilter="blur(4px)" />
+      <ModalContent>
+        <ModalHeader>
+          <Heading size="lg" color="gray.800">Record Video Introduction</Heading>
+          <Text fontSize="md" color="gray.600" fontWeight="normal" mt={2}>
+            Max duration: {formatTime(maxDuration)}
+          </Text>
+        </ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <Box position="relative" borderRadius="xl" overflow="hidden" bg="black">
+            {!recordedVideoURL ? (
+              <>
                 <video
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  className="w-full mirror"
-                  style={{ maxHeight: "400px", transform: "scaleX(-1)" }}
+                  style={{ width: "100%", height: "400px", objectFit: "cover" }}
                 />
                 {isRecording && (
-                  <div className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-full font-bold flex items-center gap-2">
-                    <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
-                    {Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, "0")}
-                  </div>
+                  <Box
+                    position="absolute"
+                    top={4}
+                    right={4}
+                    bg="red.500"
+                    color="white"
+                    px={4}
+                    py={2}
+                    borderRadius="full"
+                    fontWeight="bold"
+                  >
+                    ● {formatTime(countdown)}
+                  </Box>
                 )}
-              </div>
-            )}
-          </div>
-
-          {!hasPermission && !recordedVideoURL && (
-            <div className="text-center py-8">
-              <Camera size={48} className="mx-auto mb-3 opacity-40" />
-              <p className="text-gray-600 mb-4">Waiting for camera permission...</p>
-              <p className="text-sm text-gray-500">Please allow camera and microphone access to continue</p>
-            </div>
-          )}
-
-          <div className="flex gap-3">
-            {recordedVideoURL ? (
-              <>
-                <button
-                  onClick={redoRecording}
-                  disabled={uploading}
-                  className="flex-1 px-6 py-3 rounded-lg font-semibold transition-all border-2"
-                  style={{ borderColor: COLORS.primary, color: COLORS.primary }}
-                >
-                  Redo
-                </button>
-                <button
-                  onClick={uploadVideo}
-                  disabled={uploading}
-                  className="flex-1 px-6 py-3 rounded-lg text-white font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-50"
-                  style={{ backgroundColor: COLORS.primary }}
-                >
-                  {uploading ? "Uploading..." : "Upload Video"}
-                </button>
+                {!hasPermission && (
+                  <Box
+                    position="absolute"
+                    inset={0}
+                    bg="blackAlpha.800"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Text color="white" fontSize="lg">Requesting camera access...</Text>
+                  </Box>
+                )}
               </>
             ) : (
-              <>
-                <button
-                  onClick={onClose}
-                  disabled={isRecording}
-                  className="flex-1 px-6 py-3 rounded-lg font-semibold transition-all border-2"
-                  style={{ borderColor: COLORS.cardBg, color: COLORS.text }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={isRecording ? stopRecording : startRecording}
-                  disabled={!hasPermission}
-                  className="flex-1 px-6 py-3 rounded-lg text-white font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
-                  style={{ backgroundColor: isRecording ? COLORS.error : COLORS.primary }}
-                >
-                  {isRecording ? (
-                    <>
-                      <div className="w-4 h-4 bg-white rounded-sm"></div>
-                      Stop Recording
-                    </>
-                  ) : (
-                    <>
-                      <PlayCircle size={20} />
-                      Start Recording
-                    </>
-                  )}
-                </button>
-              </>
+              <video src={recordedVideoURL} controls style={{ width: "100%", height: "400px", objectFit: "contain" }} />
             )}
-          </div>
-
-          <p className="text-sm text-gray-500 text-center mt-4">
-            Maximum duration: {Math.floor(maxDuration / 60)}:{String(maxDuration % 60).padStart(2, "0")}
-          </p>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </ModalBody>
+        <ModalFooter gap={3}>
+          <Button variant="outline" onClick={onClose} size="lg">
+            Cancel
+          </Button>
+          {!recordedVideoURL ? (
+            <>
+              {!isRecording ? (
+                <Button
+                  colorScheme="red"
+                  onClick={startRecording}
+                  isDisabled={!hasPermission}
+                  leftIcon={<Camera size={20} />}
+                  size="lg"
+                >
+                  Start Recording
+                </Button>
+              ) : (
+                <Button colorScheme="red" onClick={stopRecording} size="lg">
+                  Stop Recording
+                </Button>
+              )}
+            </>
+          ) : (
+            <>
+              <Button variant="outline" onClick={redoRecording} size="lg">
+                Redo
+              </Button>
+              <Button
+                colorScheme="purple"
+                onClick={uploadVideo}
+                isLoading={uploading}
+                loadingText="Uploading..."
+                size="lg"
+              >
+                Upload Video
+              </Button>
+            </>
+          )}
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 }
 

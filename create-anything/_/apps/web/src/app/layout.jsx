@@ -45,9 +45,7 @@ export default function RootLayout({ children }) {
   return (
     <ChakraProvider theme={theme}>
       <QueryClientProvider client={queryClient}>
-        <div className="min-h-screen font-inter">
-          {children}
-        </div>
+        {children}
       </QueryClientProvider>
     </ChakraProvider>
   );
