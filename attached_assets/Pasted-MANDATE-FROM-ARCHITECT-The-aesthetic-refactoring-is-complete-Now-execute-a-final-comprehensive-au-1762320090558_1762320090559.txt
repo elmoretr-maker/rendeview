@@ -1,0 +1,20 @@
+MANDATE FROM ARCHITECT: The aesthetic refactoring is complete. Now execute a final, comprehensive audit to guarantee the production-ready flow and monetization integrity with security enabled.
+
+**AUDIT OBJECTIVES (TOTAL INTEGRITY CHECK):**
+
+1.  **Authentication & Flow Integrity:** Perform simulated tests for an unauthenticated user and an authenticated user who just signed up. Verify that the system enforces the correct sequence and that no user is trapped or redirected to an improper page.
+2.  **Onboarding Gates:** Verify that all four onboarding gates (Consent, Membership, Profile Completion, Media Uploads) cannot be improperly skipped and that users land exactly on the first required incomplete step.
+3.  **Monetization & Feature Enforcement:** Test a Free user's experience to ensure feature limitations are correctly enforced:
+    * Verify: The Free user is correctly limited to 2 Photos and 1 Video (15 seconds).
+    * Verify: The Free user is blocked from initiating or accepting a **4th video chat meeting** (the 3-meeting cap).
+    * Verify: The Video Call session time is correctly limited to **5 minutes** for the Free tier.
+4.  **Payment Funnel Validation:** Simulate an upgrade payment (Casual tier). Verify the following:
+    * The user is redirected to the /stripe page correctly.
+    * Upon successful completion (simulation), the user's membership_tier is immediately updated, and their features (e.g., photo limit) are instantly adjusted.
+
+5.  **MEDIA FLOW INTEGRITY (NEW CRITICAL CHECK):** Verify that media uploaded and saved on the **Consolidated Profile Page** flows correctly to all viewing components:
+    * **Profile View:** Confirm that videos recorded and photos uploaded are **automatically added and displayed** on the user's own **Post-Onboarding Profile Page** (`/profile`).
+    * **Match View:** Confirm that videos and photos are **automatically displayed** on other users' **Discovery Cards** and **Match Profile View** pages.
+    * **Primary Photo Control:** Verify that the user has the functional ability to **select and set a specific uploaded image as their Primary Profile Photo**.
+
+6.  **Audit Report:** Compile a final report confirming all 6 objectives (including the full 4-strike moderation logic) are working correctly now that the QA_BYPASS is assumed to be disabled.
