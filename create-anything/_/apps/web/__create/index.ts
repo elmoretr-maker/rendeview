@@ -50,6 +50,18 @@ app.use('*', (c, next) => {
 
 app.use(contextStorage());
 
+// Add cache control headers to prevent caching issues in Replit webview
+app.use('*', async (c, next) => {
+  await next();
+  // Only add cache control for HTML responses (not API or static assets)
+  const contentType = c.res.headers.get('content-type');
+  if (contentType && contentType.includes('text/html')) {
+    c.res.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    c.res.headers.set('Pragma', 'no-cache');
+    c.res.headers.set('Expires', '0');
+  }
+});
+
 app.onError((err, c) => {
   if (c.req.method !== 'GET') {
     return c.json(
