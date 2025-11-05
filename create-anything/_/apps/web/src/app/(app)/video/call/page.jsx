@@ -15,17 +15,25 @@ import { toast } from "sonner";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import useUser from "@/utils/useUser";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  bg: "#F9F9F9",
-  text: "#2C3E50",
-  error: "#E74C3C",
-  cardBg: "#F3F4F6",
-  warning: "#F39C12",
-  success: "#27AE60",
-};
+import {
+  Box,
+  VStack,
+  HStack,
+  Flex,
+  Heading,
+  Text,
+  Button,
+  Spinner,
+  Textarea,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  IconButton,
+  Badge
+} from "@chakra-ui/react";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
 
@@ -66,25 +74,27 @@ function PaymentForm({ clientSecret, onSuccess, onCancel }) {
   return (
     <form onSubmit={handleSubmit}>
       <PaymentElement />
-      <div className="flex gap-3 mt-4">
-        <button
+      <HStack spacing={3} mt={4}>
+        <Button
           type="button"
           onClick={onCancel}
-          disabled={processing}
-          className="flex-1 px-4 py-3 rounded-xl font-bold shadow-md transition-all disabled:opacity-50"
-          style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
+          isDisabled={processing}
+          flex={1}
+          variant="outline"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
-          disabled={!stripe || processing}
-          className="flex-1 px-4 py-3 rounded-xl font-bold text-white shadow-md transition-all disabled:opacity-50"
-          style={{ backgroundColor: COLORS.primary }}
+          isDisabled={!stripe || processing}
+          isLoading={processing}
+          loadingText="Processing..."
+          flex={1}
+          colorScheme="purple"
         >
-          {processing ? "Processing..." : `Pay $${EXTENSION_COST}.00`}
-        </button>
-      </div>
+          Pay ${EXTENSION_COST}.00
+        </Button>
+      </HStack>
     </form>
   );
 }
@@ -149,7 +159,6 @@ export default function VideoCall() {
         setLocalRemainingSeconds(data.session.remainingSeconds);
       }
 
-      // Check for tier difference and show upgrade nudge
       if (!tierUpgradeNudgeShown.current && data.currentUserTier && data.otherUserTier) {
         const tierOrder = { free: 0, casual: 1, dating: 2, business: 3 };
         const currentTierLevel = tierOrder[data.currentUserTier] || 0;
@@ -164,12 +173,9 @@ export default function VideoCall() {
       }
 
       if (data.session.state === "ended" && !noteModalShown.current) {
-        // Only show post-call note modal if no other modals are active
-        // (don't interfere with extension/payment flow)
         if (!showExtendResponseModal && !showPaymentModal) {
           noteModalShown.current = true;
           
-          // Determine the other user's ID
           const callerId = data.session.caller_id;
           const calleeId = data.session.callee_id;
           const currentUserId = currentUser?.id;
@@ -234,7 +240,6 @@ export default function VideoCall() {
       graceTimerRef.current = setInterval(() => {
         setGraceCountdown((prev) => {
           if (prev === null || prev <= 0) {
-            // Show note modal only if not already shown AND no other modals are active
             if (!noteModalShown.current && sessionData && currentUser && !showExtendResponseModal && !showPaymentModal) {
               noteModalShown.current = true;
               const callerId = sessionData.session.caller_id;
@@ -437,7 +442,6 @@ export default function VideoCall() {
         setShowExtendResponseModal(false);
         setCurrentExtension(null);
         
-        // Check if we should show note modal after declining
         setTimeout(() => pollSession(), 100);
       } else if (action === "accept") {
         toast.success("Extension accepted! Waiting for payment...");
@@ -482,7 +486,6 @@ export default function VideoCall() {
       setPaymentClientSecret(null);
       setCurrentExtension(null);
       
-      // Check session status after payment completes
       setTimeout(() => pollSession(), 100);
     } catch (err) {
       console.error("Payment confirmation error:", err);
@@ -503,354 +506,398 @@ export default function VideoCall() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: COLORS.bg }}>
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4" style={{ color: COLORS.text }}>Video Call Error</h1>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
+      <Flex minH="100vh" align="center" justify="center" px={4} bg="gray.50">
+        <VStack spacing={4} textAlign="center" maxW="md">
+          <Heading size="xl" color="gray.800">Video Call Error</Heading>
+          <Text color="gray.600">{error}</Text>
+          <Button
             onClick={() => navigate("/profile")}
-            className="mt-4 px-6 py-3 rounded-xl font-bold text-white shadow-lg"
-            style={{ backgroundColor: COLORS.primary }}
+            colorScheme="purple"
+            shadow="lg"
+            mt={4}
           >
             Back to Profile
-          </button>
-        </div>
-      </div>
+          </Button>
+        </VStack>
+      </Flex>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: "#000" }}>
-      <div className="absolute top-0 left-0 right-0 z-10 p-4 flex items-center justify-between bg-gradient-to-b from-black to-transparent">
-        <h1 className="text-xl font-bold text-white">Video Date</h1>
-        <div className="flex flex-col items-end gap-1">
-          <div 
-            className="flex items-center gap-2 px-4 py-2 rounded-lg backdrop-blur-sm"
-            style={{ 
-              backgroundColor: isNearEnd || graceCountdown !== null
-                ? 'rgba(231, 76, 60, 0.8)'
-                : 'rgba(0, 0, 0, 0.6)'
-            }}
-          >
-            <Clock size={16} className="text-white" />
-            <span className="font-bold text-white">
-              {graceCountdown !== null ? `Grace: ${formatTime(graceCountdown)}` : formatTime(remaining)}
-            </span>
-          </div>
-          {graceCountdown === null && (
-            <div className="px-3 py-1 rounded-lg text-xs font-semibold backdrop-blur-sm" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'white' }}>
-              {sessionData?.session?.extendedSecondsTotal > 0 && `+${Math.floor(sessionData.session.extendedSecondsTotal / 60)}min extended`}
-            </div>
-          )}
-        </div>
-      </div>
+    <Flex minH="100vh" direction="column" bg="black">
+      <Box
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        zIndex={10}
+        p={4}
+        bgGradient="linear(to-b, blackAlpha.900, transparent)"
+      >
+        <HStack justify="space-between">
+          <Heading size="lg" color="white">Video Date</Heading>
+          <VStack align="end" spacing={1}>
+            <Flex
+              align="center"
+              gap={2}
+              px={4}
+              py={2}
+              borderRadius="lg"
+              backdropFilter="blur(10px)"
+              bg={isNearEnd || graceCountdown !== null ? "red.600" : "blackAlpha.600"}
+            >
+              <Clock size={16} color="white" />
+              <Text fontWeight="bold" color="white">
+                {graceCountdown !== null ? `Grace: ${formatTime(graceCountdown)}` : formatTime(remaining)}
+              </Text>
+            </Flex>
+            {graceCountdown === null && sessionData?.session?.extendedSecondsTotal > 0 && (
+              <Badge px={3} py={1} borderRadius="lg" fontSize="xs" bg="whiteAlpha.200" color="white">
+                +{Math.floor(sessionData.session.extendedSecondsTotal / 60)}min extended
+              </Badge>
+            )}
+          </VStack>
+        </HStack>
+      </Box>
 
-      <div className="flex-1 relative">
+      <Box flex={1} position="relative">
         {currentRoomUrl ? (
-          <iframe
+          <Box
+            as="iframe"
             src={currentRoomUrl}
             allow="camera; microphone; fullscreen; display-capture"
-            className="w-full h-full border-0"
+            w="full"
+            h="full"
+            border="none"
             title="Video Call"
           />
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-white mx-auto mb-4"></div>
-              <p className="text-white text-lg">
+          <Flex align="center" justify="center" h="full">
+            <VStack>
+              <Spinner size="xl" color="white" thickness="4px" />
+              <Text color="white" fontSize="lg">
                 {createRoomMutation.isPending ? "Creating video room..." : "Loading video call..."}
-              </p>
-            </div>
-          </div>
+              </Text>
+            </VStack>
+          </Flex>
         )}
-      </div>
+      </Box>
 
-      <div className="bg-gradient-to-t from-black to-transparent p-6">
+      <Box bgGradient="linear(to-t, blackAlpha.900, transparent)" p={6}>
         {showTierUpgradeNudge && !showTimeLimitNudge && (
-          <div className="mb-4 p-4 rounded-xl flex items-center justify-between gap-4 relative" style={{ backgroundColor: 'rgba(0, 191, 166, 0.85)' }}>
-            <button
+          <Flex
+            mb={4}
+            p={4}
+            borderRadius="xl"
+            align="center"
+            justify="space-between"
+            gap={4}
+            position="relative"
+            bg="rgba(0, 191, 166, 0.85)"
+          >
+            <IconButton
+              icon={<X size={18} />}
               onClick={() => setShowTierUpgradeNudge(false)}
-              className="absolute top-2 right-2 p-1 rounded-full hover:bg-white/20 transition-all"
+              position="absolute"
+              top={2}
+              right={2}
+              size="sm"
+              variant="ghost"
+              color="white"
+              _hover={{ bg: "whiteAlpha.200" }}
               aria-label="Dismiss"
-            >
-              <X size={18} className="text-white" />
-            </button>
-            <div className="flex-1 pr-6">
-              <p className="text-white font-semibold text-sm">
-                💎 Your match is on the {otherUserTierName} plan! Upgrade to enjoy longer video dates together.
-              </p>
-            </div>
-            <button
+            />
+            <Text flex={1} pr={6} color="white" fontWeight="semibold" fontSize="sm">
+              💎 Your match is on the {otherUserTierName} plan! Upgrade to enjoy longer video dates together.
+            </Text>
+            <Button
               onClick={() => navigate("/onboarding/membership")}
-              className="px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all hover:opacity-90"
-              style={{ backgroundColor: "white", color: COLORS.secondary }}
+              size="sm"
+              bg="white"
+              color="pink.500"
+              _hover={{ opacity: 0.9 }}
             >
               Upgrade Now
-            </button>
-          </div>
+            </Button>
+          </Flex>
         )}
 
         {showTimeLimitNudge && (
-          <div className="mb-4 p-4 rounded-xl flex items-center justify-between gap-4 relative" style={{ backgroundColor: 'rgba(91, 59, 175, 0.85)' }}>
-            <button
+          <Flex
+            mb={4}
+            p={4}
+            borderRadius="xl"
+            align="center"
+            justify="space-between"
+            gap={4}
+            position="relative"
+            bg="rgba(91, 59, 175, 0.85)"
+          >
+            <IconButton
+              icon={<X size={18} />}
               onClick={() => setShowTimeLimitNudge(false)}
-              className="absolute top-2 right-2 p-1 rounded-full hover:bg-white/20 transition-all"
+              position="absolute"
+              top={2}
+              right={2}
+              size="sm"
+              variant="ghost"
+              color="white"
+              _hover={{ bg: "whiteAlpha.200" }}
               aria-label="Dismiss"
-            >
-              <X size={18} className="text-white" />
-            </button>
-            <div className="flex-1 pr-6">
-              <p className="text-white font-semibold text-sm">
-                Only 1 minute left on your Free plan! Upgrade to Casual ($9.99/mo) for 15-minute calls and unlimited meetings.
-              </p>
-            </div>
-            <button
+            />
+            <Text flex={1} pr={6} color="white" fontWeight="semibold" fontSize="sm">
+              Only 1 minute left on your Free plan! Upgrade to Casual ($9.99/mo) for 15-minute calls and unlimited meetings.
+            </Text>
+            <Button
               onClick={() => navigate("/onboarding/membership")}
-              className="px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all hover:opacity-90"
-              style={{ backgroundColor: COLORS.secondary, color: "white" }}
+              size="sm"
+              colorScheme="pink"
             >
               Upgrade
-            </button>
-          </div>
+            </Button>
+          </Flex>
         )}
 
         {graceCountdown !== null && (
-          <div className="mb-4 p-4 rounded-xl text-center" style={{ backgroundColor: 'rgba(243, 156, 18, 0.9)' }}>
-            <p className="text-white font-bold">Time's up! Extend to continue ({formatTime(graceCountdown)} remaining)</p>
-          </div>
+          <Box mb={4} p={4} borderRadius="xl" textAlign="center" bg="rgba(243, 156, 18, 0.9)">
+            <Text color="white" fontWeight="bold">Time's up! Extend to continue ({formatTime(graceCountdown)} remaining)</Text>
+          </Box>
         )}
 
         {showExtendButton && !currentExtension && (
-          <div className="mb-4 flex justify-center">
-            <button
+          <Flex mb={4} justify="center">
+            <Button
               onClick={() => setShowExtendInitiateModal(true)}
-              className="px-8 py-4 rounded-full shadow-2xl hover:shadow-3xl transition-all flex items-center gap-3 font-bold text-white"
-              style={{ backgroundColor: COLORS.warning }}
+              px={8}
+              py={6}
+              borderRadius="full"
+              shadow="2xl"
+              leftIcon={<DollarSign size={24} />}
+              bg="orange.500"
+              color="white"
+              _hover={{ shadow: "3xl" }}
             >
-              <DollarSign size={24} />
               Extend Call (+${EXTENSION_COST} for {EXTENSION_MINUTES} min)
-            </button>
-          </div>
+            </Button>
+          </Flex>
         )}
 
         {currentExtension && currentExtension.status === "pending_acceptance" && currentExtension.isInitiator && (
-          <div className="mb-4 p-4 rounded-xl text-center" style={{ backgroundColor: 'rgba(91, 59, 175, 0.9)' }}>
-            <p className="text-white font-semibold">Waiting for other party to accept extension...</p>
-          </div>
+          <Box mb={4} p={4} borderRadius="xl" textAlign="center" bg="rgba(91, 59, 175, 0.9)">
+            <Text color="white" fontWeight="semibold">Waiting for other party to accept extension...</Text>
+          </Box>
         )}
 
-        <div className="flex justify-center mb-4">
-          <button
+        <Flex justify="center" mb={4}>
+          <Button
             onClick={handleEndCall}
-            className="px-8 py-4 rounded-full shadow-2xl hover:shadow-3xl transition-all flex items-center gap-3 font-bold text-white"
-            style={{ backgroundColor: COLORS.error }}
+            px={8}
+            py={6}
+            borderRadius="full"
+            shadow="2xl"
+            leftIcon={<Phone size={24} />}
+            colorScheme="red"
           >
-            <Phone size={24} />
             End Call
-          </button>
-        </div>
+          </Button>
+        </Flex>
 
-        <div className="flex gap-4 max-w-2xl mx-auto">
-          <button
+        <Flex gap={4} maxW="2xl" mx="auto">
+          <Button
             onClick={() => setShowReportModal(true)}
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all"
-            style={{ backgroundColor: "rgba(255,255,255,0.2)", color: "white" }}
+            flex={1}
+            leftIcon={<Flag size={20} />}
+            bg="whiteAlpha.200"
+            color="white"
+            _hover={{ bg: "whiteAlpha.300" }}
+            size="lg"
           >
-            <Flag size={20} />
             Report
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Flex>
+      </Box>
 
-      {showExtendInitiateModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50"
-          onClick={() => setShowExtendInitiateModal(false)}
-        >
-          <div
-            className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-2xl font-bold mb-4" style={{ color: COLORS.text }}>
-              Extend Call
-            </h2>
-            <p className="mb-4" style={{ color: COLORS.text }}>
+      <Modal isOpen={showExtendInitiateModal} onClose={() => setShowExtendInitiateModal(false)} isCentered>
+        <ModalOverlay bg="blackAlpha.700" />
+        <ModalContent>
+          <ModalHeader fontSize="2xl" color="gray.800">Extend Call</ModalHeader>
+          <ModalBody>
+            <Text mb={4} color="gray.800">
               Request {EXTENSION_MINUTES} more minutes for ${EXTENSION_COST}.00?
-            </p>
-            <p className="mb-4 text-sm opacity-70" style={{ color: COLORS.text }}>
+            </Text>
+            <Text fontSize="sm" opacity={0.7} color="gray.800">
               The other party must accept before payment is processed.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowExtendInitiateModal(false)}
-                className="flex-1 px-4 py-3 rounded-xl font-bold shadow-md"
-                style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
-              >
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <HStack spacing={3} w="full">
+              <Button onClick={() => setShowExtendInitiateModal(false)} flex={1} variant="outline">
                 Cancel
-              </button>
-              <button
-                onClick={handleInitiateExtension}
-                className="flex-1 px-4 py-3 rounded-xl font-bold text-white shadow-md"
-                style={{ backgroundColor: COLORS.primary }}
-              >
+              </Button>
+              <Button onClick={handleInitiateExtension} flex={1} colorScheme="purple">
                 Request Extension
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
-      {showExtendResponseModal && currentExtension && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50"
-        >
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2" style={{ color: COLORS.text }}>
+      <Modal isOpen={showExtendResponseModal && !!currentExtension} onClose={() => {}} isCentered>
+        <ModalOverlay bg="blackAlpha.700" />
+        <ModalContent>
+          <ModalHeader fontSize="2xl" color="gray.800">
+            <HStack>
               <Clock size={28} />
-              Extension Request
-            </h2>
-            <p className="mb-4" style={{ color: COLORS.text }}>
+              <Text>Extension Request</Text>
+            </HStack>
+          </ModalHeader>
+          <ModalBody>
+            <Text mb={4} color="gray.800">
               The other party wants to extend the call for {EXTENSION_MINUTES} more minutes (${EXTENSION_COST}.00).
-            </p>
-            <p className="mb-4 text-sm font-semibold" style={{ color: COLORS.warning }}>
+            </Text>
+            <Text fontSize="sm" fontWeight="semibold" color="orange.500" mb={4}>
               They will be charged after you accept.
-            </p>
-            <div className="flex gap-3">
-              <button
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <HStack spacing={3} w="full">
+              <Button
                 onClick={() => handleExtensionResponse("decline")}
-                className="flex-1 px-4 py-3 rounded-xl font-bold text-white shadow-md flex items-center justify-center gap-2"
-                style={{ backgroundColor: COLORS.error }}
+                flex={1}
+                colorScheme="red"
+                leftIcon={<XCircle size={20} />}
               >
-                <XCircle size={20} />
                 Decline
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => handleExtensionResponse("accept")}
-                className="flex-1 px-4 py-3 rounded-xl font-bold text-white shadow-md flex items-center justify-center gap-2"
-                style={{ backgroundColor: COLORS.success }}
+                flex={1}
+                colorScheme="green"
+                leftIcon={<CheckCircle size={20} />}
               >
-                <CheckCircle size={20} />
                 Accept
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       {isMounted && showPaymentModal && paymentClientSecret && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
-            <h2 className="text-2xl font-bold mb-4" style={{ color: COLORS.text }}>
-              Complete Payment
-            </h2>
-            <p className="mb-4" style={{ color: COLORS.text }}>
-              Pay ${EXTENSION_COST}.00 to add {EXTENSION_MINUTES} minutes to your call.
-            </p>
-            <Elements stripe={stripePromise} options={{ clientSecret: paymentClientSecret }}>
-              <PaymentForm
-                clientSecret={paymentClientSecret}
-                onSuccess={handlePaymentSuccess}
-                onCancel={() => {
-                  setShowPaymentModal(false);
-                  setPaymentClientSecret(null);
-                  // Check if note modal should appear after canceling payment
-                  setTimeout(() => pollSession(), 100);
-                }}
-              />
-            </Elements>
-          </div>
-        </div>
+        <Modal isOpen onClose={() => {}} isCentered>
+          <ModalOverlay bg="blackAlpha.700" />
+          <ModalContent>
+            <ModalHeader fontSize="2xl" color="gray.800">Complete Payment</ModalHeader>
+            <ModalBody>
+              <Text mb={4} color="gray.800">
+                Pay ${EXTENSION_COST}.00 to add {EXTENSION_MINUTES} minutes to your call.
+              </Text>
+              <Elements stripe={stripePromise} options={{ clientSecret: paymentClientSecret }}>
+                <PaymentForm
+                  clientSecret={paymentClientSecret}
+                  onSuccess={handlePaymentSuccess}
+                  onCancel={() => {
+                    setShowPaymentModal(false);
+                    setPaymentClientSecret(null);
+                    setTimeout(() => pollSession(), 100);
+                  }}
+                />
+              </Elements>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
       )}
 
-      {showReportModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50"
-          onClick={() => setShowReportModal(false)}
-        >
-          <div
-            className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle size={28} style={{ color: COLORS.error }} />
-              <h2 className="text-2xl font-bold" style={{ color: COLORS.text }}>
-                Report Issue
-              </h2>
-            </div>
-            <p className="mb-4 opacity-70" style={{ color: COLORS.text }}>
+      <Modal isOpen={showReportModal} onClose={() => setShowReportModal(false)} isCentered>
+        <ModalOverlay bg="blackAlpha.700" />
+        <ModalContent>
+          <ModalHeader>
+            <HStack spacing={3}>
+              <AlertTriangle size={28} color="red" />
+              <Text fontSize="2xl" color="gray.800">Report Issue</Text>
+            </HStack>
+          </ModalHeader>
+          <ModalBody>
+            <Text opacity={0.7} mb={4} color="gray.800">
               Help us keep the community safe. Please describe the issue you experienced.
-            </p>
-            <textarea
+            </Text>
+            <Textarea
               placeholder="Describe the issue..."
               value={reportReason}
               onChange={(e) => setReportReason(e.target.value)}
-              className="w-full p-3 rounded-xl border-2 resize-none mb-4 focus:outline-none focus:border-purple-500"
-              style={{ borderColor: COLORS.cardBg }}
+              resize="none"
               rows={4}
+              borderColor="gray.300"
+              focusBorderColor="purple.500"
             />
-            <div className="flex gap-3">
-              <button
+          </ModalBody>
+          <ModalFooter>
+            <HStack spacing={3} w="full">
+              <Button
                 onClick={() => {
                   setShowReportModal(false);
                   setReportReason("");
                 }}
-                className="flex-1 px-4 py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all"
-                style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
+                flex={1}
+                variant="outline"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleReport}
-                disabled={!reportReason.trim()}
-                className="flex-1 px-4 py-3 rounded-xl font-bold text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: COLORS.error }}
+                isDisabled={!reportReason.trim()}
+                flex={1}
+                colorScheme="red"
               >
                 Submit Report
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
-      {showPostCallNoteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
-            <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.text }}>
-              How was your call?
-            </h2>
-            <p className="mb-4 text-sm opacity-70" style={{ color: COLORS.text }}>
+      <Modal isOpen={showPostCallNoteModal} onClose={() => {}} isCentered>
+        <ModalOverlay bg="blackAlpha.700" />
+        <ModalContent>
+          <ModalHeader fontSize="2xl" color="gray.800">How was your call?</ModalHeader>
+          <ModalBody>
+            <Text fontSize="sm" opacity={0.7} mb={4} color="gray.800">
               Leave a private note about your conversation. Only you can see this.
-            </p>
-            <textarea
+            </Text>
+            <Textarea
               placeholder="Add your thoughts... (e.g., 'Great conversation about travel', 'Shared interest in photography')"
               value={postCallNote}
               onChange={(e) => setPostCallNote(e.target.value)}
-              className="w-full p-3 rounded-xl border-2 resize-none mb-4 focus:outline-none focus:border-purple-500"
-              style={{ borderColor: COLORS.cardBg }}
+              resize="none"
               rows={4}
               maxLength={500}
+              borderColor="gray.300"
+              focusBorderColor="purple.500"
             />
-            <div className="flex gap-3">
-              <button
+          </ModalBody>
+          <ModalFooter>
+            <HStack spacing={3} w="full">
+              <Button
                 onClick={handleSkipNote}
-                disabled={savingNote}
-                className="flex-1 px-4 py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50"
-                style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
+                isDisabled={savingNote}
+                flex={1}
+                variant="outline"
               >
                 Skip
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleSaveNote}
-                disabled={savingNote}
-                className="flex-1 px-4 py-3 rounded-xl font-bold text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50"
-                style={{ backgroundColor: COLORS.primary }}
+                isDisabled={savingNote}
+                isLoading={savingNote}
+                loadingText="Saving..."
+                flex={1}
+                colorScheme="purple"
               >
-                {savingNote ? "Saving..." : "Save Note"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+                Save Note
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </Flex>
   );
 }

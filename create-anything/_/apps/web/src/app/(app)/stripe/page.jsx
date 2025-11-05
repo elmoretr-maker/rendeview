@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { ArrowLeft } from "lucide-react";
+import { Box, VStack, Heading, Text, Button, Spinner, Icon, Flex } from "@chakra-ui/react";
 
 export default function Stripe() {
   const navigate = useNavigate();
@@ -31,76 +32,89 @@ export default function Stripe() {
 
   if (!checkoutUrl) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: "#F9F9F9" }}>
-        <div className="text-center max-w-md">
-          <h1 className="text-2xl font-bold mb-4" style={{ color: "#2C3E50" }}>No Payment Session</h1>
-          <p className="text-gray-600 mb-6">No active payment session found.</p>
-          <button
+      <Flex minH="100vh" align="center" justify="center" px={6} bg="gray.50">
+        <VStack spacing={4} textAlign="center" maxW="md">
+          <Heading size="xl" color="gray.800">No Payment Session</Heading>
+          <Text color="gray.600" mb={2}>No active payment session found.</Text>
+          <Button
             onClick={() => navigate("/onboarding/membership")}
-            className="px-6 py-3 rounded-lg text-white font-semibold"
-            style={{ backgroundColor: "#5B3BAF" }}
+            colorScheme="purple"
+            size="lg"
           >
             Back to Membership
-          </button>
-        </div>
-      </div>
+          </Button>
+        </VStack>
+      </Flex>
     );
   }
 
   if (paymentComplete) {
     const isSubscriptionFlow = returnTo === "/settings/subscription";
     return (
-      <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: "#F9F9F9" }}>
-        <div className="text-center max-w-md">
-          <div className="mb-6">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold mb-2" style={{ color: "#2C3E50" }}>Payment Complete!</h1>
-            <p className="text-gray-600 mb-8">
-              {isSubscriptionFlow 
-                ? "Your subscription has been upgraded successfully!" 
-                : "Your subscription is now active. Let's set up your profile."}
-            </p>
-          </div>
+      <Flex minH="100vh" align="center" justify="center" px={6} bg="gray.50">
+        <VStack spacing={6} textAlign="center" maxW="md">
+          <Box
+            w={16}
+            h={16}
+            bg="green.100"
+            borderRadius="full"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Icon viewBox="0 0 24 24" w={8} h={8} color="green.600">
+              <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </Icon>
+          </Box>
+          <Heading size="xl" color="gray.800">Payment Complete!</Heading>
+          <Text color="gray.600" mb={4}>
+            {isSubscriptionFlow 
+              ? "Your subscription has been upgraded successfully!" 
+              : "Your subscription is now active. Let's set up your profile."}
+          </Text>
 
-          <button
+          <Button
             onClick={() => navigate(returnTo)}
-            className="w-full px-8 py-4 rounded-xl text-white font-semibold text-lg shadow-lg mb-3"
-            style={{ backgroundColor: "#5B3BAF" }}
+            w="full"
+            colorScheme="purple"
+            size="lg"
+            shadow="lg"
+            mb={3}
           >
             {isSubscriptionFlow ? "Back to Subscription" : "Continue to Profile Setup"}
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => navigate(isSubscriptionFlow ? "/settings/subscription" : "/onboarding/membership")}
-            className="flex items-center justify-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mx-auto"
+            variant="ghost"
+            leftIcon={<ArrowLeft size={18} />}
+            color="gray.600"
+            _hover={{ color: "gray.900" }}
           >
-            <ArrowLeft size={18} />
-            <span className="font-medium">{isSubscriptionFlow ? "View Subscription" : "Back to Membership"}</span>
-          </button>
-        </div>
-      </div>
+            {isSubscriptionFlow ? "View Subscription" : "Back to Membership"}
+          </Button>
+        </VStack>
+      </Flex>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: "#F9F9F9" }}>
-      <div className="text-center max-w-md">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: "#5B3BAF" }}></div>
-        <h2 className="text-xl font-bold mb-2" style={{ color: "#2C3E50" }}>Processing Payment</h2>
-        <p className="text-gray-600 mb-8">Please complete your purchase in the popup window...</p>
+    <Flex minH="100vh" align="center" justify="center" px={6} bg="gray.50">
+      <VStack spacing={4} textAlign="center" maxW="md">
+        <Spinner size="xl" color="purple.500" thickness="4px" />
+        <Heading size="lg" color="gray.800">Processing Payment</Heading>
+        <Text color="gray.600" mb={4}>Please complete your purchase in the popup window...</Text>
         
-        <button
+        <Button
           onClick={() => navigate("/onboarding/membership")}
-          className="flex items-center justify-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mx-auto"
+          variant="ghost"
+          leftIcon={<ArrowLeft size={18} />}
+          color="gray.600"
+          _hover={{ color: "gray.900" }}
         >
-          <ArrowLeft size={18} />
-          <span className="font-medium">Cancel & Go Back</span>
-        </button>
-      </div>
-    </div>
+          Cancel & Go Back
+        </Button>
+      </VStack>
+    </Flex>
   );
 }

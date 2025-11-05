@@ -3,15 +3,22 @@ import { useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Calendar, Clock, Check, X, MessageSquare, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  bg: "#F9F9F9",
-  text: "#2C3E50",
-  error: "#E74C3C",
-  cardBg: "#F3F4F6",
-};
+import {
+  Box,
+  Container,
+  VStack,
+  HStack,
+  Heading,
+  Text,
+  Button,
+  IconButton,
+  Spinner,
+  Avatar,
+  Badge,
+  Textarea,
+  Card,
+  CardBody
+} from "@chakra-ui/react";
 
 export default function ScheduleProposals() {
   const navigate = useNavigate();
@@ -72,15 +79,9 @@ export default function ScheduleProposals() {
 
   if (isLoading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: COLORS.bg }}
-      >
-        <div
-          className="animate-spin rounded-full h-12 w-12 border-b-2"
-          style={{ borderColor: COLORS.primary }}
-        ></div>
-      </div>
+      <Box minH="100vh" bg="gray.50" display="flex" align="center" justify="center">
+        <Spinner size="xl" color="purple.500" thickness="4px" />
+      </Box>
     );
   }
 
@@ -104,237 +105,229 @@ export default function ScheduleProposals() {
     const isCounter = counterProposalId === proposal.id;
 
     return (
-      <div
-        className="p-6 rounded-2xl shadow-md mb-4"
-        style={{ backgroundColor: "white" }}
-      >
-        {/* User info */}
-        <div className="flex items-center gap-3 mb-4">
-          {proposal.other_user.image && (
-            <img
-              src={proposal.other_user.image}
-              alt={proposal.other_user.name}
-              className="w-12 h-12 rounded-full object-cover"
-            />
+      <Card mb={4} shadow="md">
+        <CardBody>
+          <HStack mb={4} spacing={3}>
+            {proposal.other_user.image && (
+              <Avatar
+                src={proposal.other_user.image}
+                name={proposal.other_user.name}
+                size="md"
+              />
+            )}
+            <VStack align="start" spacing={0}>
+              <Heading size="md" color="gray.800">
+                {proposal.other_user.name}
+              </Heading>
+              {proposal.is_proposer && (
+                <Text fontSize="sm" opacity={0.6} color="gray.800">
+                  Waiting for response
+                </Text>
+              )}
+            </VStack>
+          </HStack>
+
+          <VStack align="start" spacing={2} mb={4}>
+            <HStack>
+              <Calendar size={20} color="#7c3aed" />
+              <Text fontWeight="semibold" color="gray.800">
+                {date}
+              </Text>
+            </HStack>
+            <HStack>
+              <Clock size={20} color="#7c3aed" />
+              <Text fontWeight="semibold" color="gray.800">
+                {time}
+              </Text>
+            </HStack>
+          </VStack>
+
+          {proposal.status !== "pending" && (
+            <Box mb={4}>
+              <Badge
+                px={3}
+                py={1}
+                borderRadius="full"
+                fontSize="sm"
+                fontWeight="semibold"
+                colorScheme={
+                  proposal.status === "accepted"
+                    ? "pink"
+                    : proposal.status === "substituted"
+                    ? "purple"
+                    : "red"
+                }
+              >
+                {proposal.status.charAt(0).toUpperCase() + proposal.status.slice(1)}
+              </Badge>
+              {proposal.substitute_note && (
+                <Text mt={2} fontSize="sm" fontStyle="italic" color="gray.800">
+                  Note: {proposal.substitute_note}
+                </Text>
+              )}
+            </Box>
           )}
-          <div>
-            <h3 className="font-bold text-lg" style={{ color: COLORS.text }}>
-              {proposal.other_user.name}
-            </h3>
-            {proposal.is_proposer && (
-              <span className="text-sm opacity-60" style={{ color: COLORS.text }}>
-                Waiting for response
-              </span>
-            )}
-          </div>
-        </div>
 
-        {/* Date & Time */}
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-2">
-            <Calendar size={20} style={{ color: COLORS.primary }} />
-            <span className="font-semibold" style={{ color: COLORS.text }}>
-              {date}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock size={20} style={{ color: COLORS.primary }} />
-            <span className="font-semibold" style={{ color: COLORS.text }}>
-              {time}
-            </span>
-          </div>
-        </div>
-
-        {/* Status badge */}
-        {proposal.status !== "pending" && (
-          <div className="mb-4">
-            <span
-              className="inline-block px-3 py-1 rounded-full text-sm font-semibold"
-              style={{
-                backgroundColor:
-                  proposal.status === "accepted"
-                    ? COLORS.secondary + "20"
-                    : proposal.status === "substituted"
-                    ? COLORS.primary + "20"
-                    : COLORS.error + "20",
-                color:
-                  proposal.status === "accepted"
-                    ? COLORS.secondary
-                    : proposal.status === "substituted"
-                    ? COLORS.primary
-                    : COLORS.error,
-              }}
-            >
-              {proposal.status.charAt(0).toUpperCase() + proposal.status.slice(1)}
-            </span>
-            {proposal.substitute_note && (
-              <p className="mt-2 text-sm italic" style={{ color: COLORS.text }}>
-                Note: {proposal.substitute_note}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Action buttons for received proposals */}
-        {!proposal.is_proposer && proposal.status === "pending" && (
-          <div className="space-y-3">
-            {!isCounter ? (
-              <div className="flex gap-3">
-                <button
-                  onClick={() =>
-                    respondMutation.mutate({ proposalId: proposal.id, action: "accept" })
-                  }
-                  disabled={respondMutation.isPending}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50"
-                  style={{ backgroundColor: COLORS.secondary }}
-                >
-                  <Check size={20} />
-                  Accept
-                </button>
-                <button
-                  onClick={() => setCounterProposalId(proposal.id)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all"
-                  style={{ backgroundColor: COLORS.primary + "20", color: COLORS.primary }}
-                >
-                  <MessageSquare size={20} />
-                  Counter
-                </button>
-                <button
-                  onClick={() =>
-                    respondMutation.mutate({ proposalId: proposal.id, action: "decline" })
-                  }
-                  disabled={respondMutation.isPending}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50"
-                  style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
-                >
-                  <X size={20} style={{ color: COLORS.error }} />
-                  Decline
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <textarea
-                  placeholder="Suggest a different time and add a note..."
-                  value={counterNote}
-                  onChange={(e) => setCounterNote(e.target.value)}
-                  className="w-full p-3 rounded-xl border-2 resize-none"
-                  style={{ borderColor: COLORS.cardBg }}
-                  rows={3}
-                />
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setCounterProposalId(null);
-                      setCounterNote("");
-                    }}
-                    className="flex-1 px-4 py-3 rounded-xl font-bold shadow-md"
-                    style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
-                  >
-                    Cancel
-                  </button>
-                  <button
+          {!proposal.is_proposer && proposal.status === "pending" && (
+            <VStack spacing={3}>
+              {!isCounter ? (
+                <HStack spacing={3} w="full">
+                  <Button
                     onClick={() =>
-                      respondMutation.mutate({
-                        proposalId: proposal.id,
-                        action: "substitute",
-                        substituteNote: counterNote,
-                      })
+                      respondMutation.mutate({ proposalId: proposal.id, action: "accept" })
                     }
-                    disabled={!counterNote.trim() || respondMutation.isPending}
-                    className="flex-1 px-4 py-3 rounded-xl font-bold text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50"
-                    style={{ backgroundColor: COLORS.primary }}
+                    isLoading={respondMutation.isPending}
+                    flex={1}
+                    colorScheme="pink"
+                    leftIcon={<Check size={20} />}
                   >
-                    Send Counter
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+                    Accept
+                  </Button>
+                  <Button
+                    onClick={() => setCounterProposalId(proposal.id)}
+                    flex={1}
+                    variant="outline"
+                    colorScheme="purple"
+                    leftIcon={<MessageSquare size={20} />}
+                  >
+                    Counter
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      respondMutation.mutate({ proposalId: proposal.id, action: "decline" })
+                    }
+                    isLoading={respondMutation.isPending}
+                    flex={1}
+                    variant="outline"
+                    colorScheme="red"
+                    leftIcon={<X size={20} />}
+                  >
+                    Decline
+                  </Button>
+                </HStack>
+              ) : (
+                <VStack spacing={3} w="full">
+                  <Textarea
+                    placeholder="Suggest a different time and add a note..."
+                    value={counterNote}
+                    onChange={(e) => setCounterNote(e.target.value)}
+                    resize="none"
+                    borderColor="gray.300"
+                    focusBorderColor="purple.500"
+                    rows={3}
+                  />
+                  <HStack spacing={3} w="full">
+                    <Button
+                      onClick={() => {
+                        setCounterProposalId(null);
+                        setCounterNote("");
+                      }}
+                      flex={1}
+                      variant="outline"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        respondMutation.mutate({
+                          proposalId: proposal.id,
+                          action: "substitute",
+                          substituteNote: counterNote,
+                        })
+                      }
+                      isDisabled={!counterNote.trim() || respondMutation.isPending}
+                      isLoading={respondMutation.isPending}
+                      flex={1}
+                      colorScheme="purple"
+                    >
+                      Send Counter
+                    </Button>
+                  </HStack>
+                </VStack>
+              )}
+            </VStack>
+          )}
 
-        {/* Navigate to video call if accepted */}
-        {proposal.status === "accepted" && (
-          <button
-            onClick={() => navigate(`/video/call?matchId=${proposal.match_id}`)}
-            className="w-full px-4 py-3 rounded-xl font-bold text-white shadow-lg hover:shadow-xl transition-all mt-4"
-            style={{ backgroundColor: COLORS.secondary }}
-          >
-            Join Video Date
-          </button>
-        )}
-      </div>
+          {proposal.status === "accepted" && (
+            <Button
+              onClick={() => navigate(`/video/call?matchId=${proposal.match_id}`)}
+              w="full"
+              colorScheme="pink"
+              shadow="lg"
+              mt={4}
+            >
+              Join Video Date
+            </Button>
+          )}
+        </CardBody>
+      </Card>
     );
   };
 
   return (
-    <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <button
+    <Box minH="100vh" px={4} py={8} bg="gray.50">
+      <Container maxW="2xl">
+        <HStack mb={6} spacing={4}>
+          <IconButton
+            icon={<ArrowLeft size={24} />}
             onClick={() => navigate("/matches")}
-            className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            <ArrowLeft size={24} style={{ color: COLORS.text }} />
-          </button>
-          <h1 className="text-3xl font-bold" style={{ color: COLORS.text }}>
+            variant="ghost"
+            aria-label="Back to matches"
+          />
+          <Heading size="2xl" color="gray.800">
             Video Date Proposals
-          </h1>
-        </div>
+          </Heading>
+        </HStack>
 
-        {/* Pending Proposals (Received) */}
         {pendingProposals.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-4" style={{ color: COLORS.text }}>
+          <Box mb={8}>
+            <Heading size="lg" mb={4} color="gray.800">
               Pending Proposals ({pendingProposals.length})
-            </h2>
+            </Heading>
             {pendingProposals.map((proposal) => (
               <ProposalCard key={proposal.id} proposal={proposal} />
             ))}
-          </div>
+          </Box>
         )}
 
-        {/* Sent Proposals */}
         {sentProposals.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-4" style={{ color: COLORS.text }}>
+          <Box mb={8}>
+            <Heading size="lg" mb={4} color="gray.800">
               Sent Proposals ({sentProposals.length})
-            </h2>
+            </Heading>
             {sentProposals.map((proposal) => (
               <ProposalCard key={proposal.id} proposal={proposal} />
             ))}
-          </div>
+          </Box>
         )}
 
-        {/* Completed Proposals */}
         {completedProposals.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold mb-4" style={{ color: COLORS.text }}>
+          <Box mb={8}>
+            <Heading size="lg" mb={4} color="gray.800">
               Past Proposals ({completedProposals.length})
-            </h2>
+            </Heading>
             {completedProposals.map((proposal) => (
               <ProposalCard key={proposal.id} proposal={proposal} />
             ))}
-          </div>
+          </Box>
         )}
 
-        {/* Empty state */}
         {proposals.length === 0 && (
-          <div className="text-center py-12">
-            <Calendar size={64} className="mx-auto mb-4 opacity-30" style={{ color: COLORS.text }} />
-            <p className="text-lg mb-4" style={{ color: COLORS.text }}>
+          <VStack spacing={4} py={12} textAlign="center">
+            <Calendar size={64} opacity={0.3} color="gray.800" />
+            <Text fontSize="lg" color="gray.800">
               No video date proposals yet
-            </p>
-            <button
+            </Text>
+            <Button
               onClick={() => navigate("/matches")}
-              className="px-6 py-3 rounded-xl font-bold text-white shadow-lg"
-              style={{ backgroundColor: COLORS.primary }}
+              colorScheme="purple"
+              shadow="lg"
             >
               View Matches
-            </button>
-          </div>
+            </Button>
+          </VStack>
         )}
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 }

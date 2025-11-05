@@ -3,15 +3,21 @@ import { useParams, useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Calendar, Clock, ArrowLeft, Video } from "lucide-react";
 import { toast } from "sonner";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  bg: "#F9F9F9",
-  text: "#2C3E50",
-  error: "#E74C3C",
-  cardBg: "#F3F4F6",
-};
+import {
+  Box,
+  Container,
+  VStack,
+  HStack,
+  Heading,
+  Text,
+  Button,
+  IconButton,
+  Spinner,
+  Avatar,
+  SimpleGrid,
+  Card,
+  CardBody
+} from "@chakra-ui/react";
 
 export default function ScheduleProposal() {
   const { userId } = useParams();
@@ -113,192 +119,179 @@ export default function ScheduleProposal() {
 
   if (isLoading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center"
-        style={{ backgroundColor: COLORS.bg }}
-      >
-        <div
-          className="animate-spin rounded-full h-12 w-12 border-b-2"
-          style={{ borderColor: COLORS.primary }}
-        ></div>
-      </div>
+      <Box minH="100vh" bg="gray.50" display="flex" align="center" justify="center">
+        <Spinner size="xl" color="purple.500" thickness="4px" />
+      </Box>
     );
   }
 
   return (
-    <div className="min-h-screen px-4 py-8" style={{ backgroundColor: COLORS.bg }}>
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <button
+    <Box minH="100vh" px={4} py={8} bg="gray.50">
+      <Container maxW="2xl">
+        <HStack mb={6} spacing={4}>
+          <IconButton
+            icon={<ArrowLeft size={24} />}
             onClick={() => navigate(-1)}
-            className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            <ArrowLeft size={24} style={{ color: COLORS.text }} />
-          </button>
-          <h1 className="text-3xl font-bold" style={{ color: COLORS.text }}>
+            variant="ghost"
+            aria-label="Back"
+          />
+          <Heading size="2xl" color="gray.800">
             Propose Video Date
-          </h1>
-        </div>
+          </Heading>
+        </HStack>
 
-        {/* User info card */}
-        <div
-          className="p-6 rounded-2xl shadow-md mb-6 flex items-center gap-4"
-          style={{ backgroundColor: "white" }}
-        >
-          {user.primary_photo_url && (
-            <img
-              src={user.primary_photo_url}
-              alt={user.name}
-              className="w-16 h-16 rounded-full object-cover"
-            />
-          )}
-          <div>
-            <h2 className="text-xl font-bold" style={{ color: COLORS.text }}>
-              {user.name}
-            </h2>
-            {!matchId && (
-              <p className="text-sm text-red-500 mt-1">
-                You must match with this person first to schedule a video date
-              </p>
-            )}
-          </div>
-        </div>
+        <Card mb={6} shadow="md">
+          <CardBody>
+            <HStack spacing={4}>
+              {user.primary_photo_url && (
+                <Avatar
+                  src={user.primary_photo_url}
+                  name={user.name}
+                  size="lg"
+                />
+              )}
+              <VStack align="start" spacing={0}>
+                <Heading size="lg" color="gray.800">
+                  {user.name}
+                </Heading>
+                {!matchId && (
+                  <Text fontSize="sm" color="red.500" mt={1}>
+                    You must match with this person first to schedule a video date
+                  </Text>
+                )}
+              </VStack>
+            </HStack>
+          </CardBody>
+        </Card>
 
         {matchId && (
           <>
-            {/* Date Selection */}
-            <div className="mb-6 p-6 rounded-2xl shadow-md" style={{ backgroundColor: "white" }}>
-              <div className="flex items-center gap-2 mb-4">
-                <Calendar size={24} style={{ color: COLORS.primary }} />
-                <h3 className="text-xl font-bold" style={{ color: COLORS.text }}>
-                  Select Date
-                </h3>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {dateOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setSelectedDate(option.value)}
-                    className={`p-3 rounded-xl font-semibold transition-all ${
-                      selectedDate === option.value ? "shadow-lg" : "hover:shadow-md"
-                    }`}
-                    style={{
-                      backgroundColor:
-                        selectedDate === option.value ? COLORS.primary : COLORS.cardBg,
-                      color: selectedDate === option.value ? "white" : COLORS.text,
-                    }}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Card mb={6} shadow="md">
+              <CardBody>
+                <HStack mb={4} spacing={2}>
+                  <Calendar size={24} color="#7c3aed" />
+                  <Heading size="lg" color="gray.800">
+                    Select Date
+                  </Heading>
+                </HStack>
+                <SimpleGrid columns={{ base: 2, sm: 3 }} spacing={3}>
+                  {dateOptions.map((option) => (
+                    <Button
+                      key={option.value}
+                      onClick={() => setSelectedDate(option.value)}
+                      colorScheme={selectedDate === option.value ? "purple" : "gray"}
+                      variant={selectedDate === option.value ? "solid" : "outline"}
+                      size="md"
+                    >
+                      {option.label}
+                    </Button>
+                  ))}
+                </SimpleGrid>
+              </CardBody>
+            </Card>
 
-            {/* Time Selection */}
-            <div className="mb-6 p-6 rounded-2xl shadow-md" style={{ backgroundColor: "white" }}>
-              <div className="flex items-center gap-2 mb-4">
-                <Clock size={24} style={{ color: COLORS.primary }} />
-                <h3 className="text-xl font-bold" style={{ color: COLORS.text }}>
-                  Select Time
-                </h3>
-              </div>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-64 overflow-y-auto">
-                {timeSlots.map((time) => (
-                  <button
-                    key={time}
-                    onClick={() => setSelectedTime(time)}
-                    className={`p-3 rounded-xl font-semibold transition-all ${
-                      selectedTime === time ? "shadow-lg" : "hover:shadow-md"
-                    }`}
-                    style={{
-                      backgroundColor:
-                        selectedTime === time ? COLORS.primary : COLORS.cardBg,
-                      color: selectedTime === time ? "white" : COLORS.text,
-                    }}
-                  >
-                    {time}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Card mb={6} shadow="md">
+              <CardBody>
+                <HStack mb={4} spacing={2}>
+                  <Clock size={24} color="#7c3aed" />
+                  <Heading size="lg" color="gray.800">
+                    Select Time
+                  </Heading>
+                </HStack>
+                <SimpleGrid columns={{ base: 3, sm: 4 }} spacing={3} maxH="64" overflowY="auto">
+                  {timeSlots.map((time) => (
+                    <Button
+                      key={time}
+                      onClick={() => setSelectedTime(time)}
+                      colorScheme={selectedTime === time ? "purple" : "gray"}
+                      variant={selectedTime === time ? "solid" : "outline"}
+                      size="md"
+                    >
+                      {time}
+                    </Button>
+                  ))}
+                </SimpleGrid>
+              </CardBody>
+            </Card>
 
-            {/* Duration Selection */}
-            <div className="mb-6 p-6 rounded-2xl shadow-md" style={{ backgroundColor: "white" }}>
-              <h3 className="text-xl font-bold mb-4" style={{ color: COLORS.text }}>
-                Duration
-              </h3>
-              <div className="flex gap-3">
-                {[15, 30, 45, 60].map((mins) => (
-                  <button
-                    key={mins}
-                    onClick={() => setDuration(mins)}
-                    className={`px-4 py-3 rounded-xl font-semibold transition-all flex-1 ${
-                      duration === mins ? "shadow-lg" : "hover:shadow-md"
-                    }`}
-                    style={{
-                      backgroundColor: duration === mins ? COLORS.primary : COLORS.cardBg,
-                      color: duration === mins ? "white" : COLORS.text,
-                    }}
-                  >
-                    {mins} min
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Card mb={6} shadow="md">
+              <CardBody>
+                <Heading size="lg" mb={4} color="gray.800">
+                  Duration
+                </Heading>
+                <HStack spacing={3}>
+                  {[15, 30, 45, 60].map((mins) => (
+                    <Button
+                      key={mins}
+                      onClick={() => setDuration(mins)}
+                      colorScheme={duration === mins ? "purple" : "gray"}
+                      variant={duration === mins ? "solid" : "outline"}
+                      flex={1}
+                    >
+                      {mins} min
+                    </Button>
+                  ))}
+                </HStack>
+              </CardBody>
+            </Card>
 
-            {/* Summary */}
             {selectedDate && selectedTime && (
-              <div
-                className="mb-6 p-6 rounded-2xl shadow-md"
-                style={{ backgroundColor: COLORS.secondary + "15" }}
+              <Box
+                mb={6}
+                p={6}
+                borderRadius="xl"
+                shadow="md"
+                bg="pink.50"
               >
-                <h3 className="text-lg font-bold mb-2" style={{ color: COLORS.text }}>
+                <Heading size="md" mb={2} color="gray.800">
                   Proposal Summary
-                </h3>
-                <p style={{ color: COLORS.text }}>
-                  <strong>{user.name}</strong> will receive a proposal for a {duration}-minute
+                </Heading>
+                <Text color="gray.800">
+                  <Text as="strong">{user.name}</Text> will receive a proposal for a {duration}-minute
                   video date on{" "}
-                  <strong>
+                  <Text as="strong">
                     {new Date(selectedDate).toLocaleDateString("en-US", {
                       weekday: "long",
                       month: "long",
                       day: "numeric",
                     })}
-                  </strong>{" "}
-                  at <strong>{selectedTime}</strong>
-                </p>
-              </div>
+                  </Text>{" "}
+                  at <Text as="strong">{selectedTime}</Text>
+                </Text>
+              </Box>
             )}
 
-            {/* Action Button */}
-            <button
+            <Button
               onClick={() => proposalMutation.mutate()}
-              disabled={!selectedDate || !selectedTime || proposalMutation.isPending}
-              className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-bold text-white shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
-              style={{ backgroundColor: COLORS.primary }}
+              isDisabled={!selectedDate || !selectedTime || proposalMutation.isPending}
+              isLoading={proposalMutation.isPending}
+              loadingText="Sending..."
+              w="full"
+              colorScheme="purple"
+              leftIcon={<Video size={24} />}
+              size="lg"
+              shadow="lg"
             >
-              <Video size={24} />
-              {proposalMutation.isPending ? "Sending..." : "Send Proposal"}
-            </button>
+              Send Proposal
+            </Button>
           </>
         )}
 
         {!matchId && (
-          <div className="text-center py-12">
-            <p className="text-lg mb-4" style={{ color: COLORS.text }}>
+          <VStack spacing={4} py={12} textAlign="center">
+            <Text fontSize="lg" color="gray.800">
               You need to match with {user.name} before proposing a video date.
-            </p>
-            <button
+            </Text>
+            <Button
               onClick={() => navigate(`/profile/${targetId}`)}
-              className="px-6 py-3 rounded-xl font-bold text-white shadow-lg"
-              style={{ backgroundColor: COLORS.primary }}
+              colorScheme="purple"
+              shadow="lg"
             >
               View Profile & Like
-            </button>
-          </div>
+            </Button>
+          </VStack>
         )}
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 }
