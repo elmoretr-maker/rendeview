@@ -22,11 +22,6 @@ export async function GET(request) {
              m.created_at, m.last_chat_at
       FROM matches m
       WHERE (m.user_a_id = ${uid} OR m.user_b_id = ${uid})
-        AND (
-          (m.user_a_id = ${uid} AND m.viewed_by_user_a = true)
-          OR
-          (m.user_b_id = ${uid} AND m.viewed_by_user_b = true)
-        )
       ORDER BY COALESCE(m.last_chat_at, m.created_at) DESC`;
 
     const matches = [];
