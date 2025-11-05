@@ -131,9 +131,9 @@ export default function ScheduleProposal() {
         <HStack mb={6} spacing={4}>
           <IconButton
             icon={<ArrowLeft size={24} />}
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/messages")}
             variant="ghost"
-            aria-label="Back"
+            aria-label="Back to messages"
           />
           <Heading size="2xl" color="gray.800">
             Propose Video Date

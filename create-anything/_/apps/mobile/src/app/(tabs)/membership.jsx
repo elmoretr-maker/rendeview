@@ -17,6 +17,7 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from "@expo-google-fonts/inter";
+import { TIER_LIMITS, MEMBERSHIP_TIERS, getTierLimits, formatMeetingsDisplay, formatMessagesDisplay } from "@/utils/membershipTiers";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -25,56 +26,47 @@ const COLORS = {
   text: "#2C3E50",
 };
 
+function buildTierDisplay(tierKey, limits) {
+  const name = tierKey.charAt(0).toUpperCase() + tierKey.slice(1);
+  const priceDisplay = limits.priceMonthly === 0 ? "$0" : `$${limits.priceMonthly.toFixed(2)}`;
+  const period = limits.priceMonthly === 0 ? "forever" : "/month";
+  
+  const photoVideoText = limits.videos > 1 
+    ? `${limits.photos} photos + ${limits.videos} videos`
+    : `${limits.photos} photos + ${limits.videos} video`;
+  
+  const meetingsText = formatMeetingsDisplay(limits.maxMeetings);
+  const messagesText = formatMessagesDisplay(limits.dailyMessages, limits.perMatchDailyMessages);
+  const videoCallText = `${limits.chatMinutes}-min video calls`;
+  
+  const matchingTier = tierKey === MEMBERSHIP_TIERS.BUSINESS 
+    ? "VIP matching" 
+    : tierKey === MEMBERSHIP_TIERS.DATING 
+    ? "Priority matching" 
+    : tierKey === MEMBERSHIP_TIERS.CASUAL
+    ? "Smart matching"
+    : "Basic matching";
+  
+  return {
+    name,
+    price: priceDisplay,
+    period,
+    popular: tierKey === MEMBERSHIP_TIERS.DATING,
+    features: [
+      meetingsText,
+      photoVideoText,
+      videoCallText,
+      messagesText,
+      matchingTier,
+    ],
+  };
+}
+
 const TIERS = {
-  free: {
-    name: "Free",
-    price: "$0",
-    period: "forever",
-    features: [
-      "1 video date/month",
-      "3 photos max",
-      "10-min video calls",
-      "50 messages/day",
-      "Basic matching",
-    ],
-  },
-  casual: {
-    name: "Casual",
-    price: "$9.99",
-    period: "/month",
-    features: [
-      "2 video dates/month",
-      "5 photos + 1 video",
-      "30-min video calls",
-      "100 messages/day",
-      "Smart matching",
-    ],
-  },
-  dating: {
-    name: "Dating",
-    price: "$29.99",
-    period: "/month",
-    popular: true,
-    features: [
-      "5 video dates/month",
-      "10 photos + 1 video",
-      "60-min video calls",
-      "Unlimited messages",
-      "Priority matching",
-    ],
-  },
-  business: {
-    name: "Business",
-    price: "$49.99",
-    period: "/month",
-    features: [
-      "Unlimited video dates",
-      "20 photos + 1 video",
-      "120-min video calls",
-      "Unlimited messages",
-      "VIP matching",
-    ],
-  },
+  [MEMBERSHIP_TIERS.FREE]: buildTierDisplay(MEMBERSHIP_TIERS.FREE, TIER_LIMITS[MEMBERSHIP_TIERS.FREE]),
+  [MEMBERSHIP_TIERS.CASUAL]: buildTierDisplay(MEMBERSHIP_TIERS.CASUAL, TIER_LIMITS[MEMBERSHIP_TIERS.CASUAL]),
+  [MEMBERSHIP_TIERS.DATING]: buildTierDisplay(MEMBERSHIP_TIERS.DATING, TIER_LIMITS[MEMBERSHIP_TIERS.DATING]),
+  [MEMBERSHIP_TIERS.BUSINESS]: buildTierDisplay(MEMBERSHIP_TIERS.BUSINESS, TIER_LIMITS[MEMBERSHIP_TIERS.BUSINESS]),
 };
 
 export default function Membership() {
