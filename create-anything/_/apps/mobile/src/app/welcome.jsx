@@ -34,7 +34,7 @@ const COLORS = {
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const { auth } = useAuth();
+  const { auth, signIn } = useAuth();
   
   const [loaded, error] = useFonts({
     Inter_400Regular,
@@ -54,7 +54,7 @@ export default function WelcomeScreen() {
   }
 
   const handleSignIn = () => {
-    router.push("/onboarding/welcome");
+    signIn();
   };
 
   const handleJoinNow = () => {
