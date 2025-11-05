@@ -95,8 +95,12 @@ export default function Chat() {
 
   const send = useCallback(() => {
     const trimmed = text.trim();
-    if (!trimmed || trimmed.length > 50) {
-      Alert.alert("Limit", "Max 50 characters");
+    if (!trimmed) {
+      Alert.alert("Error", "Message cannot be empty");
+      return;
+    }
+    if (text.length > 280) {
+      Alert.alert("Message Too Long", "Message exceeds 280 characters. Please keep messages brief and focused on scheduling your video chat!");
       return;
     }
     sendMutation.mutate(trimmed);
@@ -216,45 +220,55 @@ export default function Chat() {
                 left: 16,
                 right: 16,
                 bottom: insets.bottom + 12,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 8,
               }}
             >
-              <TextInput
-                style={{
-                  flex: 1,
-                  borderWidth: 1,
-                  borderColor: "#E5E7EB",
-                  borderRadius: 10,
-                  paddingHorizontal: 12,
-                  paddingVertical: 10,
-                  backgroundColor: "#FFFFFF",
-                }}
-                placeholder="Type a message (max 50)"
-                value={text}
-                onChangeText={(t) => t.length <= 50 && setText(t)}
-                maxLength={50}
-              />
-              <TouchableOpacity
-                onPress={send}
-                style={{
-                  backgroundColor: COLORS.primary,
-                  paddingHorizontal: 16,
-                  paddingVertical: 10,
-                  borderRadius: 10,
-                }}
-              >
-                <Text
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <TextInput
                   style={{
-                    color: "#fff",
-                    fontWeight: "600",
-                    fontFamily: "Inter_600SemiBold",
+                    flex: 1,
+                    borderWidth: 1,
+                    borderColor: "#E5E7EB",
+                    borderRadius: 10,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    backgroundColor: "#FFFFFF",
+                  }}
+                  placeholder="Type a message..."
+                  value={text}
+                  onChangeText={setText}
+                  maxLength={280}
+                />
+                <TouchableOpacity
+                  onPress={send}
+                  style={{
+                    backgroundColor: COLORS.primary,
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    borderRadius: 10,
                   }}
                 >
-                  Send
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    style={{
+                      color: "#fff",
+                      fontWeight: "600",
+                      fontFamily: "Inter_600SemiBold",
+                    }}
+                  >
+                    Send
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <Text
+                style={{
+                  fontSize: 10,
+                  color: text.length > 280 ? COLORS.error : "#9CA3AF",
+                  textAlign: "right",
+                  marginTop: 4,
+                  fontFamily: "Inter_400Regular",
+                }}
+              >
+                {text.length}/280 characters
+              </Text>
             </View>
           </>
         )}

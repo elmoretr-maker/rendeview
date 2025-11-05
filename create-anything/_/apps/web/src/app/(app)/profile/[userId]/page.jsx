@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, X, Video, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import AvailabilityDisplay from "@/components/AvailabilityDisplay";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
 import {
   Box,
@@ -225,29 +226,20 @@ export default function RemoteProfile() {
         {/* Availability */}
         <Card mb={6} shadow="md">
           <CardBody p={6}>
-            <Heading size="lg" mb={3} color="gray.800">Availability</Heading>
+            <Heading size="lg" mb={4} color="gray.800">Availability</Heading>
             {typical.length > 0 ? (
-              <VStack align="start" spacing={2}>
-                {typical.map((slot, i) => (
-                  <HStack key={i} spacing={2}>
-                    <Box w={2} h={2} borderRadius="full" bg="teal.500" />
-                    <Text color="gray.800">
-                      {(slot.days || []).join(", ")} • {slot.start} - {slot.end}
-                    </Text>
-                  </HStack>
-                ))}
-              </VStack>
+              <AvailabilityDisplay typical={typical} />
             ) : (
               <Text opacity={0.6} color="gray.800">Availability not shared</Text>
             )}
             {timezone && (
-              <Text opacity={0.6} mt={3} fontSize="sm" color="gray.800">
+              <Text opacity={0.6} mt={4} fontSize="sm" color="gray.800">
                 Timezone: {timezone}
               </Text>
             )}
             {user?.immediate_available && (
               <Badge 
-                mt={3} 
+                mt={4} 
                 display="inline-flex" 
                 alignItems="center" 
                 gap={2} 

@@ -4,6 +4,7 @@ import useUser from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import { ObjectUploader } from "@/components/ObjectUploader";
+import AvailabilityGrid, { availabilityGridToTypical, typicalToAvailabilityGrid } from "@/components/AvailabilityGrid";
 import { Trash2, Upload, Crown, Image as ImageIcon, Video as VideoIcon } from "lucide-react";
 import { getTierLimits, getRemainingPhotoSlots, getRemainingVideoSlots, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
@@ -35,9 +36,7 @@ function ProfileContent() {
   const [error, setError] = useState(null);
   const [name, setName] = useState("");
   const [timezone, setTimezone] = useState("");
-  const [days, setDays] = useState("Mon,Tue,Wed,Thu,Fri");
-  const [start, setStart] = useState("18:00");
-  const [end, setEnd] = useState("21:00");
+  const [availabilityGrid, setAvailabilityGrid] = useState({});
   const [immediate, setImmediate] = useState(false);
   const [override, setOverride] = useState(false);
   const [videoCallAvailable, setVideoCallAvailable] = useState(true);
@@ -66,11 +65,9 @@ function ProfileContent() {
         if (u.typical_availability?.timezone) {
           setTimezone(u.typical_availability.timezone);
         }
-        const typical = u.typical_availability?.typical?.[0];
+        const typical = u.typical_availability?.typical;
         if (typical) {
-          setDays((typical.days || []).join(","));
-          setStart(typical.start || start);
-          setEnd(typical.end || end);
+          setAvailabilityGrid(typicalToAvailabilityGrid(typical));
         }
         const m = Array.isArray(data.media) ? data.media : [];
         setMedia(m);
@@ -89,16 +86,7 @@ function ProfileContent() {
   const save = useCallback(async () => {
     try {
       setError(null);
-      const typical = [
-        {
-          days: days
-            .split(",")
-            .map((d) => d.trim())
-            .filter(Boolean),
-          start,
-          end,
-        },
-      ];
+      const typical = availabilityGridToTypical(availabilityGrid);
       const res = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -123,7 +111,7 @@ function ProfileContent() {
       setError("Could not save");
       toast.error("Could not save profile");
     }
-  }, [name, timezone, days, start, end, immediate, override, videoCallAvailable]);
+  }, [name, timezone, availabilityGrid, immediate, override, videoCallAvailable]);
 
   const deleteAccount = useCallback(async () => {
     const firstConfirm = window.confirm(
@@ -534,36 +522,15 @@ function ProfileContent() {
             />
           </FormControl>
 
-          <FormControl>
-            <FormLabel fontWeight="semibold" color="gray.800">Typical Availability</FormLabel>
-            <Input
-              type="text"
-              value={days}
-              onChange={(e) => setDays(e.target.value)}
-              placeholder="Mon,Tue,Wed,Thu,Fri"
-              borderColor="gray.200"
-              bg="white"
-              mb={2}
-            />
-            <HStack spacing={2}>
-              <Input
-                type="text"
-                value={start}
-                onChange={(e) => setStart(e.target.value)}
-                placeholder="18:00"
-                borderColor="gray.200"
-                bg="white"
+          <Card shadow="md">
+            <CardBody p={6}>
+              <Heading size="md" mb={4} color="gray.800">Typical Availability</Heading>
+              <AvailabilityGrid
+                value={availabilityGrid}
+                onChange={setAvailabilityGrid}
               />
-              <Input
-                type="text"
-                value={end}
-                onChange={(e) => setEnd(e.target.value)}
-                placeholder="21:00"
-                borderColor="gray.200"
-                bg="white"
-              />
-            </HStack>
-          </FormControl>
+            </CardBody>
+          </Card>
 
           <FormControl display="flex" alignItems="center" justifyContent="space-between" py={2}>
             <FormLabel mb={0} color="gray.800">Immediate Availability</FormLabel>

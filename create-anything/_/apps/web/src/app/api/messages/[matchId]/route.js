@@ -130,8 +130,14 @@ export async function POST(request, { params: { matchId } }) {
     }
     const { body } = await request.json();
 
-    if (typeof body !== "string" || body.trim().length === 0 || body.length > 50) {
-      return Response.json({ error: "Message must be 1-50 characters" }, { status: 400 });
+    if (typeof body !== "string" || body.trim().length === 0) {
+      return Response.json({ error: "Message cannot be empty" }, { status: 400 });
+    }
+
+    if (body.length > 280) {
+      return Response.json({ 
+        error: "Message exceeds 280 characters. Please keep messages brief and focused on scheduling your video chat!" 
+      }, { status: 400 });
     }
 
     // Chat Safety Filter: Block messages containing phone numbers

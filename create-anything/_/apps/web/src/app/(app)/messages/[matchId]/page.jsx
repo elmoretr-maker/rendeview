@@ -174,8 +174,12 @@ function ChatContent() {
 
   const send = useCallback(() => {
     const trimmed = text.trim();
-    if (!trimmed || trimmed.length > 50) {
-      toast.error("Message must be between 1 and 50 characters");
+    if (!trimmed) {
+      toast.error("Message cannot be empty");
+      return;
+    }
+    if (text.length > 280) {
+      toast.error("Message exceeds 280 characters. Please keep messages brief and focused on scheduling your video chat!");
       return;
     }
     sendMutation.mutate(trimmed);
@@ -559,27 +563,32 @@ function ChatContent() {
           )}
         </Box>
 
-        <HStack spacing={2}>
-          <Input
-            type="text"
-            placeholder="Type a message (max 50)"
-            value={text}
-            onChange={(e) => e.target.value.length <= 50 && setText(e.target.value)}
-            maxLength={50}
-            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
-            borderColor="gray.200"
-            bg="white"
-          />
-          <Button
-            onClick={send}
-            isDisabled={sendMutation.isPending}
-            colorScheme="purple"
-            isLoading={sendMutation.isPending}
-            loadingText="Sending..."
-          >
-            Send
-          </Button>
-        </HStack>
+        <VStack spacing={1} align="stretch">
+          <HStack spacing={2}>
+            <Input
+              type="text"
+              placeholder="Type a message..."
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              maxLength={280}
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
+              borderColor="gray.200"
+              bg="white"
+            />
+            <Button
+              onClick={send}
+              isDisabled={sendMutation.isPending}
+              colorScheme="purple"
+              isLoading={sendMutation.isPending}
+              loadingText="Sending..."
+            >
+              Send
+            </Button>
+          </HStack>
+          <Text fontSize="xs" color={text.length > 280 ? "red.500" : "gray.500"} textAlign="right">
+            {text.length}/280 characters
+          </Text>
+        </VStack>
       </Container>
       
       <BuyCreditsModal 
