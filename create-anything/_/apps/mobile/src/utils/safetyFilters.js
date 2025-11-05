@@ -1,7 +1,66 @@
 /**
  * Phone Number Detection Utility
  * Detects phone numbers in various formats to prevent users from sharing contact info
+ * Includes protection against linguistic bypasses (spelled-out numbers, mixed formats)
  */
+
+/**
+ * Map of spelled-out numbers to digits
+ */
+const WORD_TO_DIGIT = {
+  'zero': '0', 'oh': '0', 'o': '0',
+  'one': '1', 'won': '1',
+  'two': '2', 'to': '2', 'too': '2',
+  'three': '3', 'tree': '3',
+  'four': '4', 'for': '4', 'fore': '4',
+  'five': '5', 'fiv': '5',
+  'six': '6', 'six': '6',
+  'seven': '7', 'sevn': '7',
+  'eight': '8', 'ate': '8',
+  'nine': '9', 'niner': '9',
+};
+
+/**
+ * Converts spelled-out numbers to digits
+ * @param {string} text - The text to convert
+ * @returns {string} - Text with spelled numbers replaced by digits
+ */
+function convertSpelledNumbers(text) {
+  const lowerText = text.toLowerCase();
+  let converted = lowerText;
+  
+  // Replace each spelled-out number with its digit equivalent
+  Object.entries(WORD_TO_DIGIT).forEach(([word, digit]) => {
+    // Use word boundaries to match whole words and handle common separators
+    const pattern = new RegExp(`\\b${word}\\b`, 'gi');
+    converted = converted.replace(pattern, digit);
+  });
+  
+  return converted;
+}
+
+/**
+ * Detects if text contains consecutive digit-like patterns
+ * @param {string} text - The text to check
+ * @returns {boolean} - True if suspicious digit pattern found
+ */
+function detectConsecutiveDigits(text) {
+  // Remove all non-digit characters
+  const digitsOnly = text.replace(/[^\d]/g, '');
+  
+  // Check for 10+ consecutive digits (phone number length)
+  if (digitsOnly.length >= 10) {
+    return true;
+  }
+  
+  // Check for patterns like "5 5 5 1 2 3 4 5 6 7" (digits with single spaces)
+  const spacedDigits = text.match(/(\d\s){7,}\d/);
+  if (spacedDigits) {
+    return true;
+  }
+  
+  return false;
+}
 
 /**
  * Detects phone numbers in text using multiple patterns
@@ -11,7 +70,15 @@
 export function containsPhoneNumber(text) {
   if (!text || typeof text !== 'string') return false;
   
-  // Remove common separators to check raw digits
+  // Step 1: Convert spelled-out numbers to digits
+  const convertedText = convertSpelledNumbers(text);
+  
+  // Step 2: Check for consecutive digit patterns in converted text
+  if (detectConsecutiveDigits(convertedText)) {
+    return true;
+  }
+  
+  // Step 3: Check original text for numeric phone patterns
   const normalized = text.replace(/[\s\-\.\(\)\+]/g, '');
   
   // Pattern 1: 10+ consecutive digits (handles most phone numbers)
@@ -27,7 +94,22 @@ export function containsPhoneNumber(text) {
     /\d{5}[\s\-\.]\d{6}/,                          // 12345 678901 (international format)
   ];
   
-  return phonePatterns.some(pattern => pattern.test(text));
+  if (phonePatterns.some(pattern => pattern.test(text))) {
+    return true;
+  }
+  
+  // Pattern 3: Check for mixed format (some digits + some spelled words)
+  // Example: "call me at four 555-one-two-three-four"
+  const mixedPattern = /(\d+|zero|one|two|three|four|five|six|seven|eight|nine)[\s\-\.]?(\d+|zero|one|two|three|four|five|six|seven|eight|nine)[\s\-\.]?(\d+|zero|one|two|three|four|five|six|seven|eight|nine)/i;
+  if (mixedPattern.test(text)) {
+    // Additional check: ensure it's likely a phone number (has enough digit-like elements)
+    const digitLikeElements = text.match(/(\d+|zero|one|two|three|four|five|six|seven|eight|nine)/gi);
+    if (digitLikeElements && digitLikeElements.length >= 7) {
+      return true;
+    }
+  }
+  
+  return false;
 }
 
 /**
