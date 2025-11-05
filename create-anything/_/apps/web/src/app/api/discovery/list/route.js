@@ -14,9 +14,10 @@ export async function GET(request) {
     // Track user activity
     await updateLastActive(userId);
 
-    // Get current user's profile for compatibility calculation
+    // Get current user's profile for compatibility calculation and location filtering
     const [currentUser] = await sql`
-      SELECT interests, membership_tier, relationship_goals, smoking, drinking, exercise
+      SELECT interests, membership_tier, relationship_goals, smoking, drinking, exercise,
+             latitude, longitude, max_distance
       FROM auth_users 
       WHERE id = ${userId}`;
 
@@ -25,18 +26,33 @@ export async function GET(request) {
     // - users the current user has blocked (discarded)
     // - users who have blocked the current user
     // - users the current user has already liked
+    // - users outside max_distance radius (if location is set)
     // SMART PRIORITIZATION:
     // 1. Users who liked you (highest priority)
     // 2. Active users (online/recently active)
     // 3. Everyone else
+    
+    // Prepare distance filter if user has location set (explicit null checks for 0° coordinates)
+    const hasUserLocation = currentUser?.latitude != null && currentUser?.longitude != null;
+    const userLat = currentUser?.latitude;
+    const userLng = currentUser?.longitude;
+    const maxDistance = currentUser?.max_distance ?? 100; // Default to 100km if not set
+    
     const q = `
       SELECT u.id, u.name, u.image, u.immediate_available, u.typical_availability, 
              u.primary_photo_url, u.bio, u.membership_tier, u.last_active, u.interests,
              u.relationship_goals, u.smoking, u.drinking, u.exercise,
+             u.latitude, u.longitude,
              CASE WHEN l.liker_id IS NOT NULL THEN 1 ELSE 0 END as liked_you,
              CASE WHEN u.immediate_available = true THEN 1
                   WHEN u.last_active > NOW() - INTERVAL '1 day' THEN 2
                   ELSE 3 END as activity_priority
+             ${hasUserLocation ? `,
+             ( 6371 * acos( 
+               cos( radians($2) ) * cos( radians(u.latitude) ) * 
+               cos( radians(u.longitude) - radians($3) ) + 
+               sin( radians($2) ) * sin( radians(u.latitude) )
+             )) as distance_km` : ''}
       FROM auth_users u
       LEFT JOIN likes l ON l.liker_id = u.id AND l.liked_id = $1
       WHERE u.id <> $1
@@ -49,10 +65,21 @@ export async function GET(request) {
         AND NOT EXISTS (
           SELECT 1 FROM likes l2 WHERE l2.liker_id = $1 AND l2.liked_id = u.id
         )
+        ${hasUserLocation ? `
+        AND u.latitude IS NOT NULL 
+        AND u.longitude IS NOT NULL
+        AND ( 6371 * acos( 
+          cos( radians($2) ) * cos( radians(u.latitude) ) * 
+          cos( radians(u.longitude) - radians($3) ) + 
+          sin( radians($2) ) * sin( radians(u.latitude) )
+        )) <= $4` : ''}
       ORDER BY liked_you DESC, activity_priority ASC, u.id DESC
       LIMIT 20`;
 
-    const candidates = await sql(q, [userId]);
+    const params = hasUserLocation 
+      ? [userId, userLat, userLng, maxDistance]
+      : [userId];
+    const candidates = await sql(q, params);
 
     // Attach primary photo and calculate compatibility scores
     const result = [];
