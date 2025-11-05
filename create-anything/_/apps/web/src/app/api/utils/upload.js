@@ -53,12 +53,17 @@ async function upload({
     throw new Error(`Upload failed: ${uploadResponse.status}`);
   }
   
-  // Extract the object URL (remove query parameters from presigned URL)
+  // Extract the object path from the presigned URL
+  // URL format: https://storage.googleapis.com/{bucket}/uploads/uploads/{id}?...
+  // We want: /objects/uploads/uploads/{id}
   const objectUrl = new URL(uploadURL);
-  const finalUrl = `${objectUrl.origin}${objectUrl.pathname}`;
+  const pathParts = objectUrl.pathname.split('/');
+  // Remove bucket name (first 2 parts: '' and bucket name)
+  const relativePath = pathParts.slice(2).join('/');
+  const objectPath = `/objects/${relativePath}`;
   
   return {
-    url: finalUrl,
+    url: objectPath,
     mimeType: contentType
   };
 }
