@@ -4,15 +4,24 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Video } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  bg: "#F9F9F9",
-  text: "#2C3E50",
-  error: "#E74C3C",
-  cardBg: "#F3F4F6",
-};
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Spinner,
+  Avatar,
+  Card,
+  CardHeader,
+  CardBody,
+  SimpleGrid,
+  Badge,
+  Flex,
+  Wrap,
+} from "@chakra-ui/react";
 
 const TIER_DISPLAY_NAMES = {
   free: "Free",
@@ -50,278 +59,257 @@ export default function ProfilePreview() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: COLORS.primary }}></div>
-        </div>
-      </div>
+        <VStack py={12}>
+          <Spinner size="xl" color="purple.500" thickness="4px" />
+        </VStack>
+      </Box>
     );
   }
 
   if (error?.message === "AUTH_401") {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <p style={{ color: COLORS.error }}>Session expired. Please sign in.</p>
-        </div>
-      </div>
+        <Container maxW="2xl" px={4} py={8}>
+          <Text color="red.500">Session expired. Please sign in.</Text>
+        </Container>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <p style={{ color: COLORS.error }}>Could not load profile</p>
-        </div>
-      </div>
+        <Container maxW="2xl" px={4} py={8}>
+          <Text color="red.500">Could not load profile</Text>
+        </Container>
+      </Box>
     );
   }
 
   const tierDisplay = TIER_DISPLAY_NAMES[user?.membership_tier] || "Free";
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+    <Box minH="100vh" bg="gray.50">
       <AppHeader />
-      <div className="max-w-2xl mx-auto px-4 py-4">
-        {/* Back button */}
-        <button
+      <Container maxW="2xl" px={4} py={4}>
+        <Button
           onClick={() => navigate("/profile")}
-          className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-          style={{ color: COLORS.primary }}
+          variant="ghost"
+          leftIcon={<ArrowLeft size={20} />}
+          colorScheme="purple"
+          mb={4}
         >
-          <ArrowLeft size={20} />
-          <span className="font-semibold">Back to Edit Profile</span>
-        </button>
+          Back to Edit Profile
+        </Button>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          {/* Preview Header */}
-          <div className="px-6 py-4 border-b" style={{ backgroundColor: "#EDE9FE" }}>
-            <h2 className="text-xl font-bold" style={{ color: COLORS.primary }}>
+        <Card shadow="md" overflow="hidden">
+          <CardHeader bg="purple.50" borderBottomWidth="1px">
+            <Heading size="lg" color="purple.700">
               Profile Preview
-            </h2>
-            <p className="text-sm mt-1" style={{ color: COLORS.text }}>
+            </Heading>
+            <Text fontSize="sm" mt={1} color="gray.700">
               This is how other users see your profile
-            </p>
-          </div>
+            </Text>
+          </CardHeader>
 
-          <div className="p-6">
-            {/* Profile Header */}
-            <div className="flex items-start gap-4 mb-6">
-              <div className="flex-shrink-0">
-                <div
-                  className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center"
-                  style={{ backgroundColor: COLORS.cardBg }}
-                >
-                  {user.primary_photo_url ? (
-                    <img
-                      src={getAbsoluteUrl(user.primary_photo_url)}
-                      alt={user.name || "User"}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span style={{ color: COLORS.text, fontSize: "32px" }}>
-                      {user.name?.[0]?.toUpperCase() || "?"}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>
+          <CardBody p={6}>
+            <HStack align="start" spacing={4} mb={6}>
+              <Avatar
+                size="xl"
+                src={user.primary_photo_url ? getAbsoluteUrl(user.primary_photo_url) : undefined}
+                name={user.name || "?"}
+                bg="gray.200"
+              />
+              <VStack align="start" flex={1} spacing={1}>
+                <HStack spacing={2}>
+                  <Heading size="lg" color="gray.800">
                     {user.name || "No name"}
-                  </h1>
+                  </Heading>
                   {user.immediate_available && !user.availability_override && (
-                    <span
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: COLORS.secondary }}
+                    <Box
+                      w={3}
+                      h={3}
+                      borderRadius="full"
+                      bg="teal.500"
                       title="Online"
-                    ></span>
+                    />
                   )}
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <span
-                    className="inline-block px-3 py-1 rounded-full text-sm font-semibold"
-                    style={{ backgroundColor: "#EDE9FE", color: COLORS.primary }}
-                  >
-                    {tierDisplay}
-                  </span>
-                </div>
-              </div>
-            </div>
+                </HStack>
+                <Badge colorScheme="purple">
+                  {tierDisplay}
+                </Badge>
+              </VStack>
+            </HStack>
 
-            {/* Bio */}
             {user.bio && (
-              <div className="mb-6">
-                <h3 className="font-semibold mb-2" style={{ color: COLORS.text }}>
+              <Box mb={6}>
+                <Heading size="sm" mb={2} color="gray.800">
                   About
-                </h3>
-                <p style={{ color: COLORS.text }}>{user.bio}</p>
-              </div>
+                </Heading>
+                <Text color="gray.700">{user.bio}</Text>
+              </Box>
             )}
 
-            {/* Video */}
             {video && (
-              <div className="mb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <Video size={20} style={{ color: COLORS.primary }} />
-                  <h3 className="font-semibold" style={{ color: COLORS.text }}>
+              <Box mb={6}>
+                <HStack spacing={2} mb={2}>
+                  <Video size={20} color="#7c3aed" />
+                  <Heading size="sm" color="gray.800">
                     Video Introduction
-                  </h3>
-                </div>
-                <video
+                  </Heading>
+                </HStack>
+                <Box
+                  as="video"
                   src={getAbsoluteUrl(video.url)}
                   controls
-                  className="w-full rounded-lg"
-                  style={{ maxHeight: "300px" }}
+                  w="full"
+                  borderRadius="lg"
+                  maxH="300px"
                 />
-              </div>
+              </Box>
             )}
 
-            {/* Photos */}
             {photos.length > 0 && (
-              <div className="mb-6">
-                <h3 className="font-semibold mb-2" style={{ color: COLORS.text }}>
+              <Box mb={6}>
+                <Heading size="sm" mb={2} color="gray.800">
                   Photos ({photos.length})
-                </h3>
-                <div className="grid grid-cols-3 gap-2">
+                </Heading>
+                <SimpleGrid columns={3} spacing={2}>
                   {photos.map((photo, idx) => (
-                    <img
+                    <Box
                       key={idx}
+                      as="img"
                       src={getAbsoluteUrl(photo.url)}
                       alt={`Photo ${idx + 1}`}
-                      className="w-full aspect-square object-cover rounded-lg"
+                      w="full"
+                      aspectRatio={1}
+                      objectFit="cover"
+                      borderRadius="lg"
                     />
                   ))}
-                </div>
-              </div>
+                </SimpleGrid>
+              </Box>
             )}
 
-            {/* Interests */}
             {interests.length > 0 && (
-              <div className="mb-6">
-                <h3 className="font-semibold mb-2" style={{ color: COLORS.text }}>
+              <Box mb={6}>
+                <Heading size="sm" mb={2} color="gray.800">
                   Interests
-                </h3>
-                <div className="flex flex-wrap gap-2">
+                </Heading>
+                <Wrap spacing={2}>
                   {interests.map((interest, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1 rounded-full text-sm"
-                      style={{ backgroundColor: "#EDE9FE", color: COLORS.primary }}
-                    >
+                    <Badge key={idx} colorScheme="purple" fontSize="sm">
                       {interest}
-                    </span>
+                    </Badge>
                   ))}
-                </div>
-              </div>
+                </Wrap>
+              </Box>
             )}
 
-            {/* Personal Details */}
             {(user.gender || user.sexual_orientation || user.looking_for || user.relationship_goals || user.height_range || user.body_type || user.education) && (
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3" style={{ color: COLORS.text }}>
+              <Box mb={6}>
+                <Heading size="sm" mb={3} color="gray.800">
                   Personal Details
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
+                </Heading>
+                <SimpleGrid columns={2} spacing={3}>
                   {user.gender && (
-                    <div>
-                      <div className="text-sm" style={{ color: "#6B7280" }}>Gender</div>
-                      <div style={{ color: COLORS.text }}>{user.gender}</div>
-                    </div>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500">Gender</Text>
+                      <Text color="gray.800">{user.gender}</Text>
+                    </Box>
                   )}
                   {user.sexual_orientation && (
-                    <div>
-                      <div className="text-sm" style={{ color: "#6B7280" }}>Orientation</div>
-                      <div style={{ color: COLORS.text }}>{user.sexual_orientation}</div>
-                    </div>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500">Orientation</Text>
+                      <Text color="gray.800">{user.sexual_orientation}</Text>
+                    </Box>
                   )}
                   {user.looking_for && (
-                    <div>
-                      <div className="text-sm" style={{ color: "#6B7280" }}>Looking For</div>
-                      <div style={{ color: COLORS.text }}>{user.looking_for}</div>
-                    </div>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500">Looking For</Text>
+                      <Text color="gray.800">{user.looking_for}</Text>
+                    </Box>
                   )}
                   {user.relationship_goals && (
-                    <div>
-                      <div className="text-sm" style={{ color: "#6B7280" }}>Relationship Goals</div>
-                      <div style={{ color: COLORS.text }}>{user.relationship_goals}</div>
-                    </div>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500">Relationship Goals</Text>
+                      <Text color="gray.800">{user.relationship_goals}</Text>
+                    </Box>
                   )}
                   {user.height_range && (
-                    <div>
-                      <div className="text-sm" style={{ color: "#6B7280" }}>Height</div>
-                      <div style={{ color: COLORS.text }}>{user.height_range}</div>
-                    </div>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500">Height</Text>
+                      <Text color="gray.800">{user.height_range}</Text>
+                    </Box>
                   )}
                   {user.body_type && (
-                    <div>
-                      <div className="text-sm" style={{ color: "#6B7280" }}>Body Type</div>
-                      <div style={{ color: COLORS.text }}>{user.body_type}</div>
-                    </div>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500">Body Type</Text>
+                      <Text color="gray.800">{user.body_type}</Text>
+                    </Box>
                   )}
                   {user.education && (
-                    <div>
-                      <div className="text-sm" style={{ color: "#6B7280" }}>Education</div>
-                      <div style={{ color: COLORS.text }}>{user.education}</div>
-                    </div>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500">Education</Text>
+                      <Text color="gray.800">{user.education}</Text>
+                    </Box>
                   )}
-                </div>
-              </div>
+                </SimpleGrid>
+              </Box>
             )}
 
-            {/* Lifestyle */}
             {(user.drinking || user.smoking || user.exercise || user.religion || user.children_preference || user.pets) && (
-              <div className="mb-6">
-                <h3 className="font-semibold mb-3" style={{ color: COLORS.text }}>
+              <Box mb={6}>
+                <Heading size="sm" mb={3} color="gray.800">
                   Lifestyle
-                </h3>
-                <div className="grid grid-cols-2 gap-3">
+                </Heading>
+                <SimpleGrid columns={2} spacing={3}>
                   {user.drinking && (
-                    <div>
-                      <div className="text-sm" style={{ color: "#6B7280" }}>Drinking</div>
-                      <div style={{ color: COLORS.text }}>{user.drinking}</div>
-                    </div>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500">Drinking</Text>
+                      <Text color="gray.800">{user.drinking}</Text>
+                    </Box>
                   )}
                   {user.smoking && (
-                    <div>
-                      <div className="text-sm" style={{ color: "#6B7280" }}>Smoking</div>
-                      <div style={{ color: COLORS.text }}>{user.smoking}</div>
-                    </div>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500">Smoking</Text>
+                      <Text color="gray.800">{user.smoking}</Text>
+                    </Box>
                   )}
                   {user.exercise && (
-                    <div>
-                      <div className="text-sm" style={{ color: "#6B7280" }}>Exercise</div>
-                      <div style={{ color: COLORS.text }}>{user.exercise}</div>
-                    </div>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500">Exercise</Text>
+                      <Text color="gray.800">{user.exercise}</Text>
+                    </Box>
                   )}
                   {user.religion && (
-                    <div>
-                      <div className="text-sm" style={{ color: "#6B7280" }}>Religion</div>
-                      <div style={{ color: COLORS.text }}>{user.religion}</div>
-                    </div>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500">Religion</Text>
+                      <Text color="gray.800">{user.religion}</Text>
+                    </Box>
                   )}
                   {user.children_preference && (
-                    <div>
-                      <div className="text-sm" style={{ color: "#6B7280" }}>Children</div>
-                      <div style={{ color: COLORS.text }}>{user.children_preference}</div>
-                    </div>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500">Children</Text>
+                      <Text color="gray.800">{user.children_preference}</Text>
+                    </Box>
                   )}
                   {user.pets && (
-                    <div>
-                      <div className="text-sm" style={{ color: "#6B7280" }}>Pets</div>
-                      <div style={{ color: COLORS.text }}>{user.pets}</div>
-                    </div>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500">Pets</Text>
+                      <Text color="gray.800">{user.pets}</Text>
+                    </Box>
                   )}
-                </div>
-              </div>
+                </SimpleGrid>
+              </Box>
             )}
-          </div>
-        </div>
-      </div>
-    </div>
+          </CardBody>
+        </Card>
+      </Container>
+    </Box>
   );
 }

@@ -2,6 +2,19 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Spinner,
+  Avatar,
+  Card,
+} from "@chakra-ui/react";
+import AppHeader from "@/components/AppHeader";
 
 export default function Blockers() {
   const navigate = useNavigate();
@@ -41,58 +54,58 @@ export default function Blockers() {
   const blockers = data?.blockers || [];
 
   return (
-    <div className="min-h-screen px-4 py-8" style={{ backgroundColor: "#FFFFFF" }}>
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Blocked Users</h1>
-        
-        <button
-          onClick={handleSignOut}
-          className="ml-auto mb-4 px-3 py-2 rounded-lg font-bold border"
-          style={{ backgroundColor: "#FEE2E2", color: "#B91C1C", borderColor: "#FCA5A5" }}
-        >
-          Sign Out
-        </button>
+    <Box minH="100vh" bg="white">
+      <AppHeader />
+      <Container maxW="2xl" px={4} py={8}>
+        <HStack justify="space-between" mb={6}>
+          <Heading size="xl" color="gray.800">Blocked Users</Heading>
+          <Button
+            onClick={handleSignOut}
+            colorScheme="red"
+            variant="outline"
+          >
+            Sign Out
+          </Button>
+        </HStack>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: "#5B3BAF" }}></div>
-          </div>
+          <VStack py={12}>
+            <Spinner size="xl" color="purple.500" thickness="4px" />
+          </VStack>
         ) : error ? (
-          <p className="text-red-600">Error loading blocked users</p>
+          <Text color="red.500">Error loading blocked users</Text>
         ) : blockers.length === 0 ? (
-          <p className="text-center text-gray-600 py-12">No blocked users</p>
+          <Box textAlign="center" py={12}>
+            <Text color="gray.600">No blocked users</Text>
+          </Box>
         ) : (
-          <div className="space-y-3">
+          <VStack spacing={3} align="stretch">
             {blockers.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center py-3 px-4 rounded-lg border-b"
-                style={{ borderColor: "#F3F4F6" }}
-              >
-                {item.image ? (
-                  <img
-                    src={item.image}
-                    alt={item.name || "User"}
-                    className="w-12 h-12 rounded-full bg-gray-200"
+              <Card key={item.id} p={4}>
+                <HStack spacing={3}>
+                  <Avatar
+                    size="md"
+                    src={item.image || undefined}
+                    name={item.name || `User ${item.blocked_id}`}
+                    bg="gray.200"
                   />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-gray-200"></div>
-                )}
-                <div className="ml-3 flex-1">
-                  <p className="font-semibold">{item.name || `User ${item.blocked_id}`}</p>
-                </div>
-                <button
-                  onClick={() => unblockMutation.mutate(item.blocked_id)}
-                  className="px-3 py-2 rounded-lg font-semibold"
-                  style={{ backgroundColor: "#ECE8FF", color: "#6855FF" }}
-                >
-                  Unblock
-                </button>
-              </div>
+                  <Text flex={1} fontWeight="semibold" color="gray.800">
+                    {item.name || `User ${item.blocked_id}`}
+                  </Text>
+                  <Button
+                    onClick={() => unblockMutation.mutate(item.blocked_id)}
+                    isDisabled={unblockMutation.isPending}
+                    colorScheme="purple"
+                    size="sm"
+                  >
+                    Unblock
+                  </Button>
+                </HStack>
+              </Card>
             ))}
-          </div>
+          </VStack>
         )}
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 }

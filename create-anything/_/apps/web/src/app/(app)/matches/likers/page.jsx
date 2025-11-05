@@ -6,15 +6,21 @@ import { Heart, X } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MatchCelebration from "@/components/MatchCelebration";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  bg: "#F9F9F9",
-  text: "#2C3E50",
-  error: "#E74C3C",
-  cardBg: "#F3F4F6",
-};
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Spinner,
+  Avatar,
+  Card,
+  CardBody,
+  Divider,
+  Badge,
+} from "@chakra-ui/react";
 
 export default function Likers() {
   const navigate = useNavigate();
@@ -119,103 +125,106 @@ export default function Likers() {
   }, [error]);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+    <Box minH="100vh" bg="gray.50">
       <AppHeader />
-      <div className="px-4 py-8 max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6" style={{ color: COLORS.text }}>Likers</h1>
+      <Container maxW="2xl" px={4} py={8}>
+        <Heading size="xl" mb={6} color="gray.800">Likers</Heading>
         
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: COLORS.primary }}></div>
-          </div>
+          <VStack py={12}>
+            <Spinner size="xl" color="purple.500" thickness="4px" />
+          </VStack>
         ) : error?.message === "AUTH_401" ? (
-          <div>
-            <p className="mb-4" style={{ color: COLORS.text }}>Session expired. Please sign in.</p>
-            <button
+          <VStack align="start" spacing={4}>
+            <Text color="gray.700">Session expired. Please sign in.</Text>
+            <Button
               onClick={() => navigate("/account/signin")}
-              className="px-4 py-2 rounded-lg text-white font-semibold shadow-md"
-              style={{ backgroundColor: COLORS.primary }}
+              colorScheme="purple"
+              shadow="md"
             >
               Sign In
-            </button>
-          </div>
+            </Button>
+          </VStack>
         ) : error ? (
-          <p style={{ color: COLORS.error }}>Error loading likers</p>
+          <Text color="red.500">Error loading likers</Text>
         ) : likers.length === 0 ? (
-          <div className="text-center py-12">
-            <p style={{ color: COLORS.text }}>No likers yet</p>
-          </div>
+          <Box textAlign="center" py={12}>
+            <Text color="gray.700">No likers yet</Text>
+          </Box>
         ) : (
-          <div className="space-y-4">
+          <VStack spacing={4} align="stretch">
             {likers.map((item, idx) => (
-              <div
+              <Card
                 key={idx}
-                className="rounded-xl shadow-md overflow-hidden"
-                style={{ backgroundColor: "white" }}
+                shadow="md"
+                overflow="hidden"
               >
-                <div className="flex items-center p-4">
-                  <button
+                <CardBody p={4}>
+                  <Button
                     onClick={() => navigate(`/profile/${item.user.id}`)}
-                    className="flex items-center flex-1"
+                    variant="unstyled"
+                    display="flex"
+                    alignItems="center"
+                    w="full"
+                    textAlign="left"
                   >
-                    {item.user.photo ? (
-                      <img
-                        src={getAbsoluteUrl(item.user.photo)}
-                        alt={item.user.name || "User"}
-                        className="w-16 h-16 rounded-full object-cover bg-gray-200"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 rounded-full bg-gray-200"></div>
-                    )}
-                    <div className="ml-4 flex-1 text-left">
-                      <p className="font-bold text-lg" style={{ color: COLORS.text }}>
+                    <Avatar
+                      size="md"
+                      src={item.user.photo ? getAbsoluteUrl(item.user.photo) : undefined}
+                      name={item.user.name || `User ${item.user.id}`}
+                      bg="gray.200"
+                    />
+                    <VStack align="start" ml={4} flex={1} spacing={1}>
+                      <Text fontWeight="bold" fontSize="lg" color="gray.800">
                         {item.user.name || `User ${item.user.id}`}
-                      </p>
-                      <p className="text-sm text-gray-500">
+                      </Text>
+                      <Text fontSize="sm" color="gray.500">
                         liked you {new Date(item.liked_at).toLocaleDateString()}
-                      </p>
+                      </Text>
                       {item.user.immediate_available && (
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                          <span className="text-xs text-green-600 font-semibold">Online Now</span>
-                        </div>
+                        <HStack spacing={1.5}>
+                          <Box w={2} h={2} borderRadius="full" bg="green.500" animation="pulse 2s infinite" />
+                          <Text fontSize="xs" color="green.600" fontWeight="semibold">Online Now</Text>
+                        </HStack>
                       )}
-                    </div>
-                  </button>
-                </div>
+                    </VStack>
+                  </Button>
+                </CardBody>
 
-                <div className="flex border-t border-gray-100">
-                  <button
+                <Divider />
+
+                <HStack spacing={0}>
+                  <Button
                     onClick={() => passMutation.mutate(item.user.id)}
-                    disabled={passMutation.isPending || likeMutation.isPending}
-                    className="flex-1 flex items-center justify-center gap-2 py-4 font-semibold transition-colors disabled:opacity-50"
-                    style={{ 
-                      color: COLORS.error,
-                      backgroundColor: passMutation.isPending ? COLORS.cardBg : "transparent"
-                    }}
+                    isDisabled={passMutation.isPending || likeMutation.isPending}
+                    flex={1}
+                    variant="ghost"
+                    colorScheme="red"
+                    leftIcon={<X size={20} />}
+                    py={4}
+                    borderRadius={0}
                   >
-                    <X size={20} />
-                    <span>Pass</span>
-                  </button>
-                  <div className="w-px" style={{ backgroundColor: "#E5E7EB" }}></div>
-                  <button
+                    Pass
+                  </Button>
+                  <Divider orientation="vertical" h="auto" />
+                  <Button
                     onClick={() => likeMutation.mutate(item.user.id)}
-                    disabled={likeMutation.isPending || passMutation.isPending}
-                    className="flex-1 flex items-center justify-center gap-2 py-4 font-semibold transition-colors disabled:opacity-50"
-                    style={{ 
-                      color: COLORS.secondary,
-                      backgroundColor: likeMutation.isPending ? COLORS.cardBg : "transparent"
-                    }}
+                    isDisabled={likeMutation.isPending || passMutation.isPending}
+                    flex={1}
+                    variant="ghost"
+                    colorScheme="teal"
+                    leftIcon={<Heart size={20} />}
+                    py={4}
+                    borderRadius={0}
                   >
-                    <Heart size={20} />
-                    <span>Like</span>
-                  </button>
-                </div>
-              </div>
+                    Like
+                  </Button>
+                </HStack>
+              </Card>
             ))}
-          </div>
+          </VStack>
         )}
-      </div>
+      </Container>
 
       <MatchCelebration
         show={showCelebration}
@@ -229,6 +238,6 @@ export default function Likers() {
           navigate("/new-matches");
         }}
       />
-    </div>
+    </Box>
   );
 }

@@ -6,15 +6,21 @@ import { Heart, X, Eye } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MatchCelebration from "@/components/MatchCelebration";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  bg: "#F9F9F9",
-  text: "#2C3E50",
-  error: "#E74C3C",
-  cardBg: "#F3F4F6",
-};
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Spinner,
+  Avatar,
+  Card,
+  CardBody,
+  Divider,
+  Badge,
+} from "@chakra-ui/react";
 
 export default function ProfileViewers() {
   const navigate = useNavigate();
@@ -114,150 +120,150 @@ export default function ProfileViewers() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="flex items-center justify-center" style={{ minHeight: "60vh" }}>
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: COLORS.primary }}></div>
-        </div>
-      </div>
+        <VStack minH="60vh" justify="center">
+          <Spinner size="xl" color="purple.500" thickness="4px" />
+        </VStack>
+      </Box>
     );
   }
 
   if (error?.message === "AUTH_401") {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="px-4 py-8 max-w-2xl mx-auto">
-          <p className="mb-4" style={{ color: COLORS.text }}>Session expired. Please sign in.</p>
-          <button
-            onClick={() => navigate("/account/signin")}
-            className="px-4 py-2 rounded-lg text-white font-semibold shadow-md"
-            style={{ backgroundColor: COLORS.primary }}
-          >
-            Sign In
-          </button>
-        </div>
-      </div>
+        <Container maxW="2xl" px={4} py={8}>
+          <VStack align="start" spacing={4}>
+            <Text color="gray.700">Session expired. Please sign in.</Text>
+            <Button
+              onClick={() => navigate("/account/signin")}
+              colorScheme="purple"
+              shadow="md"
+            >
+              Sign In
+            </Button>
+          </VStack>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+    <Box minH="100vh" bg="gray.50">
       <AppHeader />
       
-      <div className="px-4 py-8 max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Eye size={28} style={{ color: COLORS.primary }} />
-            <h1 className="text-3xl font-bold" style={{ color: COLORS.text }}>
+      <Container maxW="4xl" px={4} py={8}>
+        <VStack textAlign="center" mb={8} spacing={2}>
+          <HStack justify="center" spacing={2}>
+            <Eye size={28} color="#7c3aed" />
+            <Heading size="2xl" color="gray.800">
               Profile Viewers
-            </h1>
-          </div>
-          <p className="text-gray-600">
+            </Heading>
+          </HStack>
+          <Text color="gray.600">
             See who's been checking out your profile
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
+          </Text>
+          <Text fontSize="sm" color="gray.500">
             Recent viewers from the last 7 days
-          </p>
-        </div>
+          </Text>
+        </VStack>
 
         {viewers.length === 0 ? (
-          <div className="text-center py-12">
-            <p style={{ color: COLORS.text }}>No profile views yet. Keep being active!</p>
-          </div>
+          <Box textAlign="center" py={12}>
+            <Text color="gray.700">No profile views yet. Keep being active!</Text>
+          </Box>
         ) : (
-          <div className="space-y-4">
+          <VStack spacing={4} align="stretch">
             {viewers.map((viewer) => (
-              <div
+              <Card
                 key={viewer.user.id}
-                className="rounded-xl shadow-md overflow-hidden"
-                style={{ backgroundColor: "white" }}
+                shadow="md"
+                overflow="hidden"
               >
-                <div className="flex items-center p-4">
-                  <button
+                <CardBody p={4}>
+                  <Button
                     onClick={() => navigate(`/profile/${viewer.user.id}`)}
-                    className="flex items-center flex-1"
+                    variant="unstyled"
+                    display="flex"
+                    alignItems="center"
+                    w="full"
+                    textAlign="left"
                   >
-                    {viewer.user.photo ? (
-                      <img
-                        src={getAbsoluteUrl(viewer.user.photo)}
-                        alt={viewer.user.name || "User"}
-                        className="w-20 h-20 rounded-full object-cover bg-gray-200"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 rounded-full bg-gray-200"></div>
-                    )}
-                    <div className="ml-4 flex-1 text-left">
-                      <p className="font-bold text-lg" style={{ color: COLORS.text }}>
+                    <Avatar
+                      size="lg"
+                      src={viewer.user.photo ? getAbsoluteUrl(viewer.user.photo) : undefined}
+                      name={viewer.user.name || `User ${viewer.user.id}`}
+                      bg="gray.200"
+                    />
+                    <VStack align="start" ml={4} flex={1} spacing={1}>
+                      <Text fontWeight="bold" fontSize="lg" color="gray.800">
                         {viewer.user.name || `User ${viewer.user.id}`}
-                      </p>
-                      <p className="text-sm text-gray-500">
+                      </Text>
+                      <Text fontSize="sm" color="gray.500">
                         Viewed {new Date(viewer.viewed_at).toLocaleDateString()} at{" "}
                         {new Date(viewer.viewed_at).toLocaleTimeString([], { 
                           hour: '2-digit', 
                           minute: '2-digit' 
                         })}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
+                      </Text>
+                      <HStack spacing={2}>
                         {viewer.user.immediate_available && (
-                          <div className="flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                            <span className="text-xs text-green-600 font-semibold">Online Now</span>
-                          </div>
+                          <HStack spacing={1}>
+                            <Box w={2} h={2} borderRadius="full" bg="green.500" animation="pulse 2s infinite" />
+                            <Text fontSize="xs" color="green.600" fontWeight="semibold">Online Now</Text>
+                          </HStack>
                         )}
                         {viewer.user.membership_tier && (
-                          <span 
-                            className="text-xs px-2 py-0.5 rounded-full"
-                            style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
-                          >
+                          <Badge colorScheme="gray" fontSize="xs">
                             {viewer.user.membership_tier.charAt(0).toUpperCase() + viewer.user.membership_tier.slice(1)}
-                          </span>
+                          </Badge>
                         )}
-                      </div>
-                    </div>
-                  </button>
-                </div>
+                      </HStack>
+                    </VStack>
+                  </Button>
+                </CardBody>
 
-                {/* Bio preview */}
                 {viewer.user.bio && (
-                  <div className="px-4 pb-3">
-                    <p className="text-sm text-gray-700 line-clamp-2">{viewer.user.bio}</p>
-                  </div>
+                  <Box px={4} pb={3}>
+                    <Text fontSize="sm" color="gray.700" noOfLines={2}>{viewer.user.bio}</Text>
+                  </Box>
                 )}
 
-                {/* Action buttons */}
-                <div className="flex border-t border-gray-100">
-                  <button
+                <Divider />
+
+                <HStack spacing={0}>
+                  <Button
                     onClick={() => passMutation.mutate(viewer.user.id)}
-                    disabled={passMutation.isPending || likeMutation.isPending}
-                    className="flex-1 flex items-center justify-center gap-2 py-4 font-semibold transition-colors disabled:opacity-50"
-                    style={{ 
-                      color: COLORS.error,
-                      backgroundColor: passMutation.isPending ? COLORS.cardBg : "transparent"
-                    }}
+                    isDisabled={passMutation.isPending || likeMutation.isPending}
+                    flex={1}
+                    variant="ghost"
+                    colorScheme="red"
+                    leftIcon={<X size={20} />}
+                    py={4}
+                    borderRadius={0}
                   >
-                    <X size={20} />
-                    <span>Pass</span>
-                  </button>
-                  <div className="w-px" style={{ backgroundColor: "#E5E7EB" }}></div>
-                  <button
+                    Pass
+                  </Button>
+                  <Divider orientation="vertical" h="auto" />
+                  <Button
                     onClick={() => likeMutation.mutate(viewer.user.id)}
-                    disabled={likeMutation.isPending || passMutation.isPending}
-                    className="flex-1 flex items-center justify-center gap-2 py-4 font-semibold transition-colors disabled:opacity-50"
-                    style={{ 
-                      color: COLORS.secondary,
-                      backgroundColor: likeMutation.isPending ? COLORS.cardBg : "transparent"
-                    }}
+                    isDisabled={likeMutation.isPending || passMutation.isPending}
+                    flex={1}
+                    variant="ghost"
+                    colorScheme="teal"
+                    leftIcon={<Heart size={20} />}
+                    py={4}
+                    borderRadius={0}
                   >
-                    <Heart size={20} />
-                    <span>Like</span>
-                  </button>
-                </div>
-              </div>
+                    Like
+                  </Button>
+                </HStack>
+              </Card>
             ))}
-          </div>
+          </VStack>
         )}
-      </div>
+      </Container>
 
       <MatchCelebration
         show={showCelebration}
@@ -271,6 +277,6 @@ export default function ProfileViewers() {
           navigate("/new-matches");
         }}
       />
-    </div>
+    </Box>
   );
 }

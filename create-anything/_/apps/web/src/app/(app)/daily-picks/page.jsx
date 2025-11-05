@@ -6,15 +6,22 @@ import { Heart, X, Sparkles } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import MatchCelebration from "@/components/MatchCelebration";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  bg: "#F9F9F9",
-  text: "#2C3E50",
-  error: "#E74C3C",
-  cardBg: "#F3F4F6",
-};
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Spinner,
+  Card,
+  SimpleGrid,
+  Badge,
+  Flex,
+  Divider,
+  Image,
+} from "@chakra-ui/react";
 
 export default function DailyPicks() {
   const navigate = useNavigate();
@@ -115,182 +122,192 @@ export default function DailyPicks() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="flex items-center justify-center" style={{ minHeight: "60vh" }}>
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: COLORS.primary }}></div>
-        </div>
-      </div>
+        <VStack minH="60vh" justify="center">
+          <Spinner size="xl" color="purple.500" thickness="4px" />
+        </VStack>
+      </Box>
     );
   }
 
   if (error?.message === "AUTH_401") {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="px-4 py-8 max-w-2xl mx-auto">
-          <p className="mb-4" style={{ color: COLORS.text }}>Session expired. Please sign in.</p>
-          <button
-            onClick={() => navigate("/account/signin")}
-            className="px-4 py-2 rounded-lg text-white font-semibold shadow-md"
-            style={{ backgroundColor: COLORS.primary }}
-          >
-            Sign In
-          </button>
-        </div>
-      </div>
+        <Container maxW="2xl" px={4} py={8}>
+          <VStack align="start" spacing={4}>
+            <Text color="gray.700">Session expired. Please sign in.</Text>
+            <Button
+              onClick={() => navigate("/account/signin")}
+              colorScheme="purple"
+              shadow="md"
+            >
+              Sign In
+            </Button>
+          </VStack>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+    <Box minH="100vh" bg="gray.50">
       <AppHeader />
       
-      <div className="px-4 py-8 max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Sparkles size={28} style={{ color: COLORS.primary }} />
-            <h1 className="text-3xl font-bold" style={{ color: COLORS.text }}>
+      <Container maxW="4xl" px={4} py={8}>
+        <VStack textAlign="center" mb={8} spacing={2}>
+          <HStack justify="center" spacing={2}>
+            <Sparkles size={28} color="#7c3aed" />
+            <Heading size="2xl" color="gray.800">
               Daily Picks
-            </h1>
-          </div>
-          <p className="text-gray-600">
+            </Heading>
+          </HStack>
+          <Text color="gray.600">
             {generated ? "Fresh" : "Today's"} curated matches just for you
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
+          </Text>
+          <Text fontSize="sm" color="gray.500">
             10 compatible profiles selected daily based on your interests and activity
-          </p>
-        </div>
+          </Text>
+        </VStack>
 
         {picks.length === 0 ? (
-          <div className="text-center py-12">
-            <p style={{ color: COLORS.text }}>No picks available today. Check back tomorrow!</p>
-          </div>
+          <Box textAlign="center" py={12}>
+            <Text color="gray.700">No picks available today. Check back tomorrow!</Text>
+          </Box>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
             {picks.map((pick) => (
-              <div
+              <Card
                 key={pick.id}
-                className="rounded-xl shadow-md overflow-hidden"
-                style={{ backgroundColor: "white" }}
+                shadow="md"
+                overflow="hidden"
               >
-                <button
+                <Button
                   onClick={() => navigate(`/profile/${pick.id}`)}
-                  className="w-full"
+                  variant="unstyled"
+                  w="full"
+                  p={0}
+                  h="auto"
                 >
                   {pick.photo ? (
-                    <div className="relative">
-                      <img
+                    <Box position="relative">
+                      <Image
                         src={pick.photo}
                         alt={pick.name || "User"}
-                        className="w-full h-64 object-cover"
-                        style={{ backgroundColor: COLORS.cardBg }}
+                        w="full"
+                        h="64"
+                        objectFit="cover"
+                        bg="gray.100"
                       />
-                      {/* Gradient overlay */}
-                      <div 
-                        className="absolute bottom-0 left-0 right-0 h-24"
-                        style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" }}
+                      <Box
+                        position="absolute"
+                        bottom={0}
+                        left={0}
+                        right={0}
+                        h={24}
+                        bgGradient="linear(to-t, blackAlpha.700, transparent)"
                       />
                       
-                      {/* Profile info overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                        <div className="flex items-center justify-between mb-1">
-                          <h3 className="text-xl font-bold">
+                      <Box position="absolute" bottom={0} left={0} right={0} p={4} color="white">
+                        <Flex align="center" justify="space-between" mb={1}>
+                          <Heading size="md">
                             {pick.name || `User ${pick.id}`}
-                          </h3>
+                          </Heading>
                           {pick.immediate_available && (
-                            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500">
-                              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-                              <span className="text-xs font-semibold">Online</span>
-                            </div>
+                            <Badge colorScheme="green" fontSize="xs">
+                              <Flex align="center" gap={1}>
+                                <Box w={1.5} h={1.5} borderRadius="full" bg="white" animation="pulse 2s infinite" />
+                                Online
+                              </Flex>
+                            </Badge>
                           )}
-                        </div>
+                        </Flex>
                         
-                        {/* Compatibility score */}
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="px-2 py-0.5 rounded-full text-xs font-bold"
-                            style={{ backgroundColor: COLORS.secondary, color: "white" }}
-                          >
+                        <HStack spacing={2}>
+                          <Badge colorScheme="teal" fontSize="xs" fontWeight="bold">
                             {Math.round(pick.compatibility_score * 100)}% Match
-                          </div>
+                          </Badge>
                           {pick.membership_tier && (
-                            <span 
-                              className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                              style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
-                            >
+                            <Badge bg="whiteAlpha.200" color="white" fontSize="xs">
                               {pick.membership_tier.charAt(0).toUpperCase() + pick.membership_tier.slice(1)}
-                            </span>
+                            </Badge>
                           )}
-                        </div>
-                      </div>
-                    </div>
+                        </HStack>
+                      </Box>
+                    </Box>
                   ) : (
-                    <div
-                      className="w-full h-64 flex items-center justify-center"
-                      style={{ backgroundColor: COLORS.cardBg }}
+                    <Flex
+                      w="full"
+                      h="64"
+                      align="center"
+                      justify="center"
+                      bg="gray.100"
                     >
-                      <span className="text-gray-600">No Photo</span>
-                    </div>
+                      <Text color="gray.600">No Photo</Text>
+                    </Flex>
                   )}
-                </button>
+                </Button>
 
-                {/* Bio preview */}
                 {pick.bio && (
-                  <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-sm text-gray-700 line-clamp-2">{pick.bio}</p>
-                  </div>
+                  <Box px={4} py={2} borderBottom="1px" borderColor="gray.100">
+                    <Text fontSize="sm" color="gray.700" noOfLines={2}>{pick.bio}</Text>
+                  </Box>
                 )}
 
-                {/* Interests */}
                 {pick.interests && pick.interests.length > 0 && (
-                  <div className="px-4 py-2 border-b border-gray-100">
-                    <div className="flex flex-wrap gap-1.5">
+                  <Box px={4} py={2} borderBottom="1px" borderColor="gray.100">
+                    <Flex flexWrap="wrap" gap={1.5}>
                       {pick.interests.slice(0, 3).map((interest, idx) => (
-                        <span 
+                        <Badge
                           key={idx}
-                          className="text-xs px-2 py-1 rounded-full"
-                          style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
+                          colorScheme="gray"
+                          fontSize="xs"
                         >
                           {interest}
-                        </span>
+                        </Badge>
                       ))}
                       {pick.interests.length > 3 && (
-                        <span className="text-xs text-gray-500 px-2 py-1">
+                        <Text fontSize="xs" color="gray.500" px={2} py={1}>
                           +{pick.interests.length - 3}
-                        </span>
+                        </Text>
                       )}
-                    </div>
-                  </div>
+                    </Flex>
+                  </Box>
                 )}
 
-                {/* Action buttons */}
-                <div className="flex border-t border-gray-100">
-                  <button
+                <HStack spacing={0}>
+                  <Button
                     onClick={() => passMutation.mutate(pick.id)}
-                    disabled={passMutation.isPending || likeMutation.isPending}
-                    className="flex-1 flex items-center justify-center gap-2 py-4 font-semibold transition-colors disabled:opacity-50"
-                    style={{ color: COLORS.error }}
+                    isDisabled={passMutation.isPending || likeMutation.isPending}
+                    flex={1}
+                    variant="ghost"
+                    colorScheme="red"
+                    leftIcon={<X size={20} />}
+                    py={4}
+                    borderRadius={0}
                   >
-                    <X size={20} />
-                    <span>Pass</span>
-                  </button>
-                  <div className="w-px" style={{ backgroundColor: "#E5E7EB" }}></div>
-                  <button
+                    Pass
+                  </Button>
+                  <Divider orientation="vertical" h="auto" />
+                  <Button
                     onClick={() => likeMutation.mutate(pick.id)}
-                    disabled={likeMutation.isPending || passMutation.isPending}
-                    className="flex-1 flex items-center justify-center gap-2 py-4 font-semibold transition-colors disabled:opacity-50"
-                    style={{ color: COLORS.secondary }}
+                    isDisabled={likeMutation.isPending || passMutation.isPending}
+                    flex={1}
+                    variant="ghost"
+                    colorScheme="teal"
+                    leftIcon={<Heart size={20} />}
+                    py={4}
+                    borderRadius={0}
                   >
-                    <Heart size={20} />
-                    <span>Like</span>
-                  </button>
-                </div>
-              </div>
+                    Like
+                  </Button>
+                </HStack>
+              </Card>
             ))}
-          </div>
+          </SimpleGrid>
         )}
-      </div>
+      </Container>
 
       <MatchCelebration
         show={showCelebration}
@@ -304,6 +321,6 @@ export default function DailyPicks() {
           navigate("/new-matches");
         }}
       />
-    </div>
+    </Box>
   );
 }

@@ -1,21 +1,25 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUser } from "@/utils/useUser";
+import useUser from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import { Heart, Sparkles, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  bg: "#F9F9F9",
-  text: "#2C3E50",
-  error: "#E74C3C",
-  cardBg: "#F3F4F6",
-};
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Spinner,
+  Avatar,
+  Badge,
+  Flex,
+} from "@chakra-ui/react";
 
 export default function NewMatches() {
   const navigate = useNavigate();
@@ -72,193 +76,219 @@ export default function NewMatches() {
 
   if (userLoading || isLoading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: COLORS.primary }}></div>
-            <p className="mt-4" style={{ color: COLORS.text }}>Loading your new matches...</p>
-          </div>
-        </div>
-      </div>
+        <VStack py={12} spacing={4}>
+          <Spinner size="xl" color="purple.500" thickness="4px" />
+          <Text color="gray.700">Loading your new matches...</Text>
+        </VStack>
+      </Box>
     );
   }
 
   if (error?.message === "AUTH_401") {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <h1 className="text-2xl font-bold mb-4" style={{ color: COLORS.text }}>New Matches</h1>
-          <div>
-            <p className="mb-4" style={{ color: COLORS.text }}>Session expired. Please sign in.</p>
-            <button
+        <Container maxW="2xl" px={4} py={8}>
+          <Heading size="xl" mb={4} color="gray.800">New Matches</Heading>
+          <VStack align="start" spacing={4}>
+            <Text color="gray.700">Session expired. Please sign in.</Text>
+            <Button
               onClick={() => navigate("/account/signin")}
-              className="px-4 py-2 rounded-lg text-white font-semibold shadow-md"
-              style={{ backgroundColor: COLORS.primary }}
+              colorScheme="purple"
+              shadow="md"
             >
               Sign In
-            </button>
-          </div>
-        </div>
-      </div>
+            </Button>
+          </VStack>
+        </Container>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <h1 className="text-2xl font-bold mb-4" style={{ color: COLORS.text }}>New Matches</h1>
-          <p style={{ color: COLORS.error }}>Error loading new matches</p>
-        </div>
-      </div>
+        <Container maxW="2xl" px={4} py={8}>
+          <Heading size="xl" mb={4} color="gray.800">New Matches</Heading>
+          <Text color="red.500">Error loading new matches</Text>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+    <Box minH="100vh" bg="gray.50">
       <AppHeader />
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <Container maxW="2xl" px={4} py={8}>
         {matches.length === 0 ? (
-          <div className="text-center py-12">
-            <motion.div
+          <VStack textAlign="center" py={12} spacing={6}>
+            <Box
+              as={motion.div}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.5 }}
-              className="mb-6"
             >
               <Heart 
                 size={80} 
-                className="mx-auto mb-4"
-                style={{ color: COLORS.primary }}
-                fill={COLORS.primary}
+                style={{ margin: '0 auto', marginBottom: '16px' }}
+                color="#7c3aed"
+                fill="#7c3aed"
               />
-            </motion.div>
-            <h1 className="text-3xl font-bold mb-4" style={{ color: COLORS.text }}>
+            </Box>
+            <Heading size="2xl" color="gray.800">
               No New Matches Yet
-            </h1>
-            <p className="text-lg mb-6" style={{ color: COLORS.text }}>
+            </Heading>
+            <Text fontSize="lg" color="gray.700">
               Keep swiping in Discovery to find your next connection!
-            </p>
-            <button
+            </Text>
+            <Button
               onClick={() => navigate("/discovery")}
-              className="px-6 py-3 rounded-lg text-white font-semibold shadow-lg hover:shadow-xl transition-all"
-              style={{ backgroundColor: COLORS.primary }}
+              colorScheme="purple"
+              size="lg"
+              shadow="lg"
+              _hover={{ shadow: "xl" }}
             >
               Go to Discovery
-            </button>
-          </div>
+            </Button>
+          </VStack>
         ) : (
-          <>
-            <motion.div
+          <VStack spacing={8} align="stretch">
+            <Box
+              as={motion.div}
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.6 }}
-              className="text-center mb-8"
+              textAlign="center"
             >
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Sparkles size={32} style={{ color: COLORS.secondary }} />
-                <h1 className="text-3xl font-bold" style={{ color: COLORS.text }}>
+              <HStack justify="center" spacing={2} mb={2}>
+                <Sparkles size={32} color="#00BFA6" />
+                <Heading size="2xl" color="gray.800">
                   You Have {matches.length} New {matches.length === 1 ? "Match" : "Matches"}!
-                </h1>
-                <Sparkles size={32} style={{ color: COLORS.secondary }} />
-              </div>
-              <p className="text-lg" style={{ color: COLORS.text }}>
+                </Heading>
+                <Sparkles size={32} color="#00BFA6" />
+              </HStack>
+              <Text fontSize="lg" color="gray.700">
                 Start a conversation and make a connection!
-              </p>
-            </motion.div>
+              </Text>
+            </Box>
 
-            <div className="space-y-4">
+            <VStack spacing={4} align="stretch">
               {matches.map((item, idx) => (
-                <motion.div
+                <Box
                   key={item.match_id}
+                  as={motion.div}
                   initial={{ x: -50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.5, delay: idx * 0.1 }}
                 >
-                  <button
+                  <Button
                     onClick={() => handleViewMatch(item.match_id)}
-                    disabled={markViewedMutation.isPending}
-                    className="w-full p-6 rounded-2xl hover:shadow-xl transition-all transform hover:scale-102 relative overflow-hidden"
-                    style={{ 
-                      backgroundColor: "white",
-                      border: `2px solid ${COLORS.secondary}`
-                    }}
+                    isDisabled={markViewedMutation.isPending}
+                    w="full"
+                    p={6}
+                    h="auto"
+                    borderRadius="2xl"
+                    bg="white"
+                    borderWidth={2}
+                    borderColor="teal.500"
+                    position="relative"
+                    overflow="hidden"
+                    _hover={{ shadow: "xl", transform: "scale(1.02)" }}
+                    transition="all 0.2s"
                   >
-                    <div className="absolute top-0 right-0 px-3 py-1 rounded-bl-lg text-white text-xs font-bold"
-                      style={{ backgroundColor: COLORS.secondary }}>
+                    <Badge
+                      position="absolute"
+                      top={0}
+                      right={0}
+                      borderRadius="0 xl 0 md"
+                      colorScheme="teal"
+                      fontSize="xs"
+                      fontWeight="bold"
+                    >
                       NEW
-                    </div>
+                    </Badge>
                     
-                    <div className="flex items-center">
-                      {item.user.photo ? (
-                        <div className="relative">
-                          <img
-                            src={getAbsoluteUrl(item.user.photo)}
-                            alt={item.user.name || "User"}
-                            className="w-20 h-20 rounded-full ring-4"
-                            style={{ ringColor: COLORS.secondary }}
-                          />
-                          <div 
-                            className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center shadow-lg"
-                            style={{ backgroundColor: COLORS.secondary }}
-                          >
-                            <Heart size={16} fill="white" color="white" />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="w-20 h-20 rounded-full bg-gray-200 ring-4"
-                          style={{ ringColor: COLORS.secondary }}>
-                        </div>
-                      )}
-                      <div className="ml-4 flex-1 text-left">
-                        <p className="text-2xl font-bold mb-1" style={{ color: COLORS.text }}>
+                    <HStack spacing={4} w="full" align="center">
+                      <Box position="relative">
+                        <Avatar
+                          size="lg"
+                          src={item.user.photo ? getAbsoluteUrl(item.user.photo) : undefined}
+                          name={item.user.name || `User ${item.user.id}`}
+                          ring={4}
+                          ringColor="teal.500"
+                        />
+                        <Flex
+                          position="absolute"
+                          bottom={-1}
+                          right={-1}
+                          w={8}
+                          h={8}
+                          borderRadius="full"
+                          bg="teal.500"
+                          align="center"
+                          justify="center"
+                          shadow="lg"
+                        >
+                          <Heart size={16} fill="white" color="white" />
+                        </Flex>
+                      </Box>
+                      <VStack align="start" flex={1} spacing={1}>
+                        <Text fontSize="2xl" fontWeight="bold" color="gray.800">
                           {item.user.name || `User ${item.user.id}`}
-                        </p>
-                        <p className="text-sm mb-2" style={{ color: "#666" }}>
+                        </Text>
+                        <Text fontSize="sm" color="gray.600">
                           Matched {new Date(item.created_at).toLocaleDateString('en-US', { 
                             month: 'short', 
                             day: 'numeric',
                             hour: 'numeric',
                             minute: '2-digit'
                           })}
-                        </p>
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full inline-block"
-                          style={{ backgroundColor: COLORS.primary + "20" }}>
-                          <MessageCircle size={16} style={{ color: COLORS.primary }} />
-                          <span className="text-sm font-semibold" style={{ color: COLORS.primary }}>
+                        </Text>
+                        <Flex
+                          align="center"
+                          gap={2}
+                          px={3}
+                          py={1.5}
+                          borderRadius="full"
+                          bg="purple.50"
+                        >
+                          <MessageCircle size={16} color="#7c3aed" />
+                          <Text fontSize="sm" fontWeight="semibold" color="purple.600">
                             Start Chatting
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                </motion.div>
+                          </Text>
+                        </Flex>
+                      </VStack>
+                    </HStack>
+                  </Button>
+                </Box>
               ))}
-            </div>
+            </VStack>
 
-            <motion.div
+            <Box
+              as={motion.div}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-center mt-8"
+              textAlign="center"
             >
-              <p className="text-sm mb-4" style={{ color: "#666" }}>
+              <Text fontSize="sm" color="gray.600" mb={4}>
                 After you start a conversation, these matches will move to your Matches page
-              </p>
-              <button
+              </Text>
+              <Button
                 onClick={() => navigate("/matches")}
-                className="px-4 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all"
-                style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
+                variant="outline"
+                shadow="md"
+                _hover={{ shadow: "lg" }}
               >
                 View All Matches
-              </button>
-            </motion.div>
-          </>
+              </Button>
+            </Box>
+          </VStack>
         )}
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 }

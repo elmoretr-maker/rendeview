@@ -5,15 +5,27 @@ import { Camera, Upload, X, Trash2, Video, PlayCircle } from "lucide-react";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import { ObjectUploader } from "@/components/ObjectUploader";
-
-const COLORS = {
-  bg: "#F9FAFB",
-  text: "#111827",
-  primary: "#EC4899",
-  secondary: "#8B5CF6",
-  error: "#EF4444",
-  cardBg: "#F3F4F6",
-};
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Spinner,
+  Card,
+  SimpleGrid,
+  IconButton,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  Flex,
+  useColorModeValue,
+} from "@chakra-ui/react";
 
 const MEMBERSHIP_TIERS = {
   FREE: "free",
@@ -120,124 +132,155 @@ export default function ProfileMediaPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: COLORS.primary }}></div>
-        </div>
-      </div>
+        <VStack py={12}>
+          <Spinner size="xl" color="purple.500" thickness="4px" />
+        </VStack>
+      </Box>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+    <Box minH="100vh" bg="gray.50">
       <AppHeader />
-      <div className="px-4 py-8 max-w-4xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: COLORS.text }}>
+      <Container maxW="4xl" px={4} py={8}>
+        <VStack align="start" mb={6} spacing={2}>
+          <Heading size="2xl" color="gray.800">
             Photos & Videos
-          </h1>
-          <p className="text-gray-600">
+          </Heading>
+          <Text color="gray.600">
             Manage your profile media. {membershipTier.charAt(0).toUpperCase() + membershipTier.slice(1)} members can upload up to {limits.photos} photos and {limits.videos} video{limits.videos > 1 ? "s" : ""}.
-          </p>
-        </div>
+          </Text>
+        </VStack>
 
-        <div className="mb-8 p-6 rounded-2xl shadow-md" style={{ backgroundColor: "white" }}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold" style={{ color: COLORS.text }}>
+        <Card mb={8} p={6} shadow="md">
+          <HStack justify="space-between" mb={4}>
+            <Heading size="lg" color="gray.800">
               Photos ({photos.length}/{limits.photos})
-            </h2>
+            </Heading>
             <ObjectUploader
               maxNumberOfFiles={1}
               maxFileSize={10485760}
               allowedFileTypes={["image/*"]}
               onGetUploadParameters={handlePhotoUpload}
               onComplete={handlePhotoComplete}
-              buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
-              buttonStyle={{ backgroundColor: COLORS.primary }}
+              buttonClassName="chakra-button css-1dyz4v9"
+              buttonStyle={{ backgroundColor: "#ec4899", color: "white" }}
             >
               <Upload size={18} />
               Add Photo
             </ObjectUploader>
-          </div>
+          </HStack>
 
           {photos.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Upload size={48} className="mx-auto mb-3 opacity-40" />
-              <p>No photos yet. Add your first photo!</p>
-            </div>
+            <VStack py={8} color="gray.500">
+              <Upload size={48} opacity={0.4} />
+              <Text>No photos yet. Add your first photo!</Text>
+            </VStack>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <SimpleGrid columns={{ base: 2, md: 3 }} spacing={4}>
               {photos.map((photo, idx) => (
-                <div key={idx} className="relative group rounded-xl overflow-hidden shadow-md">
-                  <img
+                <Box key={idx} position="relative" role="group" borderRadius="xl" overflow="hidden" shadow="md">
+                  <Box
+                    as="img"
                     src={photo.url}
                     alt={`Photo ${idx + 1}`}
-                    className="w-full h-48 object-cover"
+                    w="full"
+                    h="48"
+                    objectFit="cover"
                   />
-                  <button
+                  <IconButton
+                    icon={<Trash2 size={16} />}
                     onClick={() => deleteMutation.mutate({ mediaUrl: photo.url })}
-                    disabled={deleteMutation.isPending}
-                    className="absolute top-2 right-2 p-2 rounded-full bg-black bg-opacity-50 hover:bg-opacity-70 transition-all opacity-0 group-hover:opacity-100"
-                    style={{ color: "white" }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                    isDisabled={deleteMutation.isPending}
+                    position="absolute"
+                    top={2}
+                    right={2}
+                    size="sm"
+                    borderRadius="full"
+                    bg="blackAlpha.500"
+                    _hover={{ bg: "blackAlpha.700" }}
+                    opacity={0}
+                    _groupHover={{ opacity: 1 }}
+                    aria-label="Delete photo"
+                    color="white"
+                  />
                   {photo.is_primary && (
-                    <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md text-xs font-semibold bg-white bg-opacity-90">
+                    <Box
+                      position="absolute"
+                      bottom={2}
+                      left={2}
+                      px={2}
+                      py={1}
+                      borderRadius="md"
+                      fontSize="xs"
+                      fontWeight="semibold"
+                      bg="whiteAlpha.900"
+                    >
                       Primary
-                    </div>
+                    </Box>
                   )}
-                </div>
+                </Box>
               ))}
-            </div>
+            </SimpleGrid>
           )}
-        </div>
+        </Card>
 
-        <div className="p-6 rounded-2xl shadow-md" style={{ backgroundColor: "white" }}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold" style={{ color: COLORS.text }}>
+        <Card p={6} shadow="md">
+          <HStack justify="space-between" mb={4}>
+            <Heading size="lg" color="gray.800">
               Videos ({videos.length}/{limits.videos})
-            </h2>
-            <button
+            </Heading>
+            <Button
               onClick={() => setShowVideoRecorder(true)}
-              disabled={videos.length >= limits.videos}
-              className="px-4 py-2 rounded-lg text-white font-semibold shadow-md hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: COLORS.secondary }}
+              isDisabled={videos.length >= limits.videos}
+              colorScheme="purple"
+              leftIcon={<Camera size={18} />}
             >
-              <Camera size={18} />
               Record Video
-            </button>
-          </div>
+            </Button>
+          </HStack>
 
           {videos.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Video size={48} className="mx-auto mb-3 opacity-40" />
-              <p>No videos yet. Record your first video introduction!</p>
-              <p className="text-sm mt-2">Camera-only recording prevents catfishing</p>
-            </div>
+            <VStack py={8} color="gray.500">
+              <Video size={48} opacity={0.4} />
+              <Text>No videos yet. Record your first video introduction!</Text>
+              <Text fontSize="sm" mt={2}>Camera-only recording prevents catfishing</Text>
+            </VStack>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
               {videos.map((video, idx) => (
-                <div key={idx} className="relative group rounded-xl overflow-hidden shadow-md bg-black">
-                  <video
+                <Box key={idx} position="relative" role="group" borderRadius="xl" overflow="hidden" shadow="md" bg="black">
+                  <Box
+                    as="video"
                     src={video.url}
                     controls
-                    className="w-full h-64 object-contain"
+                    w="full"
+                    h="64"
+                    objectFit="contain"
                   />
-                  <button
+                  <IconButton
+                    icon={<Trash2 size={16} />}
                     onClick={() => deleteMutation.mutate({ mediaUrl: video.url })}
-                    disabled={deleteMutation.isPending}
-                    className="absolute top-2 right-2 p-2 rounded-full bg-black bg-opacity-50 hover:bg-opacity-70 transition-all opacity-0 group-hover:opacity-100"
-                    style={{ color: "white" }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+                    isDisabled={deleteMutation.isPending}
+                    position="absolute"
+                    top={2}
+                    right={2}
+                    size="sm"
+                    borderRadius="full"
+                    bg="blackAlpha.500"
+                    _hover={{ bg: "blackAlpha.700" }}
+                    opacity={0}
+                    _groupHover={{ opacity: 1 }}
+                    aria-label="Delete video"
+                    color="white"
+                  />
+                </Box>
               ))}
-            </div>
+            </SimpleGrid>
           )}
-        </div>
+        </Card>
 
         {showVideoRecorder && (
           <VideoRecorderModal
@@ -397,110 +440,115 @@ function VideoRecorderModal({ onClose, maxDuration, onComplete }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold" style={{ color: COLORS.text }}>
-              {recordedVideoURL ? "Review Your Video" : "Record Video Introduction"}
-            </h2>
-            <button
-              onClick={onClose}
-              disabled={uploading}
-              className="p-2 rounded-full hover:bg-gray-100 transition-all"
-            >
-              <X size={24} />
-            </button>
-          </div>
-
-          <div className="mb-4 rounded-xl overflow-hidden bg-black">
+    <Modal isOpen onClose={onClose} size="2xl" isCentered>
+      <ModalOverlay bg="blackAlpha.700" />
+      <ModalContent>
+        <ModalHeader fontSize="2xl" color="gray.800">
+          {recordedVideoURL ? "Review Your Video" : "Record Video Introduction"}
+        </ModalHeader>
+        <ModalCloseButton isDisabled={uploading} />
+        
+        <ModalBody pb={6}>
+          <Box mb={4} borderRadius="xl" overflow="hidden" bg="black">
             {recordedVideoURL ? (
-              <video src={recordedVideoURL} controls className="w-full" style={{ maxHeight: "400px" }} />
+              <Box as="video" src={recordedVideoURL} controls w="full" maxH="400px" />
             ) : (
-              <div className="relative">
-                <video
+              <Box position="relative">
+                <Box
+                  as="video"
                   ref={videoRef}
                   autoPlay
                   playsInline
                   muted
-                  className="w-full mirror"
-                  style={{ maxHeight: "400px", transform: "scaleX(-1)" }}
+                  w="full"
+                  maxH="400px"
+                  transform="scaleX(-1)"
                 />
                 {isRecording && (
-                  <div className="absolute top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-full font-bold flex items-center gap-2">
-                    <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                  <Flex
+                    position="absolute"
+                    top={4}
+                    right={4}
+                    bg="red.600"
+                    color="white"
+                    px={4}
+                    py={2}
+                    borderRadius="full"
+                    fontWeight="bold"
+                    align="center"
+                    gap={2}
+                  >
+                    <Box w={3} h={3} bg="white" borderRadius="full" animation="pulse 2s infinite" />
                     {Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, "0")}
-                  </div>
+                  </Flex>
                 )}
-              </div>
+              </Box>
             )}
-          </div>
+          </Box>
 
           {!hasPermission && !recordedVideoURL && (
-            <div className="text-center py-8">
-              <Camera size={48} className="mx-auto mb-3 opacity-40" />
-              <p className="text-gray-600 mb-4">Waiting for camera permission...</p>
-              <p className="text-sm text-gray-500">Please allow camera and microphone access to continue</p>
-            </div>
+            <VStack py={8} textAlign="center">
+              <Camera size={48} opacity={0.4} />
+              <Text color="gray.600" mb={4}>Waiting for camera permission...</Text>
+              <Text fontSize="sm" color="gray.500">Please allow camera and microphone access to continue</Text>
+            </VStack>
           )}
 
-          <div className="flex gap-3">
+          <HStack spacing={3}>
             {recordedVideoURL ? (
               <>
-                <button
+                <Button
                   onClick={redoRecording}
-                  disabled={uploading}
-                  className="flex-1 px-6 py-3 rounded-lg font-semibold transition-all border-2"
-                  style={{ borderColor: COLORS.primary, color: COLORS.primary }}
+                  isDisabled={uploading}
+                  flex={1}
+                  variant="outline"
+                  colorScheme="pink"
+                  size="lg"
                 >
                   Redo
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={uploadVideo}
-                  disabled={uploading}
-                  className="flex-1 px-6 py-3 rounded-lg text-white font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-50"
-                  style={{ backgroundColor: COLORS.primary }}
+                  isDisabled={uploading}
+                  isLoading={uploading}
+                  loadingText="Uploading..."
+                  flex={1}
+                  colorScheme="pink"
+                  size="lg"
                 >
-                  {uploading ? "Uploading..." : "Upload Video"}
-                </button>
+                  Upload Video
+                </Button>
               </>
             ) : (
               <>
-                <button
+                <Button
                   onClick={onClose}
-                  disabled={isRecording}
-                  className="flex-1 px-6 py-3 rounded-lg font-semibold transition-all border-2"
-                  style={{ borderColor: COLORS.cardBg, color: COLORS.text }}
+                  isDisabled={isRecording}
+                  flex={1}
+                  variant="outline"
+                  size="lg"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={isRecording ? stopRecording : startRecording}
-                  disabled={!hasPermission}
-                  className="flex-1 px-6 py-3 rounded-lg text-white font-semibold transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
-                  style={{ backgroundColor: isRecording ? COLORS.error : COLORS.primary }}
+                  isDisabled={!hasPermission}
+                  flex={1}
+                  colorScheme={isRecording ? "red" : "pink"}
+                  leftIcon={isRecording ? <Box w={4} h={4} bg="white" borderRadius="sm" /> : <PlayCircle size={20} />}
+                  size="lg"
                 >
-                  {isRecording ? (
-                    <>
-                      <div className="w-4 h-4 bg-white rounded-sm"></div>
-                      Stop Recording
-                    </>
-                  ) : (
-                    <>
-                      <PlayCircle size={20} />
-                      Start Recording
-                    </>
-                  )}
-                </button>
+                  {isRecording ? "Stop Recording" : "Start Recording"}
+                </Button>
               </>
             )}
-          </div>
+          </HStack>
 
-          <p className="text-sm text-gray-500 text-center mt-4">
+          <Text fontSize="sm" color="gray.500" textAlign="center" mt={4}>
             Maximum duration: {Math.floor(maxDuration / 60)}:{String(maxDuration % 60).padStart(2, "0")}
-          </p>
-        </div>
-      </div>
-    </div>
+          </Text>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
   );
 }
