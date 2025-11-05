@@ -36,11 +36,14 @@ export async function POST(request) {
     const createdMatches = [];
 
     for (const profile of profilesToMatch) {
+      // Determine user_a and user_b (user_a_id must be < user_b_id due to constraint)
+      const userA = Math.min(currentUserId, profile.id);
+      const userB = Math.max(currentUserId, profile.id);
+
       // Check if match already exists
       const existing = await sql`
         SELECT id FROM matches 
-        WHERE (user1_id = ${currentUserId} AND user2_id = ${profile.id})
-           OR (user1_id = ${profile.id} AND user2_id = ${currentUserId})
+        WHERE user_a_id = ${userA} AND user_b_id = ${userB}
       `;
 
       let matchId;
@@ -50,8 +53,8 @@ export async function POST(request) {
       } else {
         // Create match
         const match = await sql`
-          INSERT INTO matches (user1_id, user2_id, created_at)
-          VALUES (${currentUserId}, ${profile.id}, now())
+          INSERT INTO matches (user_a_id, user_b_id, created_at)
+          VALUES (${userA}, ${userB}, now())
           RETURNING id
         `;
         matchId = match[0].id;
@@ -65,7 +68,7 @@ export async function POST(request) {
 
         for (let i = 0; i < messages.length; i++) {
           await sql`
-            INSERT INTO chat_messages (match_id, sender_id, message, created_at)
+            INSERT INTO messages (match_id, sender_id, content, created_at)
             VALUES (
               ${matchId}, 
               ${messages[i].from}, 
