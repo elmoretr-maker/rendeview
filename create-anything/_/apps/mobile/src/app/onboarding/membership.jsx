@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from "@expo-google-fonts/inter";
+import { buildDynamicTiers, buildDynamicExtensions } from "@/utils/membershipTiers";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -26,42 +27,12 @@ const COLORS = {
   accent: "#00BFA6",
 };
 
-const TIERS = [
-  {
-    key: "free",
-    title: "Free",
-    price: "Free",
-    desc: "Browse, see & send likes (3 photos, 1 video)",
-    highlight: false,
-  },
-  {
-    key: "casual",
-    title: "Casual",
-    price: "$14.99/mo",
-    desc: "More media uploads (5 photos, 1 video)",
-    highlight: false,
-  },
-  {
-    key: "dating",
-    title: "Dating",
-    price: "$29.99/mo",
-    desc: "Priority matching & extended video (8 photos, 2 videos)",
-    highlight: true,
-  },
-  {
-    key: "business",
-    title: "Business",
-    price: "$49.99/mo",
-    desc: "Max exposure & tools (10 photos, 3 videos)",
-    highlight: false,
-  },
-];
-
 function MembershipScreenContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [pricing, setPricing] = useState(null);
+  const [loadingPricing, setLoadingPricing] = useState(true);
   const [error, setError] = useState(null);
   const [loaded, errorFont] = useFonts({
     Inter_400Regular,
@@ -80,15 +51,24 @@ function MembershipScreenContent() {
         const res = await fetch("/api/admin/settings");
         if (!res.ok) throw new Error("Failed to load pricing");
         const data = await res.json();
-        if (mounted) setPricing(data?.settings?.pricing || null);
+        if (mounted) {
+          setPricing(data?.settings?.pricing || null);
+          setLoadingPricing(false);
+        }
       } catch (e) {
-        console.error(e);
+        console.error("Failed to load pricing:", e);
+        if (mounted) {
+          setLoadingPricing(false);
+        }
       }
     })();
     return () => {
       mounted = false;
     };
   }, []);
+
+  const tiers = useMemo(() => buildDynamicTiers(pricing), [pricing]);
+  const extensions = useMemo(() => buildDynamicExtensions(pricing), [pricing]);
 
   const chooseTier = useCallback(
     async (key) => {
@@ -190,7 +170,16 @@ function MembershipScreenContent() {
           Select a membership to unlock features. You can upgrade anytime.
         </Text>
 
-        {TIERS.map((t) => (
+        {loadingPricing ? (
+          <View style={{ alignItems: "center", paddingVertical: 32 }}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+            <Text style={{ marginTop: 12, color: COLORS.text, fontFamily: "Inter_400Regular" }}>
+              Loading pricing...
+            </Text>
+          </View>
+        ) : (
+          <>
+        {tiers.map((t) => (
           <View
             key={t.key}
             style={{
@@ -276,13 +265,9 @@ function MembershipScreenContent() {
           >
             Call extensions
           </Text>
-          <Text style={{ color: COLORS.text, marginBottom: 4, fontFamily: "Inter_400Regular" }}>
-            • $5 for 5 minutes
+          <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular" }}>
+            • {extensions.formattedPrice} for {extensions.durationMinutes} minutes
           </Text>
-          <Text style={{ color: COLORS.text, marginBottom: 4, fontFamily: "Inter_400Regular" }}>
-            • $10 for 15 minutes
-          </Text>
-          <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular" }}>• $20 for 30 minutes</Text>
         </View>
 
         {pricing?.second_date_cents != null && (
@@ -292,6 +277,8 @@ function MembershipScreenContent() {
               USD
             </Text>
           </View>
+        )}
+        </>
         )}
 
         {error ? (

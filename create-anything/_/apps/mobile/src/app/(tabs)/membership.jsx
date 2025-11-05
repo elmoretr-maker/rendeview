@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -26,10 +26,19 @@ const COLORS = {
   text: "#2C3E50",
 };
 
-function buildTierDisplay(tierKey, limits) {
+function buildTierDisplay(tierKey, limits, dbPricing) {
   const name = tierKey.charAt(0).toUpperCase() + tierKey.slice(1);
-  const priceDisplay = limits.priceMonthly === 0 ? "$0" : `$${limits.priceMonthly.toFixed(2)}`;
-  const period = limits.priceMonthly === 0 ? "forever" : "/month";
+  
+  let priceCents = 0;
+  let chatMinutes = limits.chatMinutes;
+  
+  if (tierKey !== 'free' && dbPricing?.tiers?.[tierKey]) {
+    priceCents = dbPricing.tiers[tierKey].price_cents || 0;
+    chatMinutes = dbPricing.tiers[tierKey].minutes || limits.chatMinutes;
+  }
+  
+  const priceDisplay = priceCents === 0 ? "$0" : `$${(priceCents / 100).toFixed(2)}`;
+  const period = priceCents === 0 ? "forever" : "/month";
   
   const photoVideoText = limits.videos > 1 
     ? `${limits.photos} photos + ${limits.videos} videos`
@@ -37,7 +46,7 @@ function buildTierDisplay(tierKey, limits) {
   
   const meetingsText = formatMeetingsDisplay(limits.maxMeetings);
   const messagesText = formatMessagesDisplay(limits.dailyMessages, limits.perMatchDailyMessages);
-  const videoCallText = `${limits.chatMinutes}-min video calls`;
+  const videoCallText = `${chatMinutes}-min video calls`;
   
   const matchingTier = tierKey === MEMBERSHIP_TIERS.BUSINESS 
     ? "VIP matching" 
@@ -62,18 +71,12 @@ function buildTierDisplay(tierKey, limits) {
   };
 }
 
-const TIERS = {
-  [MEMBERSHIP_TIERS.FREE]: buildTierDisplay(MEMBERSHIP_TIERS.FREE, TIER_LIMITS[MEMBERSHIP_TIERS.FREE]),
-  [MEMBERSHIP_TIERS.CASUAL]: buildTierDisplay(MEMBERSHIP_TIERS.CASUAL, TIER_LIMITS[MEMBERSHIP_TIERS.CASUAL]),
-  [MEMBERSHIP_TIERS.DATING]: buildTierDisplay(MEMBERSHIP_TIERS.DATING, TIER_LIMITS[MEMBERSHIP_TIERS.DATING]),
-  [MEMBERSHIP_TIERS.BUSINESS]: buildTierDisplay(MEMBERSHIP_TIERS.BUSINESS, TIER_LIMITS[MEMBERSHIP_TIERS.BUSINESS]),
-};
-
 export default function Membership() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [selectedTier, setSelectedTier] = useState(null);
+  const [pricing, setPricing] = useState(null);
   const [loaded, errorFont] = useFonts({
     Inter_400Regular,
     Inter_600SemiBold,
@@ -89,7 +92,24 @@ export default function Membership() {
     },
   });
 
+  const { data: pricingData, isLoading: pricingLoading } = useQuery({
+    queryKey: ["admin-settings"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/settings");
+      if (!res.ok) throw new Error("Failed to load pricing");
+      const data = await res.json();
+      return data?.settings?.pricing || null;
+    },
+  });
+
   const currentTier = userData?.membership_tier || "free";
+
+  const TIERS = useMemo(() => ({
+    [MEMBERSHIP_TIERS.FREE]: buildTierDisplay(MEMBERSHIP_TIERS.FREE, TIER_LIMITS[MEMBERSHIP_TIERS.FREE], pricingData),
+    [MEMBERSHIP_TIERS.CASUAL]: buildTierDisplay(MEMBERSHIP_TIERS.CASUAL, TIER_LIMITS[MEMBERSHIP_TIERS.CASUAL], pricingData),
+    [MEMBERSHIP_TIERS.DATING]: buildTierDisplay(MEMBERSHIP_TIERS.DATING, TIER_LIMITS[MEMBERSHIP_TIERS.DATING], pricingData),
+    [MEMBERSHIP_TIERS.BUSINESS]: buildTierDisplay(MEMBERSHIP_TIERS.BUSINESS, TIER_LIMITS[MEMBERSHIP_TIERS.BUSINESS], pricingData),
+  }), [pricingData]);
 
   const upgradeMutation = useMutation({
     mutationFn: async (tier) => {
@@ -119,7 +139,7 @@ export default function Membership() {
     upgradeMutation.mutate(tier);
   };
 
-  if (isLoading) {
+  if (isLoading || pricingLoading) {
     return (
       <View
         style={{
@@ -131,6 +151,11 @@ export default function Membership() {
         }}
       >
         <ActivityIndicator size="large" color={COLORS.primary} />
+        {pricingLoading && !isLoading && (
+          <Text style={{ marginTop: 12, color: COLORS.text, fontFamily: "Inter_400Regular" }}>
+            Loading pricing...
+          </Text>
+        )}
       </View>
     );
   }

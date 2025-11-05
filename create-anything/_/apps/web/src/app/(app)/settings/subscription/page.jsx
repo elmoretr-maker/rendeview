@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { Crown, Check, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
@@ -22,61 +22,20 @@ import {
   ListIcon,
   ListItem,
   SimpleGrid,
+  Spinner,
   Text,
   VStack,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { TIER_LIMITS, MEMBERSHIP_TIERS, MESSAGE_CREDIT_PRICING, EXTENSION_PRICING } from "@/utils/membershipTiers";
-
-const TIERS = [
-  {
-    key: MEMBERSHIP_TIERS.FREE,
-    title: "Free",
-    price: TIER_LIMITS.free.price,
-    photos: TIER_LIMITS.free.photos,
-    videos: TIER_LIMITS.free.videos,
-    videoDuration: TIER_LIMITS.free.videoMaxDuration,
-    chatMinutes: TIER_LIMITS.free.chatMinutes,
-    maxMeetings: TIER_LIMITS.free.maxMeetings,
-    desc: "Get started with basic features",
-  },
-  {
-    key: MEMBERSHIP_TIERS.CASUAL,
-    title: "Casual",
-    price: TIER_LIMITS.casual.price,
-    photos: TIER_LIMITS.casual.photos,
-    videos: TIER_LIMITS.casual.videos,
-    videoDuration: TIER_LIMITS.casual.videoMaxDuration,
-    chatMinutes: TIER_LIMITS.casual.chatMinutes,
-    desc: "Expand your profile & chat time",
-  },
-  {
-    key: MEMBERSHIP_TIERS.DATING,
-    title: "Dating",
-    price: TIER_LIMITS.dating.price,
-    photos: TIER_LIMITS.dating.photos,
-    videos: TIER_LIMITS.dating.videos,
-    videoDuration: TIER_LIMITS.dating.videoMaxDuration,
-    chatMinutes: TIER_LIMITS.dating.chatMinutes,
-    desc: "Priority matching & longer chats",
-  },
-  {
-    key: MEMBERSHIP_TIERS.BUSINESS,
-    title: "Business",
-    price: TIER_LIMITS.business.price,
-    photos: TIER_LIMITS.business.photos,
-    videos: TIER_LIMITS.business.videos,
-    videoDuration: TIER_LIMITS.business.videoMaxDuration,
-    chatMinutes: TIER_LIMITS.business.chatMinutes,
-    desc: "Maximum exposure & unlimited features",
-  },
-];
+import { buildDynamicTiers, buildDynamicExtensions, MESSAGE_CREDIT_PRICING } from "@/utils/membershipTiers";
 
 export default function SubscriptionPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [currentTier, setCurrentTier] = useState(null);
   const [error, setError] = useState(null);
+  const [pricing, setPricing] = useState(null);
+  const [loadingPricing, setLoadingPricing] = useState(true);
 
   const [scheduledTier, setScheduledTier] = useState(null);
   const [tierChangeAt, setTierChangeAt] = useState(null);
@@ -85,23 +44,43 @@ export default function SubscriptionPage() {
     let mounted = true;
     (async () => {
       try {
-        const res = await fetch("/api/profile");
-        if (!res.ok) throw new Error("Failed to load profile");
-        const data = await res.json();
+        const [profileRes, pricingRes] = await Promise.all([
+          fetch("/api/profile"),
+          fetch("/api/admin/settings"),
+        ]);
+        
+        if (!profileRes.ok) throw new Error("Failed to load profile");
+        const profileData = await profileRes.json();
+        
         if (mounted) {
-          setCurrentTier(data?.user?.membership_tier || "free");
-          setScheduledTier(data?.user?.scheduled_tier || null);
-          setTierChangeAt(data?.user?.tier_change_at || null);
+          setCurrentTier(profileData?.user?.membership_tier || "free");
+          setScheduledTier(profileData?.user?.scheduled_tier || null);
+          setTierChangeAt(profileData?.user?.tier_change_at || null);
         }
+
+        if (pricingRes.ok) {
+          const pricingData = await pricingRes.json();
+          if (mounted) {
+            setPricing(pricingData?.settings?.pricing || null);
+          }
+        }
+
+        if (mounted) setLoadingPricing(false);
       } catch (e) {
         console.error(e);
-        if (mounted) setError("Failed to load subscription info");
+        if (mounted) {
+          setError("Failed to load subscription info");
+          setLoadingPricing(false);
+        }
       }
     })();
     return () => {
       mounted = false;
     };
   }, []);
+
+  const tiers = useMemo(() => buildDynamicTiers(pricing), [pricing]);
+  const extensions = useMemo(() => buildDynamicExtensions(pricing), [pricing]);
 
   const upgradeTier = useCallback(
     async (key) => {
@@ -196,8 +175,9 @@ export default function SubscriptionPage() {
         setLoading(true);
         setError(null);
         
+        const tierTitle = tiers.find(t => t.key === key)?.title || key;
         const confirmed = window.confirm(
-          `Are you sure you want to downgrade to the ${TIERS.find(t => t.key === key)?.title} plan? The change will take effect at the end of your current billing cycle. You'll keep your current benefits until then.`
+          `Are you sure you want to downgrade to the ${tierTitle} plan? The change will take effect at the end of your current billing cycle. You'll keep your current benefits until then.`
         );
         
         if (!confirmed) {
@@ -229,7 +209,7 @@ export default function SubscriptionPage() {
         setLoading(false);
       }
     },
-    [currentTier],
+    [currentTier, tiers],
   );
 
   const getTierRank = (tierKey) => {
@@ -362,8 +342,14 @@ export default function SubscriptionPage() {
             <Heading size="lg" mb={4}>
               {currentTier === "free" ? "Upgrade Your Plan" : "Available Plans"}
             </Heading>
+            {loadingPricing ? (
+              <Box textAlign="center" py={8}>
+                <Spinner size="xl" color="purple.500" thickness="4px" />
+                <Text mt={4} color="gray.600">Loading pricing...</Text>
+              </Box>
+            ) : (
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-              {TIERS.map((t) => {
+              {tiers.map((t) => {
                 const isCurrent = t.key === currentTier;
                 const isDowngrade = getTierRank(t.key) < currentTierRank;
                 const isUpgrade = getTierRank(t.key) > currentTierRank;
@@ -395,10 +381,10 @@ export default function SubscriptionPage() {
                         ) : (
                           <ListItem>• Unlimited Video Meetings</ListItem>
                         )}
-                        <ListItem>• {TIER_LIMITS[t.key]?.dailyMessages || 15} Messages/Day</ListItem>
-                        {TIER_LIMITS[t.key]?.perMatchDailyMessages && (
+                        <ListItem>• {t.dailyMessages || 15} Messages/Day</ListItem>
+                        {t.perMatchDailyMessages && (
                           <ListItem>
-                            • {TIER_LIMITS[t.key].perMatchDailyMessages}/{TIER_LIMITS[t.key].perMatchDailyMessagesAfterVideo || TIER_LIMITS[t.key].perMatchDailyMessages} Messages/Match/Day{TIER_LIMITS[t.key].perMatchDailyMessagesAfterVideo ? ' (after video)' : ''}
+                            • {t.perMatchDailyMessages}/{t.perMatchDailyMessagesAfterVideo || t.perMatchDailyMessages} Messages/Match/Day{t.perMatchDailyMessagesAfterVideo ? ' (after video)' : ''}
                           </ListItem>
                         )}
                       </List>
@@ -434,9 +420,11 @@ export default function SubscriptionPage() {
                 );
               })}
             </SimpleGrid>
+            )}
           </Box>
 
           {/* Additional Services & Fees */}
+          {!loadingPricing && (
           <Card>
             <CardBody>
               <Heading size="md" mb={4}>Additional Services & Fees</Heading>
@@ -445,10 +433,10 @@ export default function SubscriptionPage() {
               <Box mb={6}>
                 <HStack justify="space-between" mb={2}>
                   <Heading size="sm" color="purple.600">Video Call Extensions</Heading>
-                  <Badge colorScheme="green" fontSize="md" px={3} py={1}>${EXTENSION_PRICING.costPer10Minutes}</Badge>
+                  <Badge colorScheme="green" fontSize="md" px={3} py={1}>{extensions.formattedPrice}</Badge>
                 </HStack>
                 <Text fontSize="sm" color="gray.600" mb={3}>
-                  Running out of time during an important conversation? Extend any video call by {EXTENSION_PRICING.durationMinutes} minutes for ${EXTENSION_PRICING.costPer10Minutes}. Purchase extensions directly during a call when your timer shows less than 1 minute remaining.
+                  Running out of time during an important conversation? Extend any video call by {extensions.durationMinutes} minutes for {extensions.formattedPrice}. Purchase extensions directly during a call when your timer shows less than 1 minute remaining.
                 </Text>
                 <List spacing={1} fontSize="xs" color="gray.500">
                   <ListItem>• Extensions are purchased during active calls</ListItem>
@@ -507,8 +495,8 @@ export default function SubscriptionPage() {
               </Box>
             </CardBody>
           </Card>
+          )}
 
-          {/* How It Works */}
           <Card>
             <CardBody>
               <Heading size="md" mb={4}>How Messaging Works</Heading>

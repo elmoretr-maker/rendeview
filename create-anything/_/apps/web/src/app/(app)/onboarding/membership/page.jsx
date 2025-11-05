@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { TIER_LIMITS, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
+import { buildDynamicTiers, buildDynamicExtensions } from "@/utils/membershipTiers";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import {
   Box,
@@ -14,61 +14,15 @@ import {
   Button,
   Progress,
   Card,
-  CardBody
+  CardBody,
+  Spinner
 } from "@chakra-ui/react";
-
-const TIERS = [
-  {
-    key: MEMBERSHIP_TIERS.FREE,
-    title: "Free",
-    price: TIER_LIMITS.free.price,
-    photos: TIER_LIMITS.free.photos,
-    videos: TIER_LIMITS.free.videos,
-    videoDuration: TIER_LIMITS.free.videoMaxDuration,
-    chatMinutes: TIER_LIMITS.free.chatMinutes,
-    maxMeetings: TIER_LIMITS.free.maxMeetings,
-    desc: "Get started with basic features",
-    highlight: false,
-  },
-  {
-    key: MEMBERSHIP_TIERS.CASUAL,
-    title: "Casual",
-    price: TIER_LIMITS.casual.price,
-    photos: TIER_LIMITS.casual.photos,
-    videos: TIER_LIMITS.casual.videos,
-    videoDuration: TIER_LIMITS.casual.videoMaxDuration,
-    chatMinutes: TIER_LIMITS.casual.chatMinutes,
-    desc: "Expand your profile & chat time",
-    highlight: true,
-  },
-  {
-    key: MEMBERSHIP_TIERS.DATING,
-    title: "Dating",
-    price: TIER_LIMITS.dating.price,
-    photos: TIER_LIMITS.dating.photos,
-    videos: TIER_LIMITS.dating.videos,
-    videoDuration: TIER_LIMITS.dating.videoMaxDuration,
-    chatMinutes: TIER_LIMITS.dating.chatMinutes,
-    desc: "Priority matching & longer chats",
-    highlight: false,
-  },
-  {
-    key: MEMBERSHIP_TIERS.BUSINESS,
-    title: "Business",
-    price: TIER_LIMITS.business.price,
-    photos: TIER_LIMITS.business.photos,
-    videos: TIER_LIMITS.business.videos,
-    videoDuration: TIER_LIMITS.business.videoMaxDuration,
-    chatMinutes: TIER_LIMITS.business.chatMinutes,
-    desc: "Maximum exposure & unlimited features",
-    highlight: false,
-  },
-];
 
 function MembershipScreenContent() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [pricing, setPricing] = useState(null);
+  const [loadingPricing, setLoadingPricing] = useState(true);
   const [error, setError] = useState(null);
 
   const totalSteps = 4;
@@ -82,15 +36,24 @@ function MembershipScreenContent() {
         const res = await fetch("/api/admin/settings");
         if (!res.ok) throw new Error("Failed to load pricing");
         const data = await res.json();
-        if (mounted) setPricing(data?.settings?.pricing || null);
+        if (mounted) {
+          setPricing(data?.settings?.pricing || null);
+          setLoadingPricing(false);
+        }
       } catch (e) {
-        console.error(e);
+        console.error("Failed to load pricing:", e);
+        if (mounted) {
+          setLoadingPricing(false);
+        }
       }
     })();
     return () => {
       mounted = false;
     };
   }, []);
+
+  const tiers = useMemo(() => buildDynamicTiers(pricing), [pricing]);
+  const extensions = useMemo(() => buildDynamicExtensions(pricing), [pricing]);
 
   const chooseTier = useCallback(
     async (key) => {
@@ -172,8 +135,15 @@ function MembershipScreenContent() {
           Unlock video chat with a membership. You can upgrade anytime.
         </Text>
 
+        {loadingPricing ? (
+          <Box textAlign="center" py={8}>
+            <Spinner size="xl" color="purple.500" thickness="4px" />
+            <Text mt={4} color="gray.600">Loading pricing...</Text>
+          </Box>
+        ) : (
+          <>
         <VStack spacing={3} mb={4}>
-          {TIERS.map((t) => (
+          {tiers.map((t) => (
             <Card
               key={t.key}
               w="full"
@@ -229,7 +199,7 @@ function MembershipScreenContent() {
             Call Extensions
           </Heading>
           <Text fontWeight="semibold" color="green.500">
-            • $8.00 for 10 minutes
+            • {extensions.formattedPrice} for {extensions.durationMinutes} minutes
           </Text>
           <Text fontSize="sm" mt={1} opacity={0.8} color="gray.700">
             Extend any video call beyond your tier's limit
@@ -240,6 +210,8 @@ function MembershipScreenContent() {
           <Text fontWeight="bold" color="green.500" mt={3}>
             Second Date Fee: ${(pricing.second_date_cents / 100).toFixed(2)} USD
           </Text>
+        )}
+        </>
         )}
 
         {error && <Text mt={2} color="red.500">{error}</Text>}
