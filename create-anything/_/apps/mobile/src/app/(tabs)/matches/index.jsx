@@ -44,7 +44,7 @@ export default function Matches() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["matches"],
     queryFn: async () => {
-      const res = await apiFetch("/api/matches/list");
+      const res = await apiFetch("/api/matches-list");
       if (res.status === 401) {
         const err = new Error("AUTH_401");
         // @ts-ignore

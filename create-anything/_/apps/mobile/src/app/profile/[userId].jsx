@@ -178,7 +178,7 @@ export default function RemoteProfile() {
         };
       }
       // Fetch matches and locate this match id
-      const listRes = await fetch("/api/matches/list");
+      const listRes = await fetch("/api/matches-list");
       if (listRes.status === 401) {
         const err = new Error("AUTH_401");
         // @ts-ignore

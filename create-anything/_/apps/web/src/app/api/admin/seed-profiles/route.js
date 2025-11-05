@@ -1,8 +1,11 @@
 import sql from "@/app/api/utils/sql";
 import argon2 from "argon2";
+import { getAuthenticatedUserId } from "@/app/api/utils/auth";
 
 export async function POST(request) {
   try {
+    // Get current user to create likes directed at them
+    const currentUserId = await getAuthenticatedUserId(request);
     const profiles = [
       {
         name: "Emma Rodriguez",
@@ -183,12 +186,37 @@ export async function POST(request) {
       }
     }
 
+    // Create likes from fake profiles to current user (for "New Matches" page)
+    const likers = [];
+    if (currentUserId) {
+      // Have 3 fake profiles like the current user (Emma, Sophia, Olivia - all females)
+      const likersToCreate = createdUsers.filter(u => 
+        ['Emma Rodriguez', 'Sophia Chen', 'Olivia Taylor'].includes(u.name)
+      );
+      
+      for (const liker of likersToCreate) {
+        // Check if like already exists
+        const existingLike = await sql`
+          SELECT id FROM likes 
+          WHERE liker_id = ${liker.id} AND liked_id = ${currentUserId}`;
+        
+        if (!existingLike?.length) {
+          await sql`
+            INSERT INTO likes (liker_id, liked_id)
+            VALUES (${liker.id}, ${currentUserId})`;
+          likers.push(liker.name);
+        }
+      }
+    }
+
     return Response.json({
       ok: true,
-      message: "Successfully created 6 test profiles",
+      message: "Successfully created 6 test profiles" + (likers.length > 0 ? ` and ${likers.length} likes` : ""),
       users: createdUsers,
+      likers: likers.length > 0 ? likers : undefined,
       testPassword: password,
-      note: "All test users can login with password: " + password,
+      note: "All test users can login with password: " + password + 
+        (likers.length > 0 ? `. Check 'New Matches' to see who liked you!` : ""),
     });
   } catch (err) {
     console.error("POST /api/admin/seed-profiles error", err);
