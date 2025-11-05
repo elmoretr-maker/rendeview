@@ -115,7 +115,13 @@ function ChatContent() {
         err.code = 401;
         throw err;
       }
-      if (!res.ok) throw new Error("Failed to send");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        const err = new Error(errorData.error || "Failed to send");
+        err.response = res;
+        err.data = errorData;
+        throw err;
+      }
       return res.json();
     },
     onMutate: async (body) => {
@@ -156,14 +162,13 @@ function ChatContent() {
         return;
       }
       
-      const errorData = await e.response?.json?.().catch(() => null);
-      if (errorData?.quotaExceeded) {
+      if (e?.data?.quotaExceeded) {
         toast.error("Out of messages!");
         setShowBuyCreditsModal(true);
         return;
       }
       
-      toast.error("Message failed to send");
+      toast.error(e?.message || "Message failed to send");
     },
   });
 

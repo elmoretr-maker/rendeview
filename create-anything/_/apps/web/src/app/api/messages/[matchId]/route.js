@@ -6,6 +6,82 @@ import {
   getPerMatchDailyLimit 
 } from "@/utils/membershipTiers";
 
+/**
+ * Chat Safety Filter: Detects phone numbers in ANY format
+ * Covers: numerals, spaced, dashed, parentheses, spelled-out, and mixed formats
+ * Designed to minimize false positives while catching phone number sharing attempts
+ */
+function containsPhoneNumber(text) {
+  const normalizedText = text.toLowerCase().trim();
+  
+  // Pattern 1: Standard numeric phone formats
+  // Matches: (555) 123-4567, 555-123-4567, 555.123.4567, 555 123 4567, 5551234567, +1-555-123-4567
+  const numericPatterns = [
+    /\+?\d{1,3}?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/,  // Standard formats with optional country code
+    /\b\d{10,11}\b/,  // 10 or 11 consecutive digits
+    /\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b/,  // XXX-XXX-XXXX or similar
+    /\b\d{3}[-.\s]\d{4}\b/,  // XXX-XXXX (7 digit)
+  ];
+  
+  for (const pattern of numericPatterns) {
+    if (pattern.test(normalizedText)) {
+      return true;
+    }
+  }
+  
+  // Pattern 2: Spelled-out numbers and mixed formats (e.g., "five five five one two three four")
+  const spelledNumbers = {
+    'zero': '0', 'one': '1', 'two': '2', 'three': '3', 'four': '4',
+    'five': '5', 'six': '6', 'seven': '7', 'eight': '8', 'nine': '9',
+    'oh': '0'  // Common verbal alternative for zero
+  };
+  
+  // Extract all number-like tokens with their positions using exec
+  const numberWords = Object.keys(spelledNumbers).join('|');
+  const tokenPattern = new RegExp(`\\d|\\b(?:${numberWords})\\b`, 'gi');
+  
+  const tokenPositions = [];
+  let match;
+  while ((match = tokenPattern.exec(normalizedText)) !== null) {
+    tokenPositions.push({
+      text: match[0],
+      index: match.index,
+      endIndex: match.index + match[0].length
+    });
+  }
+  
+  // Check for any consecutive window of 7+ number tokens
+  // Phone numbers are 7-11 digits (local to international)
+  if (tokenPositions.length >= 7) {
+    // Use sliding window to find ANY 7-token sequence within 75 characters
+    for (let i = 0; i <= tokenPositions.length - 7; i++) {
+      const windowStart = tokenPositions[i];
+      const windowEnd = tokenPositions[i + 6];  // 7th token (0-indexed)
+      const span = windowEnd.endIndex - windowStart.index;
+      
+      // If any 7-token window spans ≤75 characters, it's likely a phone number
+      // This catches consecutive phone sequences even if there are unrelated numbers earlier
+      if (span <= 75) {
+        return true;
+      }
+    }
+  }
+  
+  // Pattern 3: Common phone number context clues with numeric sequences
+  const contextPatterns = [
+    /\b(?:call|text|phone|number|reach|contact)[\s:]*\d{3}/i,  // "call 555" or "text: 555"
+    /\d{3}[\s-]*(?:call|text|phone)/i,  // "555 call me"
+  ];
+  
+  for (const pattern of contextPatterns) {
+    if (pattern.test(normalizedText)) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
 export async function GET(request, { params: { matchId } }) {
   try {
     const uid = await getAuthenticatedUserId(request);
@@ -56,6 +132,13 @@ export async function POST(request, { params: { matchId } }) {
 
     if (typeof body !== "string" || body.trim().length === 0 || body.length > 50) {
       return Response.json({ error: "Message must be 1-50 characters" }, { status: 400 });
+    }
+
+    // Chat Safety Filter: Block messages containing phone numbers
+    if (containsPhoneNumber(body)) {
+      return Response.json({ 
+        error: "Phone numbers are not allowed in chat. Please keep conversations on the platform for your safety." 
+      }, { status: 400 });
     }
 
     const matchRows = await sql`SELECT id FROM matches WHERE id = ${matchId} AND (user_a_id = ${uid} OR user_b_id = ${uid})`;

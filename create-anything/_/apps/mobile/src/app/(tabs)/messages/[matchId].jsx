@@ -71,7 +71,11 @@ export default function Chat() {
         err.code = 401;
         throw err;
       }
-      if (!res.ok) throw new Error("Failed to send");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        const err = new Error(errorData.error || "Failed to send");
+        throw err;
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -85,7 +89,7 @@ export default function Chat() {
         if (isReady) signIn();
         return;
       }
-      Alert.alert("Error", "Message failed");
+      Alert.alert("Error", e?.message || "Message failed");
     },
   });
 
