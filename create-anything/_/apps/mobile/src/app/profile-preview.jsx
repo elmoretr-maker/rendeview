@@ -11,6 +11,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { apiFetch, getAbsoluteUrl } from "@/utils/api/apiFetch";
 import { VideoView, useVideoPlayer } from "expo-video";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -35,6 +41,11 @@ export default function ProfilePreview() {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const [media, setMedia] = useState([]);
+  const [loaded, errorFont] = useFonts({
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
 
   const photos = media.filter((m) => m.type === "photo");
   const video = media.find((m) => m.type === "video");
@@ -77,13 +88,13 @@ export default function ProfilePreview() {
         <View style={{ padding: 16, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: "#E5E7EB" }}>
           <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: "row", alignItems: "center" }}>
             <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
-            <Text style={{ fontSize: 18, fontWeight: "600", color: COLORS.primary, marginLeft: 8 }}>
+            <Text style={{ fontSize: 18, fontWeight: "600", color: COLORS.primary, marginLeft: 8, fontFamily: "Inter_600SemiBold" }}>
               Back
             </Text>
           </TouchableOpacity>
         </View>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <Text style={{ color: COLORS.text }}>Loading...</Text>
+          <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular" }}>Loading...</Text>
         </View>
       </View>
     );
@@ -95,13 +106,13 @@ export default function ProfilePreview() {
         <View style={{ padding: 16, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: "#E5E7EB" }}>
           <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: "row", alignItems: "center" }}>
             <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
-            <Text style={{ fontSize: 18, fontWeight: "600", color: COLORS.primary, marginLeft: 8 }}>
+            <Text style={{ fontSize: 18, fontWeight: "600", color: COLORS.primary, marginLeft: 8, fontFamily: "Inter_600SemiBold" }}>
               Back
             </Text>
           </TouchableOpacity>
         </View>
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16 }}>
-          <Text style={{ color: COLORS.error, textAlign: "center" }}>{error}</Text>
+          <Text style={{ color: COLORS.error, textAlign: "center", fontFamily: "Inter_400Regular" }}>{error}</Text>
         </View>
       </View>
     );
@@ -115,7 +126,7 @@ export default function ProfilePreview() {
       <View style={{ padding: 16, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: "#E5E7EB" }}>
         <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: "row", alignItems: "center" }}>
           <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
-          <Text style={{ fontSize: 18, fontWeight: "600", color: COLORS.primary, marginLeft: 8 }}>
+          <Text style={{ fontSize: 18, fontWeight: "600", color: COLORS.primary, marginLeft: 8, fontFamily: "Inter_600SemiBold" }}>
             Back to Edit Profile
           </Text>
         </TouchableOpacity>
@@ -125,10 +136,10 @@ export default function ProfilePreview() {
         <View style={{ padding: 16 }}>
           {/* Preview Header */}
           <View style={{ backgroundColor: "#EDE9FE", padding: 16, borderRadius: 12, marginBottom: 16 }}>
-            <Text style={{ fontSize: 20, fontWeight: "700", color: COLORS.primary }}>
+            <Text style={{ fontSize: 20, fontWeight: "700", color: COLORS.primary, fontFamily: "Inter_700Bold" }}>
               Profile Preview
             </Text>
-            <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 4 }}>
+            <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 4, fontFamily: "Inter_400Regular" }}>
               This is how other users see your profile
             </Text>
           </View>
@@ -145,7 +156,7 @@ export default function ProfilePreview() {
                   />
                 ) : (
                   <View style={{ width: "100%", height: "100%", justifyContent: "center", alignItems: "center" }}>
-                    <Text style={{ fontSize: 32, color: COLORS.text }}>
+                    <Text style={{ fontSize: 32, color: COLORS.text, fontFamily: "Inter_400Regular" }}>
                       {user?.name?.[0]?.toUpperCase() || "?"}
                     </Text>
                   </View>
@@ -153,7 +164,7 @@ export default function ProfilePreview() {
               </View>
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Text style={{ fontSize: 22, fontWeight: "700", color: COLORS.text }}>
+                  <Text style={{ fontSize: 22, fontWeight: "700", color: COLORS.text, fontFamily: "Inter_700Bold" }}>
                     {user?.name || "No name"}
                   </Text>
                   {user?.immediate_available && !user?.availability_override && (
@@ -161,7 +172,7 @@ export default function ProfilePreview() {
                   )}
                 </View>
                 <View style={{ backgroundColor: "#EDE9FE", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, alignSelf: "flex-start", marginTop: 6 }}>
-                  <Text style={{ fontSize: 12, fontWeight: "600", color: COLORS.primary }}>
+                  <Text style={{ fontSize: 12, fontWeight: "600", color: COLORS.primary, fontFamily: "Inter_600SemiBold" }}>
                     {tierDisplay}
                   </Text>
                 </View>
@@ -171,10 +182,10 @@ export default function ProfilePreview() {
             {/* Bio */}
             {user?.bio && (
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 8 }}>
+                <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 8, fontFamily: "Inter_600SemiBold" }}>
                   About
                 </Text>
-                <Text style={{ fontSize: 14, color: COLORS.text, lineHeight: 20 }}>
+                <Text style={{ fontSize: 14, color: COLORS.text, lineHeight: 20, fontFamily: "Inter_400Regular" }}>
                   {user.bio}
                 </Text>
               </View>
@@ -185,7 +196,7 @@ export default function ProfilePreview() {
               <View style={{ marginBottom: 16 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
                   <Ionicons name="videocam" size={20} color={COLORS.primary} />
-                  <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginLeft: 8 }}>
+                  <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginLeft: 8, fontFamily: "Inter_600SemiBold" }}>
                     Video Introduction
                   </Text>
                 </View>
@@ -200,7 +211,7 @@ export default function ProfilePreview() {
             {/* Photos */}
             {photos.length > 0 && (
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 8 }}>
+                <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 8, fontFamily: "Inter_600SemiBold" }}>
                   Photos ({photos.length})
                 </Text>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
@@ -218,13 +229,13 @@ export default function ProfilePreview() {
             {/* Interests */}
             {interests.length > 0 && (
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 8 }}>
+                <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 8, fontFamily: "Inter_600SemiBold" }}>
                   Interests
                 </Text>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
                   {interests.map((interest, idx) => (
                     <View key={idx} style={{ backgroundColor: "#EDE9FE", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 }}>
-                      <Text style={{ fontSize: 12, color: COLORS.primary }}>
+                      <Text style={{ fontSize: 12, color: COLORS.primary, fontFamily: "Inter_400Regular" }}>
                         {interest}
                       </Text>
                     </View>
@@ -236,50 +247,50 @@ export default function ProfilePreview() {
             {/* Personal Details */}
             {(user?.gender || user?.sexual_orientation || user?.looking_for || user?.relationship_goals || user?.height_range || user?.body_type || user?.education) && (
               <View style={{ marginBottom: 16 }}>
-                <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 12 }}>
+                <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 12, fontFamily: "Inter_600SemiBold" }}>
                   Personal Details
                 </Text>
                 <View style={{ gap: 12 }}>
                   {user?.gender && (
                     <View>
-                      <Text style={{ fontSize: 12, color: "#6B7280" }}>Gender</Text>
-                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2 }}>{user.gender}</Text>
+                      <Text style={{ fontSize: 12, color: "#6B7280", fontFamily: "Inter_400Regular" }}>Gender</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2, fontFamily: "Inter_400Regular" }}>{user.gender}</Text>
                     </View>
                   )}
                   {user?.sexual_orientation && (
                     <View>
-                      <Text style={{ fontSize: 12, color: "#6B7280" }}>Orientation</Text>
-                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2 }}>{user.sexual_orientation}</Text>
+                      <Text style={{ fontSize: 12, color: "#6B7280", fontFamily: "Inter_400Regular" }}>Orientation</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2, fontFamily: "Inter_400Regular" }}>{user.sexual_orientation}</Text>
                     </View>
                   )}
                   {user?.looking_for && (
                     <View>
-                      <Text style={{ fontSize: 12, color: "#6B7280" }}>Looking For</Text>
-                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2 }}>{user.looking_for}</Text>
+                      <Text style={{ fontSize: 12, color: "#6B7280", fontFamily: "Inter_400Regular" }}>Looking For</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2, fontFamily: "Inter_400Regular" }}>{user.looking_for}</Text>
                     </View>
                   )}
                   {user?.relationship_goals && (
                     <View>
-                      <Text style={{ fontSize: 12, color: "#6B7280" }}>Relationship Goals</Text>
-                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2 }}>{user.relationship_goals}</Text>
+                      <Text style={{ fontSize: 12, color: "#6B7280", fontFamily: "Inter_400Regular" }}>Relationship Goals</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2, fontFamily: "Inter_400Regular" }}>{user.relationship_goals}</Text>
                     </View>
                   )}
                   {user?.height_range && (
                     <View>
-                      <Text style={{ fontSize: 12, color: "#6B7280" }}>Height</Text>
-                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2 }}>{user.height_range}</Text>
+                      <Text style={{ fontSize: 12, color: "#6B7280", fontFamily: "Inter_400Regular" }}>Height</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2, fontFamily: "Inter_400Regular" }}>{user.height_range}</Text>
                     </View>
                   )}
                   {user?.body_type && (
                     <View>
-                      <Text style={{ fontSize: 12, color: "#6B7280" }}>Body Type</Text>
-                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2 }}>{user.body_type}</Text>
+                      <Text style={{ fontSize: 12, color: "#6B7280", fontFamily: "Inter_400Regular" }}>Body Type</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2, fontFamily: "Inter_400Regular" }}>{user.body_type}</Text>
                     </View>
                   )}
                   {user?.education && (
                     <View>
-                      <Text style={{ fontSize: 12, color: "#6B7280" }}>Education</Text>
-                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2 }}>{user.education}</Text>
+                      <Text style={{ fontSize: 12, color: "#6B7280", fontFamily: "Inter_400Regular" }}>Education</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2, fontFamily: "Inter_400Regular" }}>{user.education}</Text>
                     </View>
                   )}
                 </View>
@@ -289,44 +300,44 @@ export default function ProfilePreview() {
             {/* Lifestyle */}
             {(user?.drinking || user?.smoking || user?.exercise || user?.religion || user?.children_preference || user?.pets) && (
               <View>
-                <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 12 }}>
+                <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 12, fontFamily: "Inter_600SemiBold" }}>
                   Lifestyle
                 </Text>
                 <View style={{ gap: 12 }}>
                   {user?.drinking && (
                     <View>
-                      <Text style={{ fontSize: 12, color: "#6B7280" }}>Drinking</Text>
-                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2 }}>{user.drinking}</Text>
+                      <Text style={{ fontSize: 12, color: "#6B7280", fontFamily: "Inter_400Regular" }}>Drinking</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2, fontFamily: "Inter_400Regular" }}>{user.drinking}</Text>
                     </View>
                   )}
                   {user?.smoking && (
                     <View>
-                      <Text style={{ fontSize: 12, color: "#6B7280" }}>Smoking</Text>
-                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2 }}>{user.smoking}</Text>
+                      <Text style={{ fontSize: 12, color: "#6B7280", fontFamily: "Inter_400Regular" }}>Smoking</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2, fontFamily: "Inter_400Regular" }}>{user.smoking}</Text>
                     </View>
                   )}
                   {user?.exercise && (
                     <View>
-                      <Text style={{ fontSize: 12, color: "#6B7280" }}>Exercise</Text>
-                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2 }}>{user.exercise}</Text>
+                      <Text style={{ fontSize: 12, color: "#6B7280", fontFamily: "Inter_400Regular" }}>Exercise</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2, fontFamily: "Inter_400Regular" }}>{user.exercise}</Text>
                     </View>
                   )}
                   {user?.religion && (
                     <View>
-                      <Text style={{ fontSize: 12, color: "#6B7280" }}>Religion</Text>
-                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2 }}>{user.religion}</Text>
+                      <Text style={{ fontSize: 12, color: "#6B7280", fontFamily: "Inter_400Regular" }}>Religion</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2, fontFamily: "Inter_400Regular" }}>{user.religion}</Text>
                     </View>
                   )}
                   {user?.children_preference && (
                     <View>
-                      <Text style={{ fontSize: 12, color: "#6B7280" }}>Children</Text>
-                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2 }}>{user.children_preference}</Text>
+                      <Text style={{ fontSize: 12, color: "#6B7280", fontFamily: "Inter_400Regular" }}>Children</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2, fontFamily: "Inter_400Regular" }}>{user.children_preference}</Text>
                     </View>
                   )}
                   {user?.pets && (
                     <View>
-                      <Text style={{ fontSize: 12, color: "#6B7280" }}>Pets</Text>
-                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2 }}>{user.pets}</Text>
+                      <Text style={{ fontSize: 12, color: "#6B7280", fontFamily: "Inter_400Regular" }}>Pets</Text>
+                      <Text style={{ fontSize: 14, color: COLORS.text, marginTop: 2, fontFamily: "Inter_400Regular" }}>{user.pets}</Text>
                     </View>
                   )}
                 </View>
