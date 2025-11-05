@@ -9,7 +9,9 @@ This project is a feature-rich dating/matching application providing video calli
 I prefer detailed explanations and iterative development. Ask before making major changes. I value clear communication regarding the agent's actions and decisions.
 
 ## System Architecture
-The application utilizes a client-server architecture with a React 18 frontend employing React Router 7 for navigation and TailwindCSS for styling, featuring a mobile-first UI/UX with Tinder-style profile cards and gradient overlays. Routing uses Next.js-style route grouping. The backend is built with Hono (Node.js) and interacts with a PostgreSQL database. Auth.js handles authentication. Key features include Discovery, Matches, Messages with real-time chat, Profile management, and a consolidated onboarding flow. An `ErrorBoundary` ensures graceful error handling.
+**UI/UX Enhancement - Chakra UI Integration (November 5, 2025):** The web application has been upgraded with Chakra UI components throughout the onboarding profile page, delivering a professional, polished aesthetic with custom purple theme (#7c3aed). The implementation includes Card/CardHeader/CardBody sections, Input/Textarea with 'filled' variant for modern form aesthetics, Select dropdowns for 13 preference fields, Slider for distance selection (5-100km), Modal components, Tag chips for interests, Grid layouts, and comprehensive theming. SSR hydration issues were resolved by removing resetCSS from ChakraProvider. The mobile app received parallel aesthetic enhancements using native React Native components with STYLES constants (card shadows, filled input backgrounds #F7FAFC, enhanced button styling with platform-specific iOS/Android shadows), delivering cross-platform visual consistency. Location (TEXT) and max_distance (INTEGER DEFAULT 50) database columns were added to support geographic matching preferences on both platforms.
+
+The application utilizes a client-server architecture with a React 18 frontend employing React Router 7 for navigation, Chakra UI for component library (web), and TailwindCSS for utility styling, featuring a mobile-first UI/UX with Tinder-style profile cards and gradient overlays. Routing uses Next.js-style route grouping. The backend is built with Hono (Node.js) and interacts with a PostgreSQL database. Auth.js handles authentication. Key features include Discovery, Matches, Messages with real-time chat, Profile management, and a consolidated onboarding flow. An `ErrorBoundary` ensures graceful error handling.
 
 The system incorporates a 4-tier membership model (Free, Casual, Dating, Business) governing media limits, chat durations, and meeting caps, enforced both client-side and via backend API. A real-time video call extension system allows paid extensions with synchronized timers. Safety features include a 4-strike moderation logic. Core features include smart matching with prioritization, mutual interests highlighting, activity-based matching, conversation starters, Daily Picks, and Reverse Discovery (profile viewers). Media management supports photo uploads and camera-only video recording with tier-based limits. Revenue-protection downgrade flows are implemented for subscription management.
 
@@ -33,5 +35,6 @@ Mobile API integration uses a centralized `apiFetch` helper for authentication a
 - **Object Storage**: Replit Object Storage
 - **Frontend Framework**: React 18
 - **Frontend Router**: React Router 7
-- **Styling**: TailwindCSS
+- **Styling**: TailwindCSS + Chakra UI (web component library)
 - **Backend Framework**: Hono (Node.js)
+- **Mobile UI Components**: Native React Native + @react-native-community/slider
