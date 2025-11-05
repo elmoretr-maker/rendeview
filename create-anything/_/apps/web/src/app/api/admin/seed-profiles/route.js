@@ -29,7 +29,7 @@ export async function POST(request) {
     // Upload female images
     for (const filename of femaleFilenames) {
       try {
-        const filePath = path.join(process.cwd(), "attached_assets/stock_images", filename);
+        const filePath = `/home/runner/workspace/attached_assets/stock_images/${filename}`;
         const buffer = await readFile(filePath);
         const result = await upload({ buffer });
         femaleImages.push(result.url);
@@ -43,7 +43,7 @@ export async function POST(request) {
     // Upload male images
     for (const filename of maleFilenames) {
       try {
-        const filePath = path.join(process.cwd(), "attached_assets/stock_images", filename);
+        const filePath = `/home/runner/workspace/attached_assets/stock_images/${filename}`;
         const buffer = await readFile(filePath);
         const result = await upload({ buffer });
         maleImages.push(result.url);
