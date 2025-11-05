@@ -33,7 +33,6 @@
                 "@uppy/core": "^5.1.1",
                 "@uppy/dashboard": "^5.0.1",
                 "@uppy/react": "^5.0.1",
-                "@vis.gl/react-google-maps": "^0.8.3",
                 "argon2": "^0.43.0",
                 "classnames": "^2.5.1",
                 "clean-stack": "^5.2.0",

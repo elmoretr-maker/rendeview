@@ -50,4 +50,4 @@ Key features include:
 - **Typography**: Inter font family across web and mobile for consistent brand identity
 - **Backend Framework**: Hono (Node.js)
 - **Mobile UI Components**: @react-native-community/slider, @expo-google-fonts/inter, react-native-maps, expo-location
-- **Web Mapping**: React Leaflet, Leaflet CSS
+- **Geocoding**: OpenStreetMap Nominatim API (free, open-source)
