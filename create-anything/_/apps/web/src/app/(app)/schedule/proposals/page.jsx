@@ -495,15 +495,32 @@ export default function ScheduleProposals() {
     );
   };
 
+  // Handle back button - context-aware navigation
+  const handleBack = () => {
+    // If user is viewing message or counter UI, close it instead of leaving the page
+    if (messageProposalId) {
+      setMessageProposalId(null);
+      setMessageText("");
+    } else if (counterProposalId) {
+      setCounterProposalId(null);
+      setCounterDate("");
+      setCounterTime("");
+      setCounterDuration(30);
+    } else {
+      // Otherwise navigate back to matches
+      navigate("/matches");
+    }
+  };
+
   return (
     <Box minH="100vh" px={4} py={8} bg="gray.50">
       <Container maxW="2xl">
         <HStack mb={6} spacing={4}>
           <IconButton
             icon={<ArrowLeft size={24} />}
-            onClick={() => navigate("/matches")}
+            onClick={handleBack}
             variant="ghost"
-            aria-label="Back to matches"
+            aria-label="Back"
           />
           <Heading size="2xl" color="gray.800">
             Video Date Proposals
