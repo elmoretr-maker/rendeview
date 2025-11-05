@@ -324,8 +324,21 @@ export const { auth } = CreateAuth({
       return null;
     }
 
-    // return user object with the their profile data
-    return user;
+    // Fetch complete user data from application users table
+    const appUserResult = await pool.query(
+      'SELECT role, membership_tier, consent_accepted, name FROM users WHERE id = $1',
+      [user.id]
+    );
+    const appUser = appUserResult.rows[0];
+
+    // Merge auth_users data with application users data
+    return {
+      ...user,
+      role: appUser?.role,
+      membership_tier: appUser?.membership_tier,
+      consent_accepted: appUser?.consent_accepted,
+      name: appUser?.name || user.name, // Prefer app name over auth name
+    };
   },
 }),
   Credentials({
@@ -379,9 +392,21 @@ export const { auth } = CreateAuth({
         provider: 'credentials',
       });
       
-      // Fetch complete user record with all database defaults
-      const completeUser = await adapter.getUser(newUser.id);
-      return completeUser;
+      // Fetch complete user data from application users table
+      const appUserResult = await pool.query(
+        'SELECT role, membership_tier, consent_accepted, name FROM users WHERE id = $1',
+        [newUser.id]
+      );
+      const appUser = appUserResult.rows[0];
+
+      // Merge auth_users data with application users data
+      return {
+        ...newUser,
+        role: appUser?.role,
+        membership_tier: appUser?.membership_tier,
+        consent_accepted: appUser?.consent_accepted,
+        name: appUser?.name || newUser.name, // Prefer app name over auth name
+      };
     }
     return null;
   },
