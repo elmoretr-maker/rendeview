@@ -380,7 +380,7 @@ const useRefresh = () => {
   }, []);
 };
 
-export function Layout({ children }: { children: ReactNode }) {
+const SandboxBridge: FC = () => {
   useHandshakeParent();
   useCodeGen();
   useRefresh();
@@ -388,6 +388,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const pathname = location?.pathname;
+  
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
@@ -414,6 +415,11 @@ export function Layout({ children }: { children: ReactNode }) {
       '*'
     );
   }, [pathname]);
+  
+  return null;
+};
+
+export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -431,6 +437,7 @@ export function Layout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <ClientOnly loader={() => <LoadFonts />} />
+        <ClientOnly loader={() => <SandboxBridge />} />
         {children}
         <HotReloadIndicator />
         <Toaster position="bottom-right" />

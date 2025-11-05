@@ -3,6 +3,12 @@ import { auth } from "@/auth";
 
 export async function GET(request, { params: { id } }) {
   try {
+    // Validate that id is numeric - reject static routes like "list", "all", etc.
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) {
+      return Response.json({ error: "Not found" }, { status: 404 });
+    }
+
     const session = await auth();
     if (!session?.user?.id) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -11,7 +17,7 @@ export async function GET(request, { params: { id } }) {
 
     const rows = await sql`
       SELECT id, user_a_id, user_b_id FROM matches
-      WHERE id = ${id} AND (user_a_id = ${uid} OR user_b_id = ${uid})`;
+      WHERE id = ${numericId} AND (user_a_id = ${uid} OR user_b_id = ${uid})`;
     if (!rows?.length) {
       return Response.json({ error: "Not found" }, { status: 404 });
     }

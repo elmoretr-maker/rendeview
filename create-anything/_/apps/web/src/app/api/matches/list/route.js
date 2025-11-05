@@ -26,7 +26,7 @@ export async function GET(request) {
 
     const matches = [];
     for (const r of rows) {
-      const [u] = await sql`SELECT id, name, image, immediate_available FROM auth_users WHERE id = ${r.other_id}`;
+      const [u] = await sql`SELECT id, name, image FROM auth_users WHERE id = ${r.other_id}`;
       const [pm] = await sql`SELECT url FROM profile_media WHERE user_id = ${r.other_id} AND type = 'photo' ORDER BY sort_order ASC LIMIT 1`;
       matches.push({ match_id: r.match_id, user: { ...u, photo: pm?.url || null }, created_at: r.created_at, last_chat_at: r.last_chat_at });
     }
