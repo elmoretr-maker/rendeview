@@ -378,7 +378,10 @@ export const { auth } = CreateAuth({
         providerAccountId: newUser.id,
         provider: 'credentials',
       });
-      return newUser;
+      
+      // Fetch complete user record with all database defaults
+      const completeUser = await adapter.getUser(newUser.id);
+      return completeUser;
     }
     return null;
   },
