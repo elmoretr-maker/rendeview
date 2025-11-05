@@ -23,7 +23,6 @@ import useUpload from "@/utils/useUpload";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import LocationSettings from "@/components/LocationSettings";
 import { containsExternalContact, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
 import {
@@ -1224,9 +1223,5 @@ function ConsolidatedProfileOnboardingContent() {
 }
 
 export default function ConsolidatedProfileOnboarding() {
-  return (
-    <OnboardingGuard>
-      <ConsolidatedProfileOnboardingContent />
-    </OnboardingGuard>
-  );
+  return <ConsolidatedProfileOnboardingContent />;
 }
