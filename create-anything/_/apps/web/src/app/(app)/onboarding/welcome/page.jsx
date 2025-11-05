@@ -87,7 +87,7 @@ function WelcomeContent() {
 
           <VStack spacing={4} textAlign="center" mb={6}>
             <Button
-              onClick={() => navigate("/onboarding/consent")}
+              onClick={() => navigate("/account/signup")}
               px={10}
               py={6}
               borderRadius="full"

@@ -4,7 +4,7 @@ export default function LogoutPage() {
   const { signOut } = useAuth();
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/", redirect: true });
+    await signOut({ callbackUrl: "/welcome", redirect: true });
   };
 
   return (

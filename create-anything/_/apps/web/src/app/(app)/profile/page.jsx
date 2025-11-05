@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router";
 import useUser from "@/utils/useUser";
+import useAuth from "@/utils/useAuth";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import { ObjectUploader } from "@/components/ObjectUploader";
@@ -33,6 +34,7 @@ import {
 function ProfileContent() {
   const navigate = useNavigate();
   const { user, isLoading: userLoading } = useUser();
+  const { signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [name, setName] = useState("");
@@ -156,13 +158,12 @@ function ProfileContent() {
 
   const handleSignOut = useCallback(async () => {
     try {
-      await fetch("/api/auth/signout", { method: "POST" });
-      navigate("/account/signin");
+      await signOut({ callbackUrl: "/welcome", redirect: true });
     } catch (e) {
       console.error(e);
       toast.error("Could not sign out");
     }
-  }, [navigate]);
+  }, [signOut]);
 
   const handleLocationSave = useCallback(async (locationData) => {
     try {
@@ -346,15 +347,25 @@ function ProfileContent() {
         <VStack align="stretch" spacing={6} mb={6}>
           <Flex align="center" justify="space-between">
             <Heading size="xl" color="gray.800">Profile</Heading>
-            <Button
-              as={Link}
-              to="/onboarding/membership"
-              leftIcon={<Crown size={18} />}
-              colorScheme="teal"
-              shadow="md"
-            >
-              {membershipTier?.toUpperCase() || 'FREE'} Tier
-            </Button>
+            <HStack spacing={3}>
+              <Button
+                as={Link}
+                to="/onboarding/membership"
+                leftIcon={<Crown size={18} />}
+                colorScheme="teal"
+                shadow="md"
+              >
+                {membershipTier?.toUpperCase() || 'FREE'} Tier
+              </Button>
+              <Button
+                onClick={handleSignOut}
+                colorScheme="red"
+                variant="outline"
+                shadow="md"
+              >
+                Logout
+              </Button>
+            </HStack>
           </Flex>
           
           <Card
