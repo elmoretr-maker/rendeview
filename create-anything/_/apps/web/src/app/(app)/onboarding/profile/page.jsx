@@ -9,16 +9,20 @@ import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 
 const COLORS = {
   primary: "#5B3BAF",
+  primaryHover: "#4A2E91",
   secondary: "#8B5CF6",
-  text: "#2C3E50",
+  text: "#1F2937",
+  textLight: "#6B7280",
   error: "#EF4444",
-  lightGray: "#F5F5F5",
+  success: "#10B981",
+  lightGray: "#F9FAFB",
   white: "#FFFFFF",
-  cardBg: "#F3F4F6",
+  cardBg: "#FFFFFF",
+  border: "#E5E7EB",
 };
 
 const INTERESTS_CONFIG = {
-  MIN_REQUIRED: 0,
+  MIN_REQUIRED: 3,
   MAX_ALLOWED: 10,
   OPTIONS: [
     'Anime', 'Astronomy', 'Astrology', 'BBQ & Grilling', 'Basketball', 'Baking', 
@@ -175,6 +179,11 @@ function ConsolidatedProfileOnboardingContent() {
       return;
     }
 
+    if (interests.length < INTERESTS_CONFIG.MIN_REQUIRED) {
+      toast.error(`Please select at least ${INTERESTS_CONFIG.MIN_REQUIRED} interests for better matches`);
+      return;
+    }
+
     try {
       setSaving(true);
       const res = await fetch("/api/profile", {
@@ -209,112 +218,129 @@ function ConsolidatedProfileOnboardingContent() {
   }
 
   return (
-    <div className="min-h-screen px-6" style={{ backgroundColor: COLORS.white }}>
-      <div className="max-w-2xl mx-auto py-8">
+    <div className="min-h-screen" style={{ backgroundColor: COLORS.lightGray }}>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Back Button */}
         <button
           onClick={() => navigate("/onboarding/membership")}
-          className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          className="mb-6 flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-white transition-all"
+          style={{ color: COLORS.textLight }}
         >
           <ArrowLeft size={20} />
           <span className="font-medium">Back</span>
         </button>
 
         {/* Progress bar */}
-        <div className="mb-6">
-          <div className="h-1.5 bg-gray-200 rounded-full">
+        <div className="mb-8">
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-1.5 rounded-full"
+              className="h-2 rounded-full transition-all duration-500"
               style={{ backgroundColor: COLORS.primary, width: progressPct }}
             />
           </div>
-          <p className="text-sm mt-2 text-gray-600">
-            Step {stepIndex} of {totalSteps}
+          <p className="text-sm mt-3 font-medium" style={{ color: COLORS.textLight }}>
+            Step {stepIndex} of {totalSteps} • Profile Setup
           </p>
         </div>
 
-        <h1 className="text-3xl font-bold mb-2" style={{ color: COLORS.text }}>
-          Create your profile
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Add your details, photos, and an intro video. {membershipTier.charAt(0).toUpperCase() + membershipTier.slice(1)} members can add up to {limits.photos} photos and {limits.videos} video{limits.videos > 1 ? "s" : ""}.
-        </p>
-
-        {/* Name */}
-        <div className="mb-6">
-          <label className="block mb-2 font-semibold" style={{ color: COLORS.text }}>
-            Display name *
-          </label>
-          <input
-            type="text"
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2"
-            style={{ focusRing: COLORS.primary }}
-            placeholder="Your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+        {/* Header */}
+        <div className="mb-10">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4" style={{ color: COLORS.text }}>
+            Create Your Profile
+          </h1>
+          <p className="text-lg" style={{ color: COLORS.textLight }}>
+            Tell us about yourself to find compatible matches. {membershipTier.charAt(0).toUpperCase() + membershipTier.slice(1)} members can add up to {limits.photos} photos.
+          </p>
         </div>
 
-        {/* Bio */}
-        <div className="mb-6">
-          <label className="block mb-2 font-semibold" style={{ color: COLORS.text }}>
-            Bio (optional)
-          </label>
-          <textarea
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 resize-none"
-            style={{ focusRing: COLORS.primary }}
-            rows={4}
-            placeholder="Tell us about yourself..."
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            maxLength={500}
-          />
-          <p className="text-sm text-gray-500 mt-1">{bio.length}/500 characters</p>
-        </div>
+        {/* Form Card */}
+        <div className="bg-white rounded-2xl shadow-sm border p-6 sm:p-8 mb-6" style={{ borderColor: COLORS.border }}>
+          {/* Name */}
+          <div className="mb-8">
+            <label className="block mb-3 text-base font-semibold" style={{ color: COLORS.text }}>
+              Display Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              className="w-full border-2 rounded-xl px-5 py-4 text-lg focus:outline-none focus:border-purple-500 transition-colors"
+              style={{ borderColor: COLORS.border }}
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
 
-        {/* Interests */}
-        <div className="mb-6">
-          <label className="block mb-2 font-semibold" style={{ color: COLORS.text }}>
-            Interests & Hobbies (optional)
-          </label>
-          
-          <button
-            onClick={() => setShowInterestsModal(true)}
-            className="w-full border-2 border-dashed border-gray-300 rounded-lg px-4 py-3 hover:border-purple-400 transition-colors flex items-center justify-center gap-2 mb-3"
-            style={{ color: COLORS.primary }}
-          >
-            <Plus size={20} />
-            <span className="font-medium">Choose from {INTERESTS_CONFIG.OPTIONS.length} interests</span>
-          </button>
+          {/* Bio */}
+          <div className="mb-8">
+            <label className="block mb-3 text-base font-semibold" style={{ color: COLORS.text }}>
+              About Me <span className="text-sm font-normal text-gray-400">(optional)</span>
+            </label>
+            <textarea
+              className="w-full border-2 rounded-xl px-5 py-4 text-base focus:outline-none focus:border-purple-500 resize-none transition-colors"
+              style={{ borderColor: COLORS.border }}
+              rows={5}
+              placeholder="Share a bit about yourself, your hobbies, what you're looking for..."
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              maxLength={500}
+            />
+            <p className="text-sm mt-2" style={{ color: COLORS.textLight }}>{bio.length}/500 characters</p>
+          </div>
 
-          {interests.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
-              {interests.map((interest, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium"
-                  style={{ backgroundColor: COLORS.lightGray, color: COLORS.text }}
-                >
-                  <span>{interest}</span>
-                  <button onClick={() => removeInterest(idx)} className="hover:text-red-500">
-                    <X size={14} />
-                  </button>
-                </div>
-              ))}
+          {/* Interests */}
+          <div className="mb-0">
+            <label className="block mb-3 text-base font-semibold" style={{ color: COLORS.text }}>
+              Interests & Hobbies <span className="text-red-500">*</span>
+              <span className="text-sm font-normal ml-2" style={{ color: COLORS.textLight }}>
+                (Select at least {INTERESTS_CONFIG.MIN_REQUIRED} for matching)
+              </span>
+            </label>
+            
+            <button
+              onClick={() => setShowInterestsModal(true)}
+              className="w-full border-2 border-dashed rounded-xl px-6 py-5 hover:border-purple-400 hover:bg-purple-50 transition-all flex items-center justify-center gap-3 mb-4"
+              style={{ borderColor: COLORS.border, color: COLORS.primary }}
+            >
+              <Plus size={24} strokeWidth={2.5} />
+              <span className="font-semibold text-base">Choose from {INTERESTS_CONFIG.OPTIONS.length} interests</span>
+            </button>
+
+            {interests.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {interests.map((interest, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium shadow-sm border"
+                    style={{ backgroundColor: COLORS.lightGray, color: COLORS.text, borderColor: COLORS.border }}
+                  >
+                    <span>{interest}</span>
+                    <button onClick={() => removeInterest(idx)} className="hover:text-red-500 transition-colors">
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <p className="text-sm" style={{ color: interests.length >= INTERESTS_CONFIG.MIN_REQUIRED ? COLORS.success : COLORS.textLight }}>
+                {interests.length >= INTERESTS_CONFIG.MIN_REQUIRED ? `✓ ${interests.length} interests selected` : `${interests.length}/${INTERESTS_CONFIG.MIN_REQUIRED} required`}
+              </p>
+              <p className="text-sm" style={{ color: COLORS.textLight }}>
+                Max {INTERESTS_CONFIG.MAX_ALLOWED}
+              </p>
             </div>
-          )}
-          <p className="text-sm text-gray-500">{interests.length}/{INTERESTS_CONFIG.MAX_ALLOWED} interests selected</p>
+          </div>
         </div>
 
         {/* Photos Section */}
-        <div className="mb-6 p-6 rounded-2xl shadow-md" style={{ backgroundColor: COLORS.cardBg }}>
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white rounded-2xl shadow-sm border p-6 sm:p-8 mb-6" style={{ borderColor: COLORS.border }}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-xl font-bold" style={{ color: COLORS.text }}>
-                Photos *
+              <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.text }}>
+                Profile Photos <span className="text-red-500">*</span>
               </h2>
-              <p className="text-sm mt-1" style={{ color: photos.length >= 2 ? "#10B981" : COLORS.error }}>
-                {photos.length >= 2 ? `✓ ${photos.length} photos uploaded` : `${photos.length}/2 photos (${2 - photos.length} more needed)`}
+              <p className="text-base font-medium" style={{ color: photos.length >= 2 ? COLORS.success : COLORS.textLight }}>
+                {photos.length >= 2 ? `✓ ${photos.length} photos uploaded` : `${photos.length}/2 required (${2 - photos.length} more needed)`}
               </p>
             </div>
             <ObjectUploader
@@ -325,118 +351,125 @@ function ConsolidatedProfileOnboardingContent() {
               onUploadStart={handlePhotoStart}
               onComplete={handlePhotoComplete}
               onUploadError={handlePhotoError}
-              buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2 disabled:opacity-50"
+              buttonClassName="px-6 py-3.5 rounded-xl text-white font-semibold shadow-md flex items-center gap-2 disabled:opacity-50 hover:opacity-90 transition-opacity text-base whitespace-nowrap"
               buttonStyle={{ backgroundColor: COLORS.primary }}
               disabled={uploadingPhoto || photos.length >= limits.photos}
             >
-              <Upload size={18} />
+              <Upload size={20} />
               {uploadingPhoto ? "Uploading..." : "Add Photo"}
             </ObjectUploader>
           </div>
 
           {photos.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Upload size={48} className="mx-auto mb-3 opacity-40" />
-              <p className="font-medium">No photos yet</p>
-              <p className="text-sm mt-1">Click "Add Photo" above to upload</p>
+            <div className="text-center py-12 px-4 rounded-xl border-2 border-dashed" style={{ borderColor: COLORS.border, backgroundColor: COLORS.lightGray }}>
+              <Upload size={56} className="mx-auto mb-4 opacity-30" style={{ color: COLORS.textLight }} />
+              <p className="font-semibold text-lg mb-1" style={{ color: COLORS.text }}>No photos yet</p>
+              <p className="text-sm" style={{ color: COLORS.textLight }}>Click "Add Photo" above to get started</p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {photos.map((photo, idx) => (
-                <div key={idx} className="relative group rounded-xl overflow-hidden shadow-md">
+                <div key={idx} className="relative group rounded-2xl overflow-hidden shadow-sm border aspect-square" style={{ borderColor: COLORS.border }}>
                   <img
                     src={photo.url}
                     alt={`Photo ${idx + 1}`}
-                    className="w-full h-32 object-cover"
+                    className="w-full h-full object-cover"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs py-1 px-2">
-                    Photo {idx + 1}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                    <p className="text-white text-sm font-medium">Photo {idx + 1}</p>
                   </div>
                   <button
                     onClick={() => deleteMutation.mutate({ mediaUrl: photo.url })}
                     disabled={deleteMutation.isPending}
-                    className="absolute top-1 right-1 p-1.5 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 opacity-90"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
-              {uploadingPhoto && (
-                <div className="relative rounded-xl overflow-hidden shadow-md bg-gray-200 flex items-center justify-center h-32">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-2" style={{ borderColor: COLORS.primary }}></div>
-                    <p className="text-xs text-gray-600">Uploading...</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          <p className="text-sm text-gray-500 mt-3">
-            {photos.length >= limits.photos 
-              ? `Photo limit reached (${limits.photos}/${limits.photos})` 
-              : `You can upload up to ${limits.photos} photos`}
-          </p>
-        </div>
-
-        {/* Videos Section */}
-        <div className="mb-6 p-6 rounded-2xl shadow-md" style={{ backgroundColor: COLORS.cardBg }}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold" style={{ color: COLORS.text }}>
-              Video Introduction ({videos.length}/{limits.videos})
-            </h2>
-            <button
-              onClick={() => setShowVideoRecorder(true)}
-              disabled={videos.length >= limits.videos}
-              className="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: COLORS.secondary }}
-            >
-              <Camera size={18} />
-              Record Video
-            </button>
-          </div>
-
-          {videos.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Video size={48} className="mx-auto mb-3 opacity-40" />
-              <p>Optional: Record a video introduction</p>
-              <p className="text-sm mt-2">Camera-only recording prevents catfishing</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {videos.map((video, idx) => (
-                <div key={idx} className="relative group rounded-xl overflow-hidden shadow-md bg-black">
-                  <video
-                    src={video.url}
-                    controls
-                    className="w-full h-48 object-contain"
-                  />
-                  <button
-                    onClick={() => deleteMutation.mutate({ mediaUrl: video.url })}
-                    disabled={deleteMutation.isPending}
-                    className="absolute top-2 right-2 p-2 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600"
+                    className="absolute top-2 right-2 p-2 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <Trash2 size={16} />
                   </button>
                 </div>
               ))}
+              {uploadingPhoto && (
+                <div className="relative rounded-2xl overflow-hidden shadow-sm border bg-gray-100 flex items-center justify-center aspect-square" style={{ borderColor: COLORS.border }}>
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-3 mx-auto mb-3" style={{ borderColor: COLORS.primary }}></div>
+                    <p className="text-sm font-medium" style={{ color: COLORS.textLight }}>Uploading...</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
-          <p className="text-sm text-gray-500 mt-3">
+          <p className="text-sm mt-4" style={{ color: COLORS.textLight }}>
+            {photos.length >= limits.photos 
+              ? `✓ Photo limit reached (${limits.photos}/${limits.photos})` 
+              : `Upload up to ${limits.photos} photos • At least 2 required`}
+          </p>
+        </div>
+
+        {/* Videos Section */}
+        <div className="bg-white rounded-2xl shadow-sm border p-6 sm:p-8 mb-8" style={{ borderColor: COLORS.border }}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2" style={{ color: COLORS.text }}>
+                Video Introduction
+              </h2>
+              <p className="text-base font-medium" style={{ color: COLORS.textLight }}>
+                {videos.length > 0 ? `✓ ${videos.length} video uploaded` : 'Optional • Stand out with a video'}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowVideoRecorder(true)}
+              disabled={videos.length >= limits.videos}
+              className="px-6 py-3.5 rounded-xl text-white font-semibold shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity text-base whitespace-nowrap"
+              style={{ backgroundColor: COLORS.secondary }}
+            >
+              <Camera size={20} />
+              Record Video
+            </button>
+          </div>
+
+          {videos.length === 0 ? (
+            <div className="text-center py-12 px-4 rounded-xl border-2 border-dashed" style={{ borderColor: COLORS.border, backgroundColor: COLORS.lightGray }}>
+              <Video size={56} className="mx-auto mb-4 opacity-30" style={{ color: COLORS.textLight }} />
+              <p className="font-semibold text-lg mb-1" style={{ color: COLORS.text }}>No video yet</p>
+              <p className="text-sm" style={{ color: COLORS.textLight }}>Record a short intro to stand out</p>
+              <p className="text-xs mt-2" style={{ color: COLORS.textLight }}>Camera-only recording prevents catfishing</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {videos.map((video, idx) => (
+                <div key={idx} className="relative group rounded-2xl overflow-hidden shadow-sm border bg-black" style={{ borderColor: COLORS.border }}>
+                  <video
+                    src={video.url}
+                    controls
+                    className="w-full h-64 object-contain"
+                  />
+                  <button
+                    onClick={() => deleteMutation.mutate({ mediaUrl: video.url })}
+                    disabled={deleteMutation.isPending}
+                    className="absolute top-3 right-3 p-2.5 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="text-sm mt-4" style={{ color: COLORS.textLight }}>
             Max duration: {Math.floor(limits.videoMaxDuration / 60)}:{String(limits.videoMaxDuration % 60).padStart(2, "0")} minutes
           </p>
         </div>
 
+        {/* Submit Button */}
         <button
           onClick={handleContinue}
-          disabled={saving || !name.trim() || photos.length < 2}
-          className="w-full py-3.5 rounded-xl text-white font-semibold disabled:opacity-60"
+          disabled={saving || !name.trim() || photos.length < 2 || interests.length < INTERESTS_CONFIG.MIN_REQUIRED}
+          className="w-full py-5 rounded-2xl text-white font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl transition-all text-lg"
           style={{ backgroundColor: COLORS.primary }}
         >
-          {saving ? "Saving..." : "Complete Setup"}
+          {saving ? "Saving Your Profile..." : "Complete Profile Setup"}
         </button>
 
-        <p className="text-sm text-center text-gray-500 mt-4">
-          * Required fields
+        <p className="text-sm text-center mt-6 mb-4" style={{ color: COLORS.textLight }}>
+          <span className="text-red-500">*</span> Required fields
         </p>
       </div>
 
@@ -480,39 +513,53 @@ function InterestsModal({ selectedInterests, onSelect, onClose }) {
     }
   };
 
+  const meetsMinimum = tempSelected.length >= INTERESTS_CONFIG.MIN_REQUIRED;
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[85vh] overflow-hidden flex flex-col">
-        <div className="p-6 border-b">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-2xl font-bold" style={{ color: COLORS.text }}>
-              Choose Interests
-            </h2>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-              <X size={24} />
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="p-6 sm:p-8 border-b" style={{ borderColor: COLORS.border }}>
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <h2 className="text-3xl font-bold mb-2" style={{ color: COLORS.text }}>
+                Choose Your Interests
+              </h2>
+              <p className="text-base" style={{ color: COLORS.textLight }}>
+                Select at least {INTERESTS_CONFIG.MIN_REQUIRED} interests for better matches
+              </p>
+            </div>
+            <button 
+              onClick={onClose} 
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              style={{ color: COLORS.textLight }}
+            >
+              <X size={28} />
             </button>
           </div>
-          <p className="text-sm text-gray-600">
-            Select up to {INTERESTS_CONFIG.MAX_ALLOWED} interests that describe you
-          </p>
-          <p className="text-sm mt-1" style={{ color: tempSelected.length > 0 ? COLORS.primary : COLORS.text }}>
-            {tempSelected.length} selected
-          </p>
+          <div className="flex items-center gap-4 mt-4">
+            <p className="text-lg font-semibold" style={{ color: meetsMinimum ? COLORS.success : COLORS.textLight }}>
+              {meetsMinimum ? `✓ ${tempSelected.length} selected` : `${tempSelected.length}/${INTERESTS_CONFIG.MIN_REQUIRED} required`}
+            </p>
+            <p className="text-sm" style={{ color: COLORS.textLight }}>
+              Max {INTERESTS_CONFIG.MAX_ALLOWED}
+            </p>
+          </div>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <div className="p-6 sm:p-8 overflow-y-auto flex-1" style={{ backgroundColor: COLORS.lightGray }}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {INTERESTS_CONFIG.OPTIONS.map((interest) => {
               const isSelected = tempSelected.includes(interest);
               return (
                 <button
                   key={interest}
                   onClick={() => toggleInterest(interest)}
-                  className="px-4 py-3 rounded-lg font-medium text-sm transition-all border-2"
+                  className="px-4 py-3.5 rounded-xl font-semibold text-sm transition-all border-2 hover:scale-105"
                   style={{
                     backgroundColor: isSelected ? COLORS.primary : COLORS.white,
-                    borderColor: isSelected ? COLORS.primary : "#E5E7EB",
+                    borderColor: isSelected ? COLORS.primary : COLORS.border,
                     color: isSelected ? COLORS.white : COLORS.text,
+                    boxShadow: isSelected ? '0 4px 6px -1px rgba(91, 59, 175, 0.3)' : 'none',
                   }}
                 >
                   {interest}
@@ -522,20 +569,21 @@ function InterestsModal({ selectedInterests, onSelect, onClose }) {
           </div>
         </div>
 
-        <div className="p-6 border-t bg-gray-50 flex gap-3">
+        <div className="p-6 sm:p-8 border-t bg-white flex flex-col sm:flex-row gap-3" style={{ borderColor: COLORS.border }}>
           <button
             onClick={onClose}
-            className="flex-1 px-6 py-3 rounded-lg border-2 border-gray-300 font-semibold hover:bg-gray-100 transition-colors"
-            style={{ color: COLORS.text }}
+            className="flex-1 px-6 py-4 rounded-xl border-2 font-semibold hover:bg-gray-50 transition-colors text-base"
+            style={{ borderColor: COLORS.border, color: COLORS.text }}
           >
             Cancel
           </button>
           <button
             onClick={() => onSelect(tempSelected)}
-            className="flex-1 px-6 py-3 rounded-lg text-white font-semibold shadow-md"
+            disabled={!meetsMinimum}
+            className="flex-1 px-6 py-4 rounded-xl text-white font-bold shadow-lg hover:shadow-xl transition-all text-base disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: COLORS.primary }}
           >
-            Done ({tempSelected.length})
+            {meetsMinimum ? `Done (${tempSelected.length})` : `Select ${INTERESTS_CONFIG.MIN_REQUIRED - tempSelected.length} more`}
           </button>
         </div>
       </div>

@@ -36,7 +36,7 @@ const COLORS = {
 // Interests configuration
 const INTERESTS_CONFIG = {
   MIN_REQUIRED: 3,
-  MAX_ALLOWED: 7,
+  MAX_ALLOWED: 10,
   OPTIONS: [
     'Anime', 'Astronomy', 'Astrology', 'BBQ & Grilling', 'Basketball', 'Baking', 
     'Beach', 'Board Games', 'Camping', 'Career Development', 'Cars & Motorcycles',
