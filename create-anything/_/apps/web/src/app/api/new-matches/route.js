@@ -29,9 +29,15 @@ export async function GET(request) {
           SELECT id, name, primary_photo_url as photo
           FROM auth_users
           WHERE id = ${row.other_id}`;
+        
+        // Transform photo URL: /objects/... -> /api/objects/...
+        const photoUrl = u?.photo 
+          ? (u.photo.startsWith('/objects/') ? `/api${u.photo}` : u.photo)
+          : null;
+        
         return {
           match_id: row.match_id,
-          user: u || { id: row.other_id, name: null, photo: null },
+          user: u ? { ...u, photo: photoUrl } : { id: row.other_id, name: null, photo: null },
           created_at: row.created_at,
           last_chat_at: row.last_chat_at,
         };

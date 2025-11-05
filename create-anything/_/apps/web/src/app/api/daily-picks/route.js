@@ -45,6 +45,11 @@ export async function GET(request) {
           photo = media?.[0]?.url || null;
         }
         
+        // Transform photo URL: /objects/... -> /api/objects/...
+        if (photo && photo.startsWith('/objects/')) {
+          photo = `/api${photo}`;
+        }
+        
         picks.push({
           id: pick.picked_user_id,
           name: pick.name,
@@ -114,6 +119,11 @@ export async function GET(request) {
           WHERE user_id = ${pick.id} AND type = 'photo' 
           ORDER BY sort_order ASC LIMIT 1`;
         photo = media?.[0]?.url || null;
+      }
+      
+      // Transform photo URL: /objects/... -> /api/objects/...
+      if (photo && photo.startsWith('/objects/')) {
+        photo = `/api${photo}`;
       }
       
       picks.push({

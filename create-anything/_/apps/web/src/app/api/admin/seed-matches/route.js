@@ -68,7 +68,7 @@ export async function POST(request) {
 
         for (let i = 0; i < messages.length; i++) {
           await sql`
-            INSERT INTO messages (match_id, sender_id, content, created_at)
+            INSERT INTO messages (match_id, sender_id, body, created_at)
             VALUES (
               ${matchId}, 
               ${messages[i].from}, 

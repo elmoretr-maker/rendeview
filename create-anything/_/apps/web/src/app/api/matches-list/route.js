@@ -28,7 +28,18 @@ export async function GET(request) {
     for (const r of rows) {
       const [u] = await sql`SELECT id, name, image FROM auth_users WHERE id = ${r.other_id}`;
       const [pm] = await sql`SELECT url FROM profile_media WHERE user_id = ${r.other_id} AND type = 'photo' ORDER BY sort_order ASC LIMIT 1`;
-      matches.push({ match_id: r.match_id, user: { ...u, photo: pm?.url || null }, created_at: r.created_at, last_chat_at: r.last_chat_at });
+      
+      // Transform photo URL: /objects/... -> /api/objects/...
+      const photoUrl = pm?.url 
+        ? (pm.url.startsWith('/objects/') ? `/api${pm.url}` : pm.url)
+        : null;
+      
+      matches.push({ 
+        match_id: r.match_id, 
+        user: { ...u, photo: photoUrl }, 
+        created_at: r.created_at, 
+        last_chat_at: r.last_chat_at 
+      });
     }
 
     console.log('[/api/matches-list] ✅ Returning', matches.length, 'matches');

@@ -94,6 +94,11 @@ export async function GET(request) {
         photo = media?.[0]?.url || null;
       }
       
+      // Transform photo URL: /objects/... -> /api/objects/...
+      if (photo && photo.startsWith('/objects/')) {
+        photo = `/api${photo}`;
+      }
+      
       // Calculate compatibility score
       const compatibilityScore = calculateCompatibility(currentUser, c);
       
