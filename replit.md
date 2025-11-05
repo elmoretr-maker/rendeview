@@ -3,6 +3,22 @@
 ## Overview
 This project is a feature-rich dating/matching application providing video calling, messaging, scheduling, and media uploads. It aims to deliver a robust and scalable platform focused on user engagement and seamless communication. The business vision is to capture a significant share of the online dating market by offering a superior user experience and advanced features, driving high user retention and monetization through a tiered membership model. The mobile application is production-ready, transitioning to EAS (Expo Application Services) for deployment with full native functionality. **As of November 2025, the project has achieved 100% aesthetic parity between web and mobile platforms, with consistent Inter font family implementation across all 8 mobile screens.**
 
+## Recent Changes (November 2025)
+- **Dynamic Pricing System**: All membership pricing now pulls from Admin Dashboard (`/api/admin/settings`) as single source of truth. Admin pricing changes reflect immediately across web and mobile without redeployment.
+- **Enhanced Admin Dashboard**: Safety Management section now displays flagged user profile photos, membership tiers, and location/timezone alongside existing block counts and account status.
+- **User Availability**: Fully implemented day/time availability selection visible on profile views for scheduling assistance.
+
+## ⚠️ CRITICAL SECURITY ACTION REQUIRED
+**Before deploying to production, you MUST manually delete the `QA_BYPASS_AUTH` environment variable from Replit's Secrets panel.** This testing bypass must be removed to re-enable full authentication security. This cannot be done programmatically and requires manual action in the Replit interface.
+
+**Steps to Remove QA_BYPASS_AUTH:**
+1. Open your Replit project
+2. Click "Secrets" in the left sidebar (lock icon)
+3. Find `QA_BYPASS_AUTH` in the list
+4. Click the trash/delete icon next to it
+5. Confirm deletion
+6. Restart your workflows to ensure changes take effect
+
 ## User Preferences
 I prefer detailed explanations and iterative development. Ask before making major changes. I value clear communication regarding the agent's actions and decisions.
 
@@ -18,7 +34,7 @@ Key features include:
 - **Authentication & Security**: Global authentication guard, two-step authentication including onboarding completion checks (consent, membership, photos). Security measures include webhook monitoring, idempotency keys, database-backed rate limiting, and database constraints.
 - **Chat Monetization**: Hybrid chat monetization with a three-pool message deduction and per-match caps for the Business tier, credit packs available.
 - **Matching System**: Enhanced matching incorporates a comprehensive interests system and a weighted scoring algorithm (v2) for compatibility calculation.
-- **Admin Dashboard**: Features user photo management, revenue overview, and pricing settings for subscription tiers and second date fees.
+- **Admin Dashboard**: Features comprehensive user safety management (profile photos, membership tier, location, block count, account status), revenue overview, and dynamic pricing settings for subscription tiers and second date fees. Pricing changes made in the Admin Dashboard immediately propagate to all web and mobile surfaces without requiring redeployment.
 - **Deployment**: Mobile application uses EAS (Expo Application Services) for production-ready cloud builds, supporting development, preview, and production profiles.
 
 ## External Dependencies

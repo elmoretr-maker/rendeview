@@ -30,6 +30,9 @@ export async function GET() {
         block_count,
         account_status,
         flagged_for_admin,
+        membership_tier,
+        timezone,
+        primary_photo_url,
         created_at
       FROM auth_users
       WHERE flagged_for_admin = true

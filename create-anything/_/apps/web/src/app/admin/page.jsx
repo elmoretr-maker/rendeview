@@ -31,6 +31,8 @@ import {
   FormControl,
   FormLabel,
   Divider,
+  Avatar,
+  Tooltip,
 } from "@chakra-ui/react";
 import useUser from "@/utils/useUser";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -237,8 +239,11 @@ export default function AdminPage() {
                 <Table variant="simple">
                   <Thead>
                     <Tr>
+                      <Th>Photo</Th>
                       <Th>Name</Th>
                       <Th>Email</Th>
+                      <Th>Tier</Th>
+                      <Th>Location</Th>
                       <Th>Blocks</Th>
                       <Th>Status</Th>
                       <Th>Action</Th>
@@ -247,8 +252,35 @@ export default function AdminPage() {
                   <Tbody>
                     {flaggedUsers.map((flaggedUser) => (
                       <Tr key={flaggedUser.id} _hover={{ bg: "gray.50" }}>
+                        <Td>
+                          <Avatar 
+                            size="sm" 
+                            src={flaggedUser.primary_photo_url} 
+                            name={flaggedUser.name || flaggedUser.email}
+                          />
+                        </Td>
                         <Td fontWeight="medium">{flaggedUser.name || "N/A"}</Td>
-                        <Td>{flaggedUser.email}</Td>
+                        <Td fontSize="sm">{flaggedUser.email}</Td>
+                        <Td>
+                          <Badge 
+                            colorScheme={
+                              flaggedUser.membership_tier === 'business' ? 'purple' :
+                              flaggedUser.membership_tier === 'dating' ? 'blue' :
+                              flaggedUser.membership_tier === 'casual' ? 'green' :
+                              'gray'
+                            }
+                            textTransform="capitalize"
+                          >
+                            {flaggedUser.membership_tier || 'free'}
+                          </Badge>
+                        </Td>
+                        <Td fontSize="sm">
+                          <Tooltip label={flaggedUser.timezone || 'Not set'}>
+                            <Text isTruncated maxW="120px">
+                              {flaggedUser.timezone || 'N/A'}
+                            </Text>
+                          </Tooltip>
+                        </Td>
                         <Td>
                           <Badge colorScheme="red">
                             {flaggedUser.block_count || 0} blocks
