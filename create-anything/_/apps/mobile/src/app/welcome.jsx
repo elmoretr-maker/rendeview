@@ -1,191 +1,265 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import React, { useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/utils/auth/useAuth";
+import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
+
+const { width } = Dimensions.get("window");
 
 const COLORS = {
   primary: "#5B3BAF",
+  primaryDark: "#4A2E8E",
+  purple50: "#F5E6FF",
+  purple100: "#E6CCFF",
+  blue50: "#E6F2FF",
+  pink50: "#FFE6F5",
   text: "#2C3E50",
+  textLight: "#6B7280",
   white: "#FFFFFF",
-  lightGray: "#F5F5F5",
 };
 
-export default function WelcomeBackScreen() {
-  const insets = useSafeAreaInsets();
+export default function WelcomeScreen() {
   const router = useRouter();
-  const { signIn, auth } = useAuth();
+  const { auth } = useAuth();
+  
+  const [loaded, error] = useFonts({
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
 
-  // Auto-redirect if user becomes authenticated
-  React.useEffect(() => {
+  useEffect(() => {
     if (auth) {
       console.log("[WELCOME] User authenticated, redirecting to index");
       router.replace("/");
     }
   }, [auth, router]);
 
-  const handleSignIn = async () => {
-    try {
-      await signIn();
-      // After successful sign-in, useEffect will handle redirect
-    } catch (error) {
-      console.error("Sign in error:", error);
-    }
+  if (!loaded && !error) {
+    return null;
+  }
+
+  const handleSignIn = () => {
+    router.push("/onboarding/welcome");
   };
 
-  const handleJoin = () => {
+  const handleJoinNow = () => {
     router.push("/onboarding/welcome");
   };
 
   return (
-    <View
-      style={[
-        styles.container,
-        { paddingTop: insets.top, paddingBottom: insets.bottom },
-      ]}
+    <LinearGradient
+      colors={[COLORS.purple50, COLORS.blue50, COLORS.pink50]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.gradient}
     >
-      <View style={styles.content}>
-        <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
-            <Text style={styles.logoText}>💜</Text>
+      <View style={styles.blurCircle1} />
+      <View style={styles.blurCircle2} />
+
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          <View style={styles.logoSection}>
+            <View style={styles.logoCard}>
+              <Image
+                source={{
+                  uri: "https://ucarecdn.com/7e6175a0-5279-4da8-8e24-c6a129f1821f/-/format/auto/",
+                }}
+                style={styles.logo}
+                contentFit="contain"
+                transition={150}
+              />
+            </View>
+
+            <View style={styles.brandSection}>
+              <Text style={[styles.appName, { fontFamily: "Inter_700Bold" }]}>
+                Rende-View
+              </Text>
+              <Text style={[styles.tagline, { fontFamily: "Inter_600SemiBold" }]}>
+                VIDEO-FIRST DATING
+              </Text>
+            </View>
           </View>
-          <Text style={styles.appName}>Rende-VIEW</Text>
-          <Text style={styles.tagline}>Video-First Dating</Text>
-        </View>
 
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeTitle}>Welcome Back!</Text>
-          <Text style={styles.welcomeSubtitle}>
-            Sign in to continue your journey to authentic connections
-          </Text>
-        </View>
+          <View style={styles.buttonSection}>
+            <TouchableOpacity
+              style={styles.signInButton}
+              onPress={handleSignIn}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.signInText, { fontFamily: "Inter_700Bold" }]}>
+                Sign In
+              </Text>
+            </TouchableOpacity>
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.signInButton}
-            onPress={handleSignIn}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.signInButtonText}>Sign In</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.joinButton}
+              onPress={handleJoinNow}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={[COLORS.primary, COLORS.primaryDark]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.joinGradient}
+              >
+                <Text style={[styles.joinText, { fontFamily: "Inter_700Bold" }]}>
+                  Join Now
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            style={styles.joinButton}
-            onPress={handleJoin}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.joinButtonText}>New? Join Now</Text>
-          </TouchableOpacity>
+          <View style={styles.footer}>
+            <Text style={[styles.footerText, { fontFamily: "Inter_400Regular" }]}>
+              By continuing, you agree to our{" "}
+              <Text style={styles.footerLink}>Terms of Service</Text> and{" "}
+              <Text style={styles.footerLink}>Privacy Policy</Text>.
+            </Text>
+          </View>
         </View>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            By continuing, you agree to our Terms of Service and Privacy Policy
-          </Text>
-        </View>
-      </View>
-    </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
+  blurCircle1: {
+    position: "absolute",
+    top: "-10%",
+    right: "-5%",
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: COLORS.purple100,
+    opacity: 0.3,
+  },
+  blurCircle2: {
+    position: "absolute",
+    bottom: "-10%",
+    left: "-5%",
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+    backgroundColor: COLORS.blue50,
+    opacity: 0.3,
+  },
+  safeArea: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 32,
+    paddingVertical: 40,
     justifyContent: "space-between",
-  },
-  logoContainer: {
     alignItems: "center",
-    marginTop: 80,
   },
-  logoCircle: {
+  logoSection: {
+    alignItems: "center",
+    marginTop: 60,
+  },
+  logoCard: {
     width: 120,
     height: 120,
-    borderRadius: 60,
-    backgroundColor: COLORS.lightGray,
+    backgroundColor: COLORS.white,
+    borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
     marginBottom: 24,
-    borderWidth: 3,
-    borderColor: COLORS.primary,
   },
-  logoText: {
-    fontSize: 60,
+  logo: {
+    width: 96,
+    height: 96,
+  },
+  brandSection: {
+    alignItems: "center",
   },
   appName: {
-    fontSize: 32,
-    fontWeight: "700",
+    fontSize: 36,
     color: COLORS.primary,
+    letterSpacing: -0.5,
     marginBottom: 8,
   },
   tagline: {
-    fontSize: 16,
-    color: COLORS.text,
-    opacity: 0.7,
+    fontSize: 14,
+    color: COLORS.primary,
+    letterSpacing: 2,
+    textTransform: "uppercase",
   },
-  welcomeSection: {
-    alignItems: "center",
-    marginVertical: 40,
-  },
-  welcomeTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: COLORS.text,
-    marginBottom: 12,
-  },
-  welcomeSubtitle: {
-    fontSize: 16,
-    color: COLORS.text,
-    opacity: 0.7,
-    textAlign: "center",
-    lineHeight: 24,
-  },
-  buttonContainer: {
+  buttonSection: {
+    width: "100%",
     gap: 16,
-    marginBottom: 40,
+    marginTop: 40,
   },
   signInButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  signInButtonText: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  joinButton: {
     backgroundColor: COLORS.white,
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: 18,
+    borderRadius: 9999,
     alignItems: "center",
     borderWidth: 2,
     borderColor: COLORS.primary,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  joinButtonText: {
+  signInText: {
     color: COLORS.primary,
-    fontSize: 18,
-    fontWeight: "600",
+    fontSize: 16,
+  },
+  joinButton: {
+    borderRadius: 9999,
+    overflow: "hidden",
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  joinGradient: {
+    paddingVertical: 18,
+    alignItems: "center",
+  },
+  joinText: {
+    color: COLORS.white,
+    fontSize: 16,
   },
   footer: {
-    alignItems: "center",
-    marginBottom: 24,
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
   footerText: {
     fontSize: 12,
-    color: COLORS.text,
-    opacity: 0.5,
+    color: COLORS.textLight,
     textAlign: "center",
     lineHeight: 18,
+  },
+  footerLink: {
+    color: COLORS.primary,
+    fontWeight: "600",
+    textDecorationLine: "underline",
   },
 });
