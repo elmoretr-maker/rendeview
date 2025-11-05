@@ -1,10 +1,61 @@
 import React, { useCallback, useState } from "react";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Alert, Platform } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
+
+const COLORS = {
+  primary: "#7c3aed",
+  teal: "#00BFA6",
+  white: "#FFFFFF",
+  gray50: "#F9F9F9",
+  gray600: "#6B7280",
+  text: "#2C3E50",
+};
+
+const STYLES = {
+  card: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  button: {
+    backgroundColor: COLORS.teal,
+    borderRadius: 10,
+    padding: 16,
+    alignItems: "center",
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.teal,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  buttonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+};
 
 function ConsentContent() {
   const router = useRouter();
@@ -59,7 +110,7 @@ function ConsentContent() {
     <View
       style={{
         flex: 1,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: COLORS.gray50,
         paddingTop: insets.top,
         paddingHorizontal: 24,
         justifyContent: "center",
@@ -81,12 +132,12 @@ function ConsentContent() {
             style={{
               height: 6,
               width: progressPct,
-              backgroundColor: "#5B3BAF",
+              backgroundColor: COLORS.primary,
               borderRadius: 999,
             }}
           />
         </View>
-        <Text style={{ marginTop: 6, color: "#2C3E50", opacity: 0.7 }}>
+        <Text style={{ marginTop: 6, color: COLORS.text, opacity: 0.7 }}>
           Step {stepIndex} of {totalSteps}
         </Text>
       </View>
@@ -102,60 +153,55 @@ function ConsentContent() {
           alignItems: "center",
         }}
       >
-        <Ionicons name="arrow-back" size={24} color="#6B7280" />
-        <Text style={{ marginLeft: 8, color: "#6B7280", fontSize: 16 }}>Back</Text>
+        <Ionicons name="arrow-back" size={24} color={COLORS.gray600} />
+        <Text style={{ marginLeft: 8, color: COLORS.gray600, fontSize: 16 }}>Back</Text>
       </TouchableOpacity>
 
-      <Text style={{ fontSize: 22, fontWeight: "700", marginBottom: 12 }}>
-        Data Consent
-      </Text>
-      <Text style={{ color: "#6B6B6B", marginBottom: 24 }}>
-        We use your location and interests to ensure perfect matches and
-        reliable scheduling. By consenting, you unlock all features for a
-        superior dating experience.
-      </Text>
+      {/* Card Container */}
+      <View style={STYLES.card}>
+        <Text style={{ fontSize: 22, fontWeight: "700", marginBottom: 12, color: COLORS.text }}>
+          Data Consent
+        </Text>
+        <Text style={{ color: COLORS.gray600, marginBottom: 24, lineHeight: 22 }}>
+          We use your location and interests to ensure perfect matches and
+          reliable scheduling. By consenting, you unlock all features for a
+          superior dating experience.
+        </Text>
 
-      <TouchableOpacity
-        onPress={accept}
-        disabled={saving}
-        style={{
-          backgroundColor: "#00BFA6",
-          paddingVertical: 14,
-          borderRadius: 12,
-          marginBottom: 12,
-          opacity: saving ? 0.6 : 1,
-        }}
-      >
-        <Text
+        <TouchableOpacity
+          onPress={accept}
+          disabled={saving}
+          style={[
+            STYLES.button,
+            { marginBottom: 12 },
+            saving && { opacity: 0.6 }
+          ]}
+        >
+          <Text style={STYLES.buttonText}>
+            {saving ? "Saving..." : "Accept & Continue"}
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          onPress={decline}
           style={{
-            textAlign: "center",
-            color: "#FFFFFF",
-            fontWeight: "600",
-            fontSize: 16,
+            backgroundColor: "#F3F4F6",
+            paddingVertical: 14,
+            borderRadius: 12,
           }}
         >
-          {saving ? "Saving..." : "Accept & Continue"}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={decline}
-        style={{
-          backgroundColor: "#F3F4F6",
-          paddingVertical: 14,
-          borderRadius: 12,
-        }}
-      >
-        <Text
-          style={{
-            textAlign: "center",
-            color: "#111827",
-            fontWeight: "600",
-            fontSize: 16,
-          }}
-        >
-          Decline
-        </Text>
-      </TouchableOpacity>
+          <Text
+            style={{
+              textAlign: "center",
+              color: "#111827",
+              fontWeight: "600",
+              fontSize: 16,
+            }}
+          >
+            Decline
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }

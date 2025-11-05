@@ -7,17 +7,62 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 const COLORS = {
-  primary: "#5B3BAF",
+  primary: "#7c3aed",
   text: "#2C3E50",
   lightGray: "#F5F5F5",
   white: "#FFFFFF",
   accent: "#00BFA6",
+  gray50: "#F9F9F9",
+  gray600: "#6B7280",
+};
+
+const STYLES = {
+  card: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  button: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    padding: 14,
+    alignItems: "center",
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  buttonText: {
+    color: COLORS.white,
+    fontSize: 15,
+    fontWeight: "600",
+  },
 };
 
 const TIERS = [
@@ -460,14 +505,14 @@ export default function SubscriptionScreen() {
           return (
             <View
               key={t.key}
-              style={{
-                backgroundColor: isCurrent ? "#F9F5FF" : COLORS.white,
-                padding: 16,
-                borderRadius: 12,
-                marginBottom: 12,
-                borderWidth: 1,
-                borderColor: isCurrent ? COLORS.primary : "#E5E7EB",
-              }}
+              style={[
+                STYLES.card,
+                {
+                  backgroundColor: isCurrent ? "#F3E8FF" : COLORS.white,
+                  borderWidth: 2,
+                  borderColor: isCurrent ? COLORS.primary : "#E5E7EB",
+                },
+              ]}
             >
               <View
                 style={{
@@ -537,21 +582,12 @@ export default function SubscriptionScreen() {
                 <TouchableOpacity
                   onPress={() => isDowngrade ? downgradeTier(t.key) : upgradeTier(t.key)}
                   disabled={loading}
-                  style={{
-                    backgroundColor: COLORS.primary,
-                    paddingVertical: 10,
-                    borderRadius: 8,
-                    opacity: loading ? 0.5 : 1,
-                  }}
+                  style={[
+                    STYLES.button,
+                    loading && { opacity: 0.5 },
+                  ]}
                 >
-                  <Text
-                    style={{
-                      color: COLORS.white,
-                      textAlign: "center",
-                      fontWeight: "700",
-                      fontSize: 14,
-                    }}
-                  >
+                  <Text style={STYLES.buttonText}>
                     {loading
                       ? "Please wait..."
                       : isDowngrade

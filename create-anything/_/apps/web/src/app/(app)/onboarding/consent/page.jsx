@@ -2,6 +2,18 @@ import React, { useCallback, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Box,
+  Button,
+  Card,
+  CardBody,
+  Container,
+  Heading,
+  IconButton,
+  Progress,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 
 function ConsentContent() {
@@ -41,56 +53,72 @@ function ConsentContent() {
   }, [navigate, returnTo]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ backgroundColor: "#FFFFFF" }}>
+    <Box minH="100vh" bg="gray.50" position="relative">
       {/* Back Button */}
-      <div className="absolute top-8 left-6">
-        <button
+      <Box position="absolute" top={8} left={6}>
+        <IconButton
+          icon={<ArrowLeft size={20} />}
+          aria-label="Back to welcome"
+          variant="ghost"
           onClick={() => navigate("/onboarding/welcome")}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <ArrowLeft size={20} />
-          <span className="font-medium">Back</span>
-        </button>
-      </div>
+        />
+      </Box>
 
       {/* Progress bar */}
-      <div className="absolute top-8 left-6 right-6 max-w-2xl mx-auto">
-        <div className="h-1.5 bg-gray-200 rounded-full mt-12">
-          <div
-            className="h-1.5 rounded-full"
-            style={{ backgroundColor: "#5B3BAF", width: progressPct }}
+      <Container maxW="2xl" pt={20} px={6}>
+        <Box mb={8}>
+          <Progress 
+            value={(stepIndex / totalSteps) * 100} 
+            colorScheme="purple" 
+            size="sm" 
+            borderRadius="full"
+            mb={2}
           />
-        </div>
-        <p className="text-sm mt-2 text-gray-600">
-          Step {stepIndex} of {totalSteps}
-        </p>
-      </div>
+          <Text fontSize="sm" color="gray.600">
+            Step {stepIndex} of {totalSteps}
+          </Text>
+        </Box>
+      </Container>
 
-      <div className="max-w-md w-full">
-        <h1 className="text-2xl font-bold mb-3">Data Consent</h1>
-        <p className="text-gray-600 mb-6">
-          We use your location and interests to ensure perfect matches and reliable scheduling. 
-          By consenting, you unlock all features for a superior dating experience.
-        </p>
+      {/* Main Content */}
+      <Container maxW="md" py={16}>
+        <Card>
+          <CardBody>
+            <VStack spacing={6} align="stretch">
+              <Box>
+                <Heading size="lg" mb={3}>Data Consent</Heading>
+                <Text color="gray.600">
+                  We use your location and interests to ensure perfect matches and reliable scheduling. 
+                  By consenting, you unlock all features for a superior dating experience.
+                </Text>
+              </Box>
 
-        <button
-          onClick={accept}
-          disabled={saving}
-          className="w-full py-3.5 rounded-xl text-white font-semibold text-base mb-3 disabled:opacity-60"
-          style={{ backgroundColor: "#00BFA6" }}
-        >
-          {saving ? "Saving..." : "Accept & Continue"}
-        </button>
-        
-        <button
-          onClick={decline}
-          className="w-full py-3.5 rounded-xl font-semibold text-base"
-          style={{ backgroundColor: "#F3F4F6", color: "#111827" }}
-        >
-          Decline
-        </button>
-      </div>
-    </div>
+              <VStack spacing={3}>
+                <Button
+                  colorScheme="teal"
+                  size="lg"
+                  width="full"
+                  onClick={accept}
+                  isLoading={saving}
+                  loadingText="Saving..."
+                >
+                  Accept & Continue
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  width="full"
+                  onClick={decline}
+                >
+                  Decline
+                </Button>
+              </VStack>
+            </VStack>
+          </CardBody>
+        </Card>
+      </Container>
+    </Box>
   );
 }
 
