@@ -332,8 +332,8 @@ function ConsolidatedProfileOnboardingContent() {
             <IconButton
               icon={<ArrowLeft />}
               variant="ghost"
-              onClick={() => navigate(-1)}
-              aria-label="Go back"
+              onClick={() => navigate("/onboarding/membership")}
+              aria-label="Back to membership"
             />
             <Box flex={1}>
               <Heading size="md" color="gray.800">Complete Your Profile</Heading>
