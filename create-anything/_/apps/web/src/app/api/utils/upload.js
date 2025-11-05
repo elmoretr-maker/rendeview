@@ -1,9 +1,11 @@
 import { ObjectStorageService } from '../../../../server/objectStorage.js';
+import { ObjectPermission } from '../../../../server/objectAcl.ts';
 
 async function upload({
   url,
   buffer,
-  base64
+  base64,
+  userId = 'system' // Default to 'system' for admin uploads
 }) {
   // Get presigned upload URL directly from ObjectStorageService
   const objectStorageService = new ObjectStorageService();
@@ -61,6 +63,19 @@ async function upload({
   // Remove bucket name (first 2 parts: '' and bucket name)
   const relativePath = pathParts.slice(2).join('/');
   const objectPath = `/objects/${relativePath}`;
+  
+  // Set ACL policy to make the uploaded image publicly readable
+  try {
+    const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+    const aclPolicy = {
+      owner: userId,
+      visibility: 'public'
+    };
+    await objectStorageService.trySetObjectEntityAclPolicy(objectPath, aclPolicy);
+  } catch (error) {
+    console.error('Failed to set ACL policy for uploaded image:', error);
+    // Continue even if ACL setting fails - the image is still uploaded
+  }
   
   return {
     url: objectPath,
