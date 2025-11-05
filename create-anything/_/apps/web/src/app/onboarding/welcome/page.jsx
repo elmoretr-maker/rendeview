@@ -2,7 +2,6 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { CheckCircle, Shield, Heart, Users } from "lucide-react";
 import logoImage from "@/assets/logo-centered.png";
-import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import {
   Box,
   Container,
@@ -14,7 +13,7 @@ import {
   Image
 } from "@chakra-ui/react";
 
-function WelcomeContent() {
+export default function Welcome() {
   const navigate = useNavigate();
 
   const valueProps = [
@@ -116,13 +115,5 @@ function WelcomeContent() {
         </VStack>
       </Container>
     </Box>
-  );
-}
-
-export default function Welcome() {
-  return (
-    <OnboardingGuard allowUnauthenticated={true}>
-      <WelcomeContent />
-    </OnboardingGuard>
   );
 }
