@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import AvailabilityGrid, { availabilityGridToTypical, typicalToAvailabilityGrid } from "@/components/AvailabilityGrid";
+import LocationSettings from "@/components/LocationSettings";
 import { Trash2, Upload, Crown, Image as ImageIcon, Video as VideoIcon } from "lucide-react";
 import { getTierLimits, getRemainingPhotoSlots, getRemainingVideoSlots, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
@@ -44,6 +45,9 @@ function ProfileContent() {
   const [primaryPhoto, setPrimaryPhoto] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
   const [membershipTier, setMembershipTier] = useState(MEMBERSHIP_TIERS.FREE);
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+  const [maxDistance, setMaxDistance] = useState(100);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -73,6 +77,9 @@ function ProfileContent() {
         setMedia(m);
         const vid = m.find((x) => x.type === "video");
         setVideoUrl(vid?.url || null);
+        setLatitude(u.latitude ?? null);
+        setLongitude(u.longitude ?? null);
+        setMaxDistance(u.max_distance ?? 100);
       } catch (e) {
         console.error(e);
         setError("Failed to fetch profile");
@@ -156,6 +163,28 @@ function ProfileContent() {
       toast.error("Could not sign out");
     }
   }, [navigate]);
+
+  const handleLocationSave = useCallback(async (locationData) => {
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(locationData),
+      });
+      if (res.status === 401) {
+        setError("AUTH_401");
+        toast.error("Session expired. Please sign in.");
+        throw new Error("Unauthorized");
+      }
+      if (!res.ok) throw new Error("Failed to save location");
+      setLatitude(locationData.latitude);
+      setLongitude(locationData.longitude);
+      setMaxDistance(locationData.max_distance);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }, []);
 
   const selectPrimary = useCallback(async (url) => {
     try {
@@ -531,6 +560,13 @@ function ProfileContent() {
               />
             </CardBody>
           </Card>
+
+          <LocationSettings
+            initialLatitude={latitude}
+            initialLongitude={longitude}
+            initialMaxDistance={maxDistance}
+            onSave={handleLocationSave}
+          />
 
           <FormControl display="flex" alignItems="center" justifyContent="space-between" py={2}>
             <FormLabel mb={0} color="gray.800">Immediate Availability</FormLabel>
