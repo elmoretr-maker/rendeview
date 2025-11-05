@@ -6,7 +6,7 @@ export async function POST(request) {
     const session = await auth();
     if (!session?.user?.id) return Response.json({ error: "Unauthorized" }, { status: 401 });
     const uid = session.user.id;
-    const { proposalId, action, substituteNote } = await request.json();
+    const { proposalId, action, counterDateTime } = await request.json();
     if (!proposalId || !action) return Response.json({ error: "Invalid request" }, { status: 400 });
 
     const proposals = await sql`SELECT sp.*, m.user_a_id, m.user_b_id FROM schedule_proposals sp JOIN matches m ON m.id = sp.match_id WHERE sp.id = ${proposalId}`;
@@ -21,11 +21,32 @@ export async function POST(request) {
     if (action === "substitute") newStatus = "substituted";
     if (!newStatus) return Response.json({ error: "Invalid action" }, { status: 400 });
 
+    // For counter-proposals, decline the original and create a new proposal
+    if (action === "substitute" && counterDateTime?.start && counterDateTime?.end) {
+      // Decline the original proposal
+      await sql`
+        UPDATE schedule_proposals
+        SET status = 'declined'
+        WHERE id = ${proposalId}`;
+
+      // Create new counter-proposal from the responder
+      const [newProposal] = await sql`
+        INSERT INTO schedule_proposals (match_id, proposer_id, proposed_start, proposed_end, status)
+        VALUES (${p.match_id}, ${uid}, ${counterDateTime.start}, ${counterDateTime.end}, 'pending')
+        RETURNING id, match_id, proposer_id, proposed_start, proposed_end, status, created_at`;
+
+      return Response.json({ 
+        proposal: newProposal,
+        message: "Counter-proposal sent successfully"
+      });
+    }
+
+    // For accept/decline, just update the original proposal
     const [row] = await sql`
       UPDATE schedule_proposals
-      SET status = ${newStatus}, substitute_note = ${action === 'substitute' ? substituteNote ?? null : null}
+      SET status = ${newStatus}
       WHERE id = ${proposalId}
-      RETURNING id, match_id, proposer_id, proposed_start, proposed_end, status, substitute_note, created_at`;
+      RETURNING id, match_id, proposer_id, proposed_start, proposed_end, status, created_at`;
 
     return Response.json({ proposal: row });
   } catch (err) {
