@@ -1,5 +1,13 @@
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router";
+import {
+  Box,
+  Container,
+  VStack,
+  Heading,
+  Text,
+  Button
+} from "@chakra-ui/react";
 
 export default function ConsentRequired() {
   const navigate = useNavigate();
@@ -8,20 +16,25 @@ export default function ConsentRequired() {
   const returnTo = searchParams.get("returnTo") || "/discovery";
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ backgroundColor: "#FFFFFF" }}>
-      <div className="max-w-md w-full">
-        <h1 className="text-2xl font-bold mb-3">Consent Required</h1>
-        <p className="text-gray-600 mb-6">
-          You must accept data consent to use the app features.
-        </p>
-        <button
-          onClick={() => navigate(`/onboarding/consent?returnTo=${encodeURIComponent(returnTo)}`, { replace: true })}
-          className="w-full py-3.5 rounded-xl text-white font-semibold text-base"
-          style={{ backgroundColor: "#6855FF" }}
-        >
-          Return to Consent
-        </button>
-      </div>
-    </div>
+    <Box minH="100vh" display="flex" flexDirection="column" alignItems="center" justifyContent="center" px={6} bg="white">
+      <Container maxW="md">
+        <VStack spacing={6} align="start">
+          <Heading size="xl" color="gray.800">Consent Required</Heading>
+          <Text color="gray.600">
+            You must accept data consent to use the app features.
+          </Text>
+          <Button
+            onClick={() => navigate(`/onboarding/consent?returnTo=${encodeURIComponent(returnTo)}`, { replace: true })}
+            w="full"
+            py={6}
+            borderRadius="xl"
+            colorScheme="purple"
+            fontSize="md"
+          >
+            Return to Consent
+          </Button>
+        </VStack>
+      </Container>
+    </Box>
   );
 }

@@ -1,18 +1,18 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router";
 import { CheckCircle, Shield, Heart, Users } from "lucide-react";
 import logoImage from "@/assets/logo-centered.png";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  text: "#2C3E50",
-  lightGray: "#F3F4F6",
-  bg: "#F9F9F9",
-  white: "#FFFFFF",
-  error: "#E74C3C",
-};
+import {
+  Box,
+  Container,
+  VStack,
+  HStack,
+  Heading,
+  Text,
+  Button,
+  Image
+} from "@chakra-ui/react";
 
 function WelcomeContent() {
   const navigate = useNavigate();
@@ -45,67 +45,77 @@ function WelcomeContent() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.bg }}>
-      <div className="max-w-4xl mx-auto w-full px-8 py-12 flex-1">
-        {/* Header/Title Section */}
-        <div className="text-center mb-12">
-          <img
-            src={logoImage}
-            alt="Rende-View Logo"
-            className="w-16 h-16 mx-auto mb-3 object-contain logo-image"
-            style={{ width: '48px', height: '48px' }}
-          />
-          <h2 className="text-3xl font-playfair font-bold mb-3" style={{ color: COLORS.primary }}>
-            Date Smarter, Not Harder
-          </h2>
-          <p className="text-lg opacity-80" style={{ color: COLORS.text }}>
-            No Catfishing. Know who they are before you meet. Your time is valuable—only pay for connections that matter.
-          </p>
-        </div>
+    <Box minH="100vh" display="flex" flexDirection="column" bg="gray.50">
+      <Container maxW="4xl" px={8} py={12} flex={1}>
+        <VStack spacing={12} mb={12}>
+          <VStack textAlign="center" spacing={3}>
+            <Image
+              src={logoImage}
+              alt="Rende-View Logo"
+              w="12"
+              h="12"
+              objectFit="contain"
+            />
+            <Heading
+              size="2xl"
+              fontFamily="'Playfair Display', serif"
+              fontWeight="bold"
+              color="purple.600"
+            >
+              Date Smarter, Not Harder
+            </Heading>
+            <Text fontSize="lg" opacity={0.8} color="gray.700">
+              No Catfishing. Know who they are before you meet. Your time is valuable—only pay for connections that matter.
+            </Text>
+          </VStack>
 
-        {/* Value Propositions Section */}
-        <div className="space-y-6 mb-12">
-          {valueProps.map((prop, index) => (
-            <div key={index} className="flex items-start">
-              <prop.icon className="w-7 h-7 mr-4 mt-1 flex-shrink-0" style={{ color: COLORS.primary }} />
-              <div>
-                <h3 className="font-semibold text-base mb-1" style={{ color: COLORS.text }}>
-                  {prop.title}
-                </h3>
-                <p className="text-sm opacity-70" style={{ color: COLORS.text }}>
-                  {prop.description}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+          <VStack spacing={6} w="full" mb={12}>
+            {valueProps.map((prop, index) => (
+              <HStack key={index} align="start" spacing={4} w="full">
+                <Box as={prop.icon} w={7} h={7} flexShrink={0} color="purple.600" />
+                <VStack align="start" spacing={1} flex={1}>
+                  <Heading size="md" fontWeight="semibold" color="gray.700">
+                    {prop.title}
+                  </Heading>
+                  <Text fontSize="sm" opacity={0.7} color="gray.700">
+                    {prop.description}
+                  </Text>
+                </VStack>
+              </HStack>
+            ))}
+          </VStack>
 
-        {/* Buttons Section */}
-        <div className="text-center space-y-4 mb-6">
-          <button
-            onClick={() => navigate("/onboarding/consent")}
-            className="w-full px-10 py-4 rounded-full text-white font-semibold text-lg shadow-lg"
-            style={{ backgroundColor: COLORS.primary }}
-          >
-            Get Started
-          </button>
-          <button
-            onClick={() => navigate("/account/signin")}
-            className="text-sm font-semibold"
-            style={{ color: COLORS.text }}
-          >
-            I Already Have an Account
-          </button>
-        </div>
+          <VStack spacing={4} textAlign="center" mb={6}>
+            <Button
+              onClick={() => navigate("/onboarding/consent")}
+              px={10}
+              py={6}
+              borderRadius="full"
+              colorScheme="purple"
+              fontSize="lg"
+              shadow="lg"
+            >
+              Get Started
+            </Button>
+            <Button
+              onClick={() => navigate("/account/signin")}
+              variant="link"
+              fontSize="sm"
+              fontWeight="semibold"
+              color="purple.600"
+            >
+              I Already Have an Account
+            </Button>
+          </VStack>
 
-        {/* Footer/Legal Text */}
-        <p className="text-xs text-center opacity-60" style={{ color: COLORS.text }}>
-          By continuing, you agree to our{" "}
-          <span style={{ color: COLORS.primary }} className="underline">Terms of Service</span> and{" "}
-          <span style={{ color: COLORS.primary }} className="underline">Privacy Policy</span>.
-        </p>
-      </div>
-    </div>
+          <Text fontSize="xs" textAlign="center" opacity={0.6} color="gray.700">
+            By continuing, you agree to our{" "}
+            <Text as="span" color="purple.600" textDecoration="underline" cursor="pointer">Terms of Service</Text> and{" "}
+            <Text as="span" color="purple.600" textDecoration="underline" cursor="pointer">Privacy Policy</Text>.
+          </Text>
+        </VStack>
+      </Container>
+    </Box>
   );
 }
 

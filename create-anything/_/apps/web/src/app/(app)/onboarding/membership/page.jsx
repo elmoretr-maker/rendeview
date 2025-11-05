@@ -4,14 +4,18 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { TIER_LIMITS, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  text: "#2C3E50",
-  lightGray: "#F5F5F5",
-  white: "#FFFFFF",
-  accent: "#00BFA6",
-};
+import {
+  Box,
+  Container,
+  VStack,
+  HStack,
+  Heading,
+  Text,
+  Button,
+  Progress,
+  Card,
+  CardBody
+} from "@chakra-ui/react";
 
 const TIERS = [
   {
@@ -69,7 +73,7 @@ function MembershipScreenContent() {
 
   const totalSteps = 4;
   const stepIndex = 3;
-  const progressPct = `${(stepIndex / totalSteps) * 100}%`;
+  const progressPct = (stepIndex / totalSteps) * 100;
 
   useEffect(() => {
     let mounted = true;
@@ -135,107 +139,112 @@ function MembershipScreenContent() {
   );
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLORS.white }}>
-      <div className="max-w-2xl mx-auto px-6 py-8">
-        {/* Back Button */}
-        <button
+    <Box minH="100vh" bg="white">
+      <Container maxW="2xl" px={6} py={8}>
+        <Button
           onClick={() => navigate("/onboarding/consent")}
-          className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          variant="ghost"
+          leftIcon={<ArrowLeft size={20} />}
+          mb={4}
+          color="gray.600"
+          _hover={{ color: "gray.900" }}
         >
-          <ArrowLeft size={20} />
-          <span className="font-medium">Back</span>
-        </button>
+          Back
+        </Button>
 
-        {/* Progress bar */}
-        <div className="mb-6">
-          <div className="h-1.5 bg-gray-200 rounded-full">
-            <div
-              className="h-1.5 rounded-full"
-              style={{ backgroundColor: COLORS.primary, width: progressPct }}
-            />
-          </div>
-          <p className="text-sm mt-2 opacity-70" style={{ color: COLORS.text }}>
+        <Box mb={6}>
+          <Progress
+            value={progressPct}
+            size="sm"
+            borderRadius="full"
+            colorScheme="purple"
+            mb={2}
+          />
+          <Text fontSize="sm" opacity={0.7} color="gray.700">
             Step {stepIndex} of {totalSteps}
-          </p>
-        </div>
+          </Text>
+        </Box>
 
-        <h1 className="text-3xl font-bold mb-2" style={{ color: COLORS.text }}>
+        <Heading size="2xl" mb={2} color="gray.700">
           Choose your plan
-        </h1>
-        <p className="opacity-70 mb-6" style={{ color: COLORS.text }}>
+        </Heading>
+        <Text opacity={0.7} mb={6} color="gray.700">
           Unlock video chat with a membership. You can upgrade anytime.
-        </p>
+        </Text>
 
-        {TIERS.map((t) => (
-          <div
-            key={t.key}
-            className="border rounded-xl p-4 mb-3"
-            style={{
-              borderColor: "#E5E7EB",
-              backgroundColor: t.highlight ? "#F9F5FF" : COLORS.white,
-            }}
-          >
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-lg font-bold" style={{ color: COLORS.text }}>
-                {t.title}
-              </span>
-              <span className="text-base font-bold" style={{ color: COLORS.primary }}>
-                {t.price}
-              </span>
-            </div>
-            <p className="opacity-80 mb-2" style={{ color: COLORS.text }}>
-              {t.desc}
-            </p>
-            
-            <div className="mb-3 space-y-1 text-sm" style={{ color: COLORS.text }}>
-              <p>• {t.photos} Profile Photos</p>
-              <p>• {t.videos} Video{t.videos !== 1 ? 's' : ''} ({t.videoDuration}s max each)</p>
-              <p>• {t.chatMinutes} Minutes Video Chat</p>
-              {t.maxMeetings !== undefined && t.maxMeetings !== Infinity && (
-                <p className="font-semibold" style={{ color: COLORS.accent }}>
-                  • {t.maxMeetings} Meeting Limit
-                </p>
-              )}
-            </div>
-            
-            <button
-              onClick={() => chooseTier(t.key)}
-              disabled={loading}
-              className="w-full py-3 rounded-lg text-white font-bold disabled:opacity-50"
-              style={{ backgroundColor: COLORS.primary }}
+        <VStack spacing={3} mb={4}>
+          {TIERS.map((t) => (
+            <Card
+              key={t.key}
+              w="full"
+              borderWidth="1px"
+              borderColor="gray.200"
+              borderRadius="xl"
+              bg={t.highlight ? "purple.50" : "white"}
+              shadow={t.highlight ? "md" : "sm"}
             >
-              {loading
-                ? "Please wait..."
-                : t.key === "free"
-                  ? "Continue with Free"
-                  : `Choose ${t.title}`}
-            </button>
-          </div>
-        ))}
+              <CardBody>
+                <HStack justify="space-between" mb={2}>
+                  <Text fontSize="lg" fontWeight="bold" color="gray.700">
+                    {t.title}
+                  </Text>
+                  <Text fontSize="md" fontWeight="bold" color="purple.600">
+                    {t.price}
+                  </Text>
+                </HStack>
+                <Text opacity={0.8} mb={2} color="gray.700">
+                  {t.desc}
+                </Text>
+                
+                <VStack align="start" spacing={1} fontSize="sm" mb={3} color="gray.700">
+                  <Text>• {t.photos} Profile Photos</Text>
+                  <Text>• {t.videos} Video{t.videos !== 1 ? 's' : ''} ({t.videoDuration}s max each)</Text>
+                  <Text>• {t.chatMinutes} Minutes Video Chat</Text>
+                  {t.maxMeetings !== undefined && t.maxMeetings !== Infinity && (
+                    <Text fontWeight="semibold" color="green.500">
+                      • {t.maxMeetings} Meeting Limit
+                    </Text>
+                  )}
+                </VStack>
+                
+                <Button
+                  onClick={() => chooseTier(t.key)}
+                  isDisabled={loading}
+                  isLoading={loading}
+                  w="full"
+                  colorScheme="purple"
+                  size="lg"
+                >
+                  {t.key === "free"
+                    ? "Continue with Free"
+                    : `Choose ${t.title}`}
+                </Button>
+              </CardBody>
+            </Card>
+          ))}
+        </VStack>
 
-        <div className="mt-4 p-4 rounded-xl" style={{ backgroundColor: COLORS.lightGray }}>
-          <h3 className="text-base font-bold mb-2" style={{ color: COLORS.text }}>
+        <Box p={4} borderRadius="xl" bg="gray.100" mt={4}>
+          <Heading size="md" mb={2} color="gray.700">
             Call Extensions
-          </h3>
-          <p className="font-semibold" style={{ color: COLORS.accent }}>
+          </Heading>
+          <Text fontWeight="semibold" color="green.500">
             • $8.00 for 10 minutes
-          </p>
-          <p className="text-sm mt-1 opacity-80" style={{ color: COLORS.text }}>
+          </Text>
+          <Text fontSize="sm" mt={1} opacity={0.8} color="gray.700">
             Extend any video call beyond your tier's limit
-          </p>
-        </div>
+          </Text>
+        </Box>
 
         {pricing?.second_date_cents != null && (
-          <div className="mt-3">
-            <p className="font-bold" style={{ color: COLORS.accent }}>
-              Second Date Fee: ${(pricing.second_date_cents / 100).toFixed(2)} USD
-            </p>
-          </div>
+          <Text fontWeight="bold" color="green.500" mt={3}>
+            Second Date Fee: ${(pricing.second_date_cents / 100).toFixed(2)} USD
+          </Text>
         )}
 
-        {error && <p className="mt-2 text-red-600">{error}</p>}
-      </div>
-    </div>
+        {error && <Text mt={2} color="red.500">{error}</Text>}
+      </Container>
+    </Box>
   );
 }
 
