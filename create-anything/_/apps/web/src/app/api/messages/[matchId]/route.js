@@ -5,6 +5,7 @@ import {
   getFirstEncounterMessageLimit, 
   getPerMatchDailyLimit 
 } from "@/utils/membershipTiers";
+import { containsExternalContact } from "@/utils/safetyFilters";
 
 /**
  * Chat Safety Filter: Detects phone numbers in ANY format
@@ -140,10 +141,10 @@ export async function POST(request, { params: { matchId } }) {
       }, { status: 400 });
     }
 
-    // Chat Safety Filter: Block messages containing phone numbers
-    if (containsPhoneNumber(body)) {
+    // Chat Safety Filter: Block messages containing phone numbers or emails
+    if (containsExternalContact(body)) {
       return Response.json({ 
-        error: "Phone numbers are not allowed in chat. Please keep conversations on the platform for your safety." 
+        error: "For your safety, please do not share external contact info (emails or phone numbers). Keep conversations on the platform." 
       }, { status: 400 });
     }
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Calendar, Clock, Check, X, MessageSquare, ArrowLeft } from "lucide-react";
+import { Calendar, Clock, Check, X, MessageSquare, ArrowLeft, Mail } from "lucide-react";
 import { toast } from "sonner";
 import {
   Box,
@@ -17,8 +17,10 @@ import {
   Badge,
   SimpleGrid,
   Card,
-  CardBody
+  CardBody,
+  Textarea
 } from "@chakra-ui/react";
+import { containsExternalContact } from "@/utils/safetyFilters";
 
 export default function ScheduleProposals() {
   const navigate = useNavigate();
@@ -27,6 +29,8 @@ export default function ScheduleProposals() {
   const [counterDate, setCounterDate] = useState("");
   const [counterTime, setCounterTime] = useState("");
   const [counterDuration, setCounterDuration] = useState(30);
+  const [messageProposalId, setMessageProposalId] = useState(null);
+  const [messageText, setMessageText] = useState("");
 
   // Fetch all schedule proposals
   const { data, isLoading } = useQuery({
@@ -71,6 +75,39 @@ export default function ScheduleProposals() {
     },
     onError: (error) => {
       toast.error(error.message || "Failed to respond");
+    },
+  });
+
+  // Send message mutation
+  const sendMessageMutation = useMutation({
+    mutationFn: async ({ matchId, message }) => {
+      // Security check for external contact info
+      if (containsExternalContact(message)) {
+        throw new Error(
+          "For your safety, please do not share external contact info (emails or phone numbers). Keep scheduling conversations on the platform."
+        );
+      }
+
+      const res = await fetch(`/api/messages/${matchId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: message }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to send message");
+      }
+
+      return res.json();
+    },
+    onSuccess: () => {
+      setMessageProposalId(null);
+      setMessageText("");
+      toast.success("Scheduling message sent!");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to send message");
     },
   });
 
@@ -131,6 +168,7 @@ export default function ScheduleProposals() {
   const ProposalCard = ({ proposal }) => {
     const { date, time } = formatDateTime(proposal.proposed_start);
     const isCounter = counterProposalId === proposal.id;
+    const isMessaging = messageProposalId === proposal.id;
 
     return (
       <Card mb={4} shadow="md">
@@ -198,46 +236,122 @@ export default function ScheduleProposals() {
 
           {!proposal.is_proposer && proposal.status === "pending" && (
             <VStack spacing={3}>
-              {!isCounter ? (
-                <HStack spacing={3} w="full">
-                  <Button
-                    onClick={() =>
-                      respondMutation.mutate({ proposalId: proposal.id, action: "accept" })
-                    }
-                    isLoading={respondMutation.isPending}
-                    flex={1}
-                    colorScheme="pink"
-                    leftIcon={<Check size={20} />}
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setCounterProposalId(proposal.id);
-                      setCounterDate("");
-                      setCounterTime("");
-                      setCounterDuration(30);
-                    }}
-                    flex={1}
-                    variant="outline"
-                    colorScheme="purple"
-                    leftIcon={<MessageSquare size={20} />}
-                  >
-                    Counter
-                  </Button>
-                  <Button
-                    onClick={() =>
-                      respondMutation.mutate({ proposalId: proposal.id, action: "decline" })
-                    }
-                    isLoading={respondMutation.isPending}
-                    flex={1}
-                    variant="outline"
-                    colorScheme="red"
-                    leftIcon={<X size={20} />}
-                  >
-                    Decline
-                  </Button>
-                </HStack>
+              {!isCounter && !isMessaging ? (
+                <>
+                  <HStack spacing={2} w="full">
+                    <Button
+                      onClick={() =>
+                        respondMutation.mutate({ proposalId: proposal.id, action: "accept" })
+                      }
+                      isLoading={respondMutation.isPending}
+                      flex={1}
+                      colorScheme="pink"
+                      leftIcon={<Check size={18} />}
+                      size="md"
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setCounterProposalId(proposal.id);
+                        setCounterDate("");
+                        setCounterTime("");
+                        setCounterDuration(30);
+                        setMessageProposalId(null);
+                      }}
+                      flex={1}
+                      variant="outline"
+                      colorScheme="purple"
+                      leftIcon={<MessageSquare size={18} />}
+                      size="md"
+                    >
+                      Counter
+                    </Button>
+                  </HStack>
+                  <HStack spacing={2} w="full">
+                    <Button
+                      onClick={() => {
+                        setMessageProposalId(proposal.id);
+                        setMessageText("");
+                        setCounterProposalId(null);
+                      }}
+                      flex={1}
+                      variant="outline"
+                      colorScheme="blue"
+                      leftIcon={<Mail size={18} />}
+                      size="md"
+                    >
+                      Message
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        respondMutation.mutate({ proposalId: proposal.id, action: "decline" })
+                      }
+                      isLoading={respondMutation.isPending}
+                      flex={1}
+                      variant="outline"
+                      colorScheme="red"
+                      leftIcon={<X size={18} />}
+                      size="md"
+                    >
+                      Decline
+                    </Button>
+                  </HStack>
+                </>
+              ) : isMessaging ? (
+                <VStack spacing={3} w="full">
+                  <Box w="full">
+                    <Heading size="sm" mb={2} color="gray.800">
+                      Send Scheduling Message
+                    </Heading>
+                    <Text fontSize="xs" color="gray.600" mb={2}>
+                      {200 - messageText.length} characters remaining
+                    </Text>
+                    <Textarea
+                      placeholder="Send a quick note about scheduling... (e.g., 'That time works! Looking forward to our chat.' or 'Can we do evening instead?')"
+                      value={messageText}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 200) {
+                          setMessageText(e.target.value);
+                        }
+                      }}
+                      resize="none"
+                      borderColor="gray.300"
+                      focusBorderColor="blue.500"
+                      rows={3}
+                      maxLength={200}
+                    />
+                    <Text fontSize="xs" color="gray.500" mt={1} fontStyle="italic">
+                      Note: For your safety, phone numbers and emails are not allowed
+                    </Text>
+                  </Box>
+                  <HStack spacing={3} w="full">
+                    <Button
+                      onClick={() => {
+                        setMessageProposalId(null);
+                        setMessageText("");
+                      }}
+                      flex={1}
+                      variant="outline"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        sendMessageMutation.mutate({
+                          matchId: proposal.match_id,
+                          message: messageText,
+                        })
+                      }
+                      isDisabled={!messageText.trim() || sendMessageMutation.isPending}
+                      isLoading={sendMessageMutation.isPending}
+                      flex={1}
+                      colorScheme="blue"
+                    >
+                      Send Message
+                    </Button>
+                  </HStack>
+                </VStack>
               ) : (
                 <VStack spacing={3} w="full">
                   <Box w="full">
