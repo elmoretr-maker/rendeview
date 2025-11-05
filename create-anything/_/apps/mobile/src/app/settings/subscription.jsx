@@ -12,6 +12,12 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
 
 const COLORS = {
   primary: "#7c3aed",
@@ -62,6 +68,7 @@ const STYLES = {
     color: COLORS.white,
     fontSize: 15,
     fontWeight: "600",
+    fontFamily: "Inter_600SemiBold",
   },
 };
 
@@ -117,6 +124,11 @@ export default function SubscriptionScreen() {
   const [error, setError] = useState(null);
   const [scheduledTier, setScheduledTier] = useState(null);
   const [tierChangeAt, setTierChangeAt] = useState(null);
+  const [loaded, errorFont] = useFonts({
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
 
   useEffect(() => {
     let mounted = true;
@@ -324,11 +336,11 @@ export default function SubscriptionScreen() {
             <Ionicons name="arrow-back" size={24} color={COLORS.text} />
           </TouchableOpacity>
           <Ionicons name="diamond" size={28} color={COLORS.primary} />
-          <Text style={{ fontSize: 24, fontWeight: "700", color: COLORS.text }}>
+          <Text style={{ fontSize: 24, fontWeight: "700", color: COLORS.text, fontFamily: "Inter_700Bold" }}>
             Subscription
           </Text>
         </View>
-        <Text style={{ marginLeft: 60, color: COLORS.text, opacity: 0.7 }}>
+        <Text style={{ marginLeft: 60, color: COLORS.text, opacity: 0.7, fontFamily: "Inter_400Regular" }}>
           Manage your membership plan
         </Text>
       </View>
@@ -361,12 +373,13 @@ export default function SubscriptionScreen() {
                     fontWeight: "600",
                     color: COLORS.text,
                     opacity: 0.7,
+                    fontFamily: "Inter_600SemiBold",
                   }}
                 >
                   Current Plan
                 </Text>
                 <Text
-                  style={{ fontSize: 24, fontWeight: "700", color: COLORS.primary }}
+                  style={{ fontSize: 24, fontWeight: "700", color: COLORS.primary, fontFamily: "Inter_700Bold" }}
                 >
                   {currentTierData.title}
                 </Text>
@@ -384,7 +397,7 @@ export default function SubscriptionScreen() {
               >
                 <Ionicons name="checkmark-circle" size={20} color={COLORS.accent} />
                 <Text
-                  style={{ fontWeight: "700", fontSize: 14, color: COLORS.accent }}
+                  style={{ fontWeight: "700", fontSize: 14, color: COLORS.accent, fontFamily: "Inter_700Bold" }}
                 >
                   Active
                 </Text>
@@ -392,19 +405,19 @@ export default function SubscriptionScreen() {
             </View>
 
             <View style={{ marginTop: 8 }}>
-              <Text style={{ color: COLORS.text, marginBottom: 4 }}>
+              <Text style={{ color: COLORS.text, marginBottom: 4, fontFamily: "Inter_400Regular" }}>
                 ✓ {currentTierData.photos} Profile Photos
               </Text>
-              <Text style={{ color: COLORS.text, marginBottom: 4 }}>
+              <Text style={{ color: COLORS.text, marginBottom: 4, fontFamily: "Inter_400Regular" }}>
                 ✓ {currentTierData.videos} Video{currentTierData.videos !== 1 ? "s" : ""} (
                 {currentTierData.videoDuration}s max each)
               </Text>
-              <Text style={{ color: COLORS.text, marginBottom: 4 }}>
+              <Text style={{ color: COLORS.text, marginBottom: 4, fontFamily: "Inter_400Regular" }}>
                 ✓ {currentTierData.chatMinutes} Minutes Video Chat
               </Text>
               {currentTierData.maxMeetings !== undefined &&
                 currentTierData.maxMeetings !== Infinity && (
-                  <Text style={{ color: COLORS.text }}>
+                  <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular" }}>
                     ✓ {currentTierData.maxMeetings} Meeting Limit
                   </Text>
                 )}
@@ -438,10 +451,10 @@ export default function SubscriptionScreen() {
                 <Ionicons name="time-outline" size={24} color="#EA580C" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 16, fontWeight: "700", color: "#EA580C" }}>
+                <Text style={{ fontSize: 16, fontWeight: "700", color: "#EA580C", fontFamily: "Inter_700Bold" }}>
                   Scheduled Downgrade
                 </Text>
-                <Text style={{ fontSize: 13, color: "#9A3412", marginTop: 2 }}>
+                <Text style={{ fontSize: 13, color: "#9A3412", marginTop: 2, fontFamily: "Inter_400Regular" }}>
                   Your plan will change on {new Date(tierChangeAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </Text>
               </View>
@@ -454,14 +467,14 @@ export default function SubscriptionScreen() {
                 marginBottom: 12,
               }}
             >
-              <Text style={{ fontSize: 13, fontWeight: "600", color: "#9A3412", marginBottom: 6 }}>
+              <Text style={{ fontSize: 13, fontWeight: "600", color: "#9A3412", marginBottom: 6, fontFamily: "Inter_600SemiBold" }}>
                 Current: {TIERS.find(t => t.key === currentTier)?.title}
               </Text>
-              <Text style={{ fontSize: 13, fontWeight: "600", color: "#9A3412" }}>
+              <Text style={{ fontSize: 13, fontWeight: "600", color: "#9A3412", fontFamily: "Inter_600SemiBold" }}>
                 Scheduled: {TIERS.find(t => t.key === scheduledTier)?.title}
               </Text>
             </View>
-            <Text style={{ fontSize: 13, color: "#9A3412", lineHeight: 20 }}>
+            <Text style={{ fontSize: 13, color: "#9A3412", lineHeight: 20, fontFamily: "Inter_400Regular" }}>
               You will retain your current {TIERS.find(t => t.key === currentTier)?.title} benefits until {new Date(tierChangeAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
             </Text>
             <Pressable
@@ -478,7 +491,7 @@ export default function SubscriptionScreen() {
                 opacity: loading ? 0.5 : 1,
               }}
             >
-              <Text style={{ textAlign: "center", fontWeight: "700", color: "#EA580C" }}>
+              <Text style={{ textAlign: "center", fontWeight: "700", color: "#EA580C", fontFamily: "Inter_700Bold" }}>
                 {loading ? "Cancelling..." : "Cancel Scheduled Downgrade"}
               </Text>
             </Pressable>
@@ -492,6 +505,7 @@ export default function SubscriptionScreen() {
             fontWeight: "700",
             color: COLORS.text,
             marginBottom: 12,
+            fontFamily: "Inter_700Bold",
           }}
         >
           {currentTier === "free" ? "Upgrade Your Plan" : "Available Plans"}
@@ -523,12 +537,12 @@ export default function SubscriptionScreen() {
                 }}
               >
                 <Text
-                  style={{ fontSize: 18, fontWeight: "700", color: COLORS.text }}
+                  style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, fontFamily: "Inter_700Bold" }}
                 >
                   {t.title}
                 </Text>
                 <Text
-                  style={{ fontSize: 16, fontWeight: "700", color: COLORS.primary }}
+                  style={{ fontSize: 16, fontWeight: "700", color: COLORS.primary, fontFamily: "Inter_700Bold" }}
                 >
                   {t.price}
                 </Text>
@@ -540,24 +554,25 @@ export default function SubscriptionScreen() {
                   opacity: 0.8,
                   marginBottom: 8,
                   fontSize: 14,
+                  fontFamily: "Inter_400Regular",
                 }}
               >
                 {t.desc}
               </Text>
 
               <View style={{ marginBottom: 12 }}>
-                <Text style={{ color: COLORS.text, fontSize: 13, marginBottom: 2 }}>
+                <Text style={{ color: COLORS.text, fontSize: 13, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
                   • {t.photos} Profile Photos
                 </Text>
-                <Text style={{ color: COLORS.text, fontSize: 13, marginBottom: 2 }}>
+                <Text style={{ color: COLORS.text, fontSize: 13, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
                   • {t.videos} Video{t.videos !== 1 ? "s" : ""} ({t.videoDuration}s max
                   each)
                 </Text>
-                <Text style={{ color: COLORS.text, fontSize: 13, marginBottom: 2 }}>
+                <Text style={{ color: COLORS.text, fontSize: 13, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
                   • {t.chatMinutes} Minutes Video Chat
                 </Text>
                 {t.maxMeetings !== undefined && t.maxMeetings !== Infinity && (
-                  <Text style={{ color: COLORS.text, fontSize: 13 }}>
+                  <Text style={{ color: COLORS.text, fontSize: 13, fontFamily: "Inter_400Regular" }}>
                     • {t.maxMeetings} Meeting Limit
                   </Text>
                 )}
@@ -573,7 +588,7 @@ export default function SubscriptionScreen() {
                   }}
                 >
                   <Text
-                    style={{ fontWeight: "700", fontSize: 14, color: COLORS.text }}
+                    style={{ fontWeight: "700", fontSize: 14, color: COLORS.text, fontFamily: "Inter_700Bold" }}
                   >
                     Current Plan
                   </Text>
@@ -612,7 +627,7 @@ export default function SubscriptionScreen() {
           }}
         >
           <Text
-            style={{ fontSize: 16, fontWeight: "700", color: COLORS.text, marginBottom: 8 }}
+            style={{ fontSize: 16, fontWeight: "700", color: COLORS.text, marginBottom: 8, fontFamily: "Inter_700Bold" }}
           >
             Call Extensions
           </Text>
@@ -622,11 +637,12 @@ export default function SubscriptionScreen() {
               color: COLORS.text,
               opacity: 0.7,
               marginBottom: 8,
+              fontFamily: "Inter_400Regular",
             }}
           >
             Extend any video call beyond your tier's limit
           </Text>
-          <Text style={{ fontWeight: "700", color: COLORS.accent }}>
+          <Text style={{ fontWeight: "700", color: COLORS.accent, fontFamily: "Inter_700Bold" }}>
             • $8.00 for 10 minutes
           </Text>
         </View>
@@ -640,7 +656,7 @@ export default function SubscriptionScreen() {
               marginBottom: 16,
             }}
           >
-            <Text style={{ color: "#B91C1C" }}>{error}</Text>
+            <Text style={{ color: "#B91C1C", fontFamily: "Inter_400Regular" }}>{error}</Text>
           </View>
         )}
       </ScrollView>
