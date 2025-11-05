@@ -24,6 +24,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/utils/auth/useAuth";
 import { apiFetch, getAbsoluteUrl } from "@/utils/api/apiFetch";
+import LocationSettings from "@/components/LocationSettings";
 import {
   useFonts,
   Inter_400Regular,
@@ -146,6 +147,11 @@ export default function Profile() {
   const [pets, setPets] = useState("");
   const [showPreferenceModal, setShowPreferenceModal] = useState(null);
   
+  // Location state
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+  const [maxDistance, setMaxDistance] = useState(100);
+  
   // Media state
   const [photos, setPhotos] = useState([]);
   const [videoAsset, setVideoAsset] = useState(null);
@@ -238,6 +244,11 @@ export default function Profile() {
             if (user?.religion) setReligion(user.religion);
             if (user?.children_preference) setChildrenPreference(user.children_preference);
             if (user?.pets) setPets(user.pets);
+            
+            // Load location data
+            setLatitude(user?.latitude ?? null);
+            setLongitude(user?.longitude ?? null);
+            setMaxDistance(user?.max_distance ?? 100);
             
             console.log("[PROFILE TAB] State updated successfully");
           }
@@ -401,6 +412,26 @@ export default function Profile() {
 
   const removeInterest = useCallback((interest) => {
     setInterests((prev) => prev.filter((i) => i !== interest));
+  }, []);
+
+  const handleLocationSave = useCallback(async (locationData) => {
+    try {
+      const res = await apiFetch("/api/profile", {
+        method: "PUT",
+        body: JSON.stringify(locationData),
+      });
+      
+      if (!res.ok) {
+        throw new Error("Failed to save location");
+      }
+      
+      setLatitude(locationData.latitude);
+      setLongitude(locationData.longitude);
+      setMaxDistance(locationData.max_distance);
+    } catch (error) {
+      console.error("Location save error:", error);
+      throw error;
+    }
   }, []);
 
   const onSave = useCallback(async () => {
@@ -1089,6 +1120,15 @@ export default function Profile() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Location Settings */}
+        <LocationSettings
+          initialLatitude={latitude}
+          initialLongitude={longitude}
+          initialMaxDistance={maxDistance}
+          onSave={handleLocationSave}
+          fontLoaded={loaded}
+        />
 
         {/* Complete button */}
         <TouchableOpacity

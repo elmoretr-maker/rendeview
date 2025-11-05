@@ -10,7 +10,9 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "This app needs your location to help you discover matches nearby.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs your location to help you discover matches nearby."
       }
     },
     "android": {
@@ -20,7 +22,9 @@
       },
       "permissions": [
         "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS"
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
       ],
       "package": "xyz.create.CreateExpoEnvironment"
     },
@@ -46,6 +50,13 @@
           "ios": {
             "useFrameworks": "static"
           }
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Rende-View to use your location to discover matches nearby.",
+          "locationWhenInUsePermission": "Allow Rende-View to use your location to discover matches nearby."
         }
       ],
       "expo-video",
