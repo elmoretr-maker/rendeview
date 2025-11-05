@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { Crown, Check, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import AppHeader from "@/components/AppHeader";
 import {
   Alert,
   AlertDescription,
@@ -221,6 +222,7 @@ export default function SubscriptionPage() {
 
   return (
     <Box minH="100vh" bg="gray.50">
+      <AppHeader />
       <Container maxW="4xl" py={8}>
         {/* Header */}
         <VStack spacing={8} align="stretch">

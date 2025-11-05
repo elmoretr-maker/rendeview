@@ -101,9 +101,19 @@ export default function Messages() {
         <Heading size="xl" mb={6} color="gray.800">Messages</Heading>
 
         {matches.length === 0 ? (
-          <Box textAlign="center" py={12}>
-            <Text color="gray.700">No messages yet. Match with someone first!</Text>
-          </Box>
+          <VStack spacing={4} py={12}>
+            <Text color="gray.700" fontSize="lg" textAlign="center">
+              No conversations yet. Visit the Discovery page to start matching and chatting!
+            </Text>
+            <Button
+              onClick={() => navigate("/discovery")}
+              colorScheme="purple"
+              size="lg"
+              shadow="md"
+            >
+              Go to Discovery
+            </Button>
+          </VStack>
         ) : (
           <VStack spacing={3} align="stretch">
             {matches.map((item) => (

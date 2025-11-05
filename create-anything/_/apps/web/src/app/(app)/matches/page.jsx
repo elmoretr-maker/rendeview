@@ -142,9 +142,19 @@ function MatchesContent() {
         </Flex>
 
         {matches.length === 0 ? (
-          <Box textAlign="center" py={12}>
-            <Text color="gray.700">You have no matches yet. Start exploring the Discovery feed!</Text>
-          </Box>
+          <VStack spacing={4} py={12}>
+            <Text color="gray.700" fontSize="lg" textAlign="center">
+              No matches yet. Visit the Discovery page to start swiping and connecting!
+            </Text>
+            <Button
+              onClick={() => navigate("/discovery")}
+              colorScheme="purple"
+              size="lg"
+              shadow="md"
+            >
+              Go to Discovery
+            </Button>
+          </VStack>
         ) : (
           <VStack spacing={3} align="stretch">
             {matches.map((item) => {
