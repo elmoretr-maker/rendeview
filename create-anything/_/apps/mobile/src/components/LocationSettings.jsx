@@ -35,6 +35,21 @@ export default function LocationSettings({
   const [loading, setLoading] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
 
+  useEffect(() => {
+    if (initialLatitude != null) {
+      setLatitude(initialLatitude);
+    }
+    if (initialLongitude != null) {
+      setLongitude(initialLongitude);
+    }
+  }, [initialLatitude, initialLongitude]);
+
+  useEffect(() => {
+    if (initialMaxDistance != null) {
+      setMaxDistance(initialMaxDistance);
+    }
+  }, [initialMaxDistance]);
+
   const hasLocation = latitude != null && longitude != null;
 
   const region = hasLocation

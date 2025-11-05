@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
 import {
   Box,
   VStack,
@@ -17,26 +16,114 @@ import {
   Heading,
   useToast,
 } from '@chakra-ui/react';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
 
 function MapController({ center }) {
-  const map = useMap();
-  
+  const [map, setMap] = useState(null);
+  const [useMapHook, setUseMapHook] = useState(null);
+
   useEffect(() => {
-    if (center) {
-      map.setView(center, map.getZoom());
+    if (typeof window !== 'undefined') {
+      import('react-leaflet').then((reactLeaflet) => {
+        setUseMapHook(() => reactLeaflet.useMap);
+      });
     }
-  }, [center, map]);
+  }, []);
+
+  if (useMapHook) {
+    const MapUpdater = () => {
+      const mapInstance = useMapHook();
+      
+      useEffect(() => {
+        if (mapInstance && center) {
+          mapInstance.setView(center, mapInstance.getZoom());
+        }
+      }, [center, mapInstance]);
+      
+      return null;
+    };
+    
+    return <MapUpdater />;
+  }
   
   return null;
+}
+
+function LocationMap({ center, maxDistance }) {
+  const [MapComponents, setMapComponents] = useState(null);
+  const [L, setL] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      Promise.all([
+        import('react-leaflet'),
+        import('leaflet'),
+        import('leaflet/dist/leaflet.css'),
+      ]).then(([reactLeaflet, leaflet]) => {
+        setMapComponents(reactLeaflet);
+        setL(leaflet.default);
+        
+        delete leaflet.default.Icon.Default.prototype._getIconUrl;
+        leaflet.default.Icon.Default.mergeOptions({
+          iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+          iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+        });
+      });
+    }
+  }, []);
+
+  if (!MapComponents || !L) {
+    return (
+      <Box h="300px" borderRadius="lg" overflow="hidden" borderWidth={2} borderColor="gray.200" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
+        <Text color="gray.500">Loading map...</Text>
+      </Box>
+    );
+  }
+
+  const { MapContainer, TileLayer, Marker, Circle, useMap } = MapComponents;
+
+  function MapCenterUpdater() {
+    const map = useMap();
+    
+    useEffect(() => {
+      if (map && center) {
+        map.setView(center, map.getZoom());
+      }
+    }, [center, map]);
+    
+    return null;
+  }
+
+  return (
+    <Box h="300px" borderRadius="lg" overflow="hidden" borderWidth={2} borderColor="gray.200">
+      <MapContainer
+        center={center}
+        zoom={center[0] === 40.7128 ? 4 : 11}
+        style={{ height: '100%', width: '100%' }}
+        scrollWheelZoom={false}
+      >
+        <MapCenterUpdater />
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        {center[0] !== 40.7128 && (
+          <>
+            <Marker position={center} />
+            <Circle
+              center={center}
+              radius={maxDistance * 1000}
+              pathOptions={{
+                color: '#7c3aed',
+                fillColor: '#7c3aed',
+                fillOpacity: 0.1,
+              }}
+            />
+          </>
+        )}
+      </MapContainer>
+    </Box>
+  );
 }
 
 export default function LocationSettings({ 
@@ -51,6 +138,26 @@ export default function LocationSettings({
   const [maxDistance, setMaxDistance] = useState(initialMaxDistance ?? 100);
   const [loading, setLoading] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (initialLatitude != null) {
+      setLatitude(initialLatitude);
+    }
+    if (initialLongitude != null) {
+      setLongitude(initialLongitude);
+    }
+  }, [initialLatitude, initialLongitude]);
+
+  useEffect(() => {
+    if (initialMaxDistance != null) {
+      setMaxDistance(initialMaxDistance);
+    }
+  }, [initialMaxDistance]);
 
   const center = useMemo(() => {
     if (latitude != null && longitude != null) {
@@ -138,6 +245,16 @@ export default function LocationSettings({
     }
   };
 
+  if (!mounted) {
+    return (
+      <Card shadow="md">
+        <CardBody p={6}>
+          <Text>Loading location settings...</Text>
+        </CardBody>
+      </Card>
+    );
+  }
+
   return (
     <Card shadow="md">
       <CardBody p={6}>
@@ -148,34 +265,7 @@ export default function LocationSettings({
             Set your location to discover matches nearby. Adjust the distance slider to control how far you want to search.
           </Text>
 
-          <Box h="300px" borderRadius="lg" overflow="hidden" borderWidth={2} borderColor="gray.200">
-            <MapContainer
-              center={center}
-              zoom={hasLocation ? 11 : 4}
-              style={{ height: '100%', width: '100%' }}
-              scrollWheelZoom={false}
-            >
-              <MapController center={center} />
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              {hasLocation && (
-                <>
-                  <Marker position={center} />
-                  <Circle
-                    center={center}
-                    radius={maxDistance * 1000}
-                    pathOptions={{
-                      color: '#7c3aed',
-                      fillColor: '#7c3aed',
-                      fillOpacity: 0.1,
-                    }}
-                  />
-                </>
-              )}
-            </MapContainer>
-          </Box>
+          <LocationMap center={center} maxDistance={maxDistance} />
 
           <Button
             onClick={getCurrentLocation}
