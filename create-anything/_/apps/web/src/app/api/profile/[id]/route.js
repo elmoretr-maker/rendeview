@@ -22,10 +22,11 @@ export async function GET(request, { params }) {
       SELECT id, type, url, sort_order FROM profile_media WHERE user_id = ${userId}
       ORDER BY sort_order ASC, id ASC`;
     
-    // Transform media URLs to include /api/objects/ prefix for display
+    // Transform media URLs to include /api prefix for display
+    // URLs in DB are stored as /objects/... so we prepend /api to get /api/objects/...
     const media = mediaRows.map(m => ({
       ...m,
-      url: `/api/objects/${m.url}`
+      url: m.url.startsWith('/objects/') ? `/api${m.url}` : m.url
     }));
 
     return Response.json({ user: rows[0], media });

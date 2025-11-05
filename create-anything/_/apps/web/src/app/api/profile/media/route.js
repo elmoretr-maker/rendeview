@@ -72,9 +72,10 @@ export async function DELETE(request, { params }) {
       });
     }
 
-    // Strip /api/objects/ prefix if present to get the database path
+    // Strip /api prefix if present to get the database path
+    // URLs are displayed as /api/objects/... but stored as /objects/...
     const dbPath = mediaUrl.startsWith('/api/objects/') 
-      ? mediaUrl.replace('/api/objects/', '') 
+      ? mediaUrl.replace('/api', '') 
       : mediaUrl;
 
     // Delete from database
