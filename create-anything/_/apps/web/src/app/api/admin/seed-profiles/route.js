@@ -1,11 +1,59 @@
 import sql from "@/app/api/utils/sql";
 import argon2 from "argon2";
 import { getAuthenticatedUserId } from "@/app/api/utils/auth";
+import upload from "@/app/api/utils/upload";
+import { readFile } from "fs/promises";
+import path from "path";
 
 export async function POST(request) {
   try {
     // Get current user to create likes directed at them
     const currentUserId = await getAuthenticatedUserId(request);
+    
+    // Upload stock images to object storage
+    const femaleImages = [];
+    const maleImages = [];
+    
+    const femaleFilenames = [
+      "professional_young_w_8b78e46f.jpg",
+      "professional_young_w_13c96c2d.jpg",
+      "professional_young_w_05ffd94d.jpg"
+    ];
+    
+    const maleFilenames = [
+      "professional_young_m_a9e144af.jpg",
+      "professional_young_m_85d97fbf.jpg",
+      "professional_young_m_ae594282.jpg"
+    ];
+    
+    // Upload female images
+    for (const filename of femaleFilenames) {
+      try {
+        const filePath = path.join(process.cwd(), "attached_assets/stock_images", filename);
+        const buffer = await readFile(filePath);
+        const result = await upload({ buffer });
+        femaleImages.push(result.url);
+      } catch (err) {
+        console.error(`Failed to upload ${filename}:`, err);
+        // Fallback to placeholder if upload fails
+        femaleImages.push(`https://placehold.co/600x800/E91E63/FFFFFF?text=Photo`);
+      }
+    }
+    
+    // Upload male images
+    for (const filename of maleFilenames) {
+      try {
+        const filePath = path.join(process.cwd(), "attached_assets/stock_images", filename);
+        const buffer = await readFile(filePath);
+        const result = await upload({ buffer });
+        maleImages.push(result.url);
+      } catch (err) {
+        console.error(`Failed to upload ${filename}:`, err);
+        // Fallback to placeholder if upload fails
+        maleImages.push(`https://placehold.co/600x800/2196F3/FFFFFF?text=Photo`);
+      }
+    }
+    
     const profiles = [
       {
         name: "Emma Rodriguez",
@@ -93,13 +141,19 @@ export async function POST(request) {
 
       if (!userId) {
         // Create user with complete profile
-        const primaryPhotoUrl = "https://placehold.co/600x800/" + 
-          (createdUsers.length === 0 ? "5B3BAF" : 
-           createdUsers.length === 1 ? "00BFA6" : 
-           createdUsers.length === 2 ? "E91E63" : 
-           createdUsers.length === 3 ? "FF9800" : 
-           createdUsers.length === 4 ? "2196F3" : "4CAF50") + 
-          "/FFFFFF?text=" + encodeURIComponent(profile.name.split(' ')[0]);
+        // Determine image index based on gender
+        let imageIndex = 0;
+        if (profile.gender === "female") {
+          // Count how many females we've created
+          imageIndex = createdUsers.filter(u => profiles.find(p => p.name === u.name)?.gender === "female").length;
+        } else {
+          // Count how many males we've created
+          imageIndex = createdUsers.filter(u => profiles.find(p => p.name === u.name)?.gender === "male").length;
+        }
+        
+        const primaryPhotoUrl = profile.gender === "female" 
+          ? (femaleImages[imageIndex % femaleImages.length] || "https://placehold.co/600x800/E91E63/FFFFFF?text=Photo")
+          : (maleImages[imageIndex % maleImages.length] || "https://placehold.co/600x800/2196F3/FFFFFF?text=Photo");
         
         const timezone = profile.location.includes("MI") ? "America/Detroit" : "America/New_York";
         
@@ -116,7 +170,10 @@ export async function POST(request) {
             primary_photo_url,
             location,
             latitude,
-            longitude
+            longitude,
+            interests,
+            video_call_available,
+            immediate_available
           )
           VALUES (
             ${profile.name}, 
@@ -136,7 +193,10 @@ export async function POST(request) {
             ${primaryPhotoUrl},
             ${profile.location},
             ${profile.latitude},
-            ${profile.longitude}
+            ${profile.longitude},
+            ${JSON.stringify(profile.interests)}::jsonb,
+            true,
+            false
           )
           RETURNING id`;
         userId = created[0].id;
@@ -146,23 +206,18 @@ export async function POST(request) {
           INSERT INTO auth_accounts ("userId", provider, type, "providerAccountId", password)
           VALUES (${userId}, 'credentials', 'credentials', ${userId}::text, ${hashedPassword})`;
 
-        // Create profile photos (3 photos per user with different colors)
-        const colors = [
-          ["5B3BAF", "FFFFFF"], // Purple
-          ["00BFA6", "FFFFFF"], // Teal
-          ["E91E63", "FFFFFF"], // Pink
-          ["FF9800", "FFFFFF"], // Orange
-          ["2196F3", "FFFFFF"], // Blue
-          ["4CAF50", "FFFFFF"], // Green
-        ];
-        const userColor = colors[createdUsers.length % colors.length];
+        // Create profile photos using uploaded stock images
+        const imagePool = profile.gender === "female" ? femaleImages : maleImages;
+        const photo1 = imagePool[0] || primaryPhotoUrl;
+        const photo2 = imagePool[1] || primaryPhotoUrl;
+        const photo3 = imagePool[2] || primaryPhotoUrl;
         
         await sql`
           INSERT INTO profile_media (user_id, type, url, sort_order)
           VALUES 
-            (${userId}, 'photo', ${"https://placehold.co/600x800/" + userColor[0] + "/" + userColor[1] + "?text=" + encodeURIComponent(profile.name.split(' ')[0])}, 0),
-            (${userId}, 'photo', ${"https://placehold.co/600x800/" + userColor[0] + "/" + userColor[1] + "?text=Photo+2"}, 1),
-            (${userId}, 'photo', ${"https://placehold.co/600x800/" + userColor[0] + "/" + userColor[1] + "?text=Photo+3"}, 2)`;
+            (${userId}, 'photo', ${photo1}, 0),
+            (${userId}, 'photo', ${photo2}, 1),
+            (${userId}, 'photo', ${photo3}, 2)`;
 
         // Create a profile video (using sample video for testing)
         // Note: Using Big Buck Bunny sample video for demonstration
