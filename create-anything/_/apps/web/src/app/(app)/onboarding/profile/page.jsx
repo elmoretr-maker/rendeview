@@ -49,6 +49,7 @@ import { ObjectUploader } from "@/components/ObjectUploader";
 import { getTierLimits, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import AvailabilityGrid, { availabilityGridToTypical, typicalToAvailabilityGrid } from "@/components/AvailabilityGrid";
+import LocationSettings from "@/components/LocationSettings";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -136,6 +137,8 @@ function ConsolidatedProfileOnboardingContent() {
   // Location preferences
   const [location, setLocation] = useState("");
   const [maxDistance, setMaxDistance] = useState(50);
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
   
   // Availability grid
   const [availabilityGrid, setAvailabilityGrid] = useState({});
@@ -181,6 +184,8 @@ function ConsolidatedProfileOnboardingContent() {
     
     if (user.location) setLocation(user.location);
     if (typeof user.max_distance === 'number') setMaxDistance(user.max_distance);
+    if (user.latitude != null) setLatitude(user.latitude);
+    if (user.longitude != null) setLongitude(user.longitude);
     
     if (user.typical_availability) {
       setAvailabilityGrid(typicalToAvailabilityGrid(user.typical_availability));
@@ -309,6 +314,8 @@ function ConsolidatedProfileOnboardingContent() {
           pets: pets || null,
           location: location || null,
           max_distance: maxDistance || null,
+          latitude: latitude,
+          longitude: longitude,
           typical_availability: availabilityGridToTypical(availabilityGrid),
         }),
       });
@@ -604,42 +611,18 @@ function ConsolidatedProfileOnboardingContent() {
             </CardHeader>
             <CardBody>
               <VStack spacing={6} align="stretch">
-                {/* Location & Distance */}
+                {/* Location Settings */}
                 <Box pb={6} borderBottom="1px" borderColor="gray.200">
-                  <FormControl>
-                    <FormLabel fontWeight="semibold" color="gray.700">Location</FormLabel>
-                    <Input
-                      variant="filled"
-                      size="lg"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      placeholder="City, State or Postal Code"
-                      focusBorderColor="brand.500"
-                      _hover={{ bg: "gray.100" }}
-                      mb={6}
-                    />
-                  </FormControl>
-
-                  <FormControl>
-                    <FormLabel fontWeight="semibold" color="gray.700">Maximum Distance: {maxDistance} km</FormLabel>
-                    <Slider
-                      value={maxDistance}
-                      onChange={setMaxDistance}
-                      min={5}
-                      max={100}
-                      step={5}
-                      colorScheme="purple"
-                    >
-                      <SliderTrack>
-                        <SliderFilledTrack />
-                      </SliderTrack>
-                      <SliderThumb boxSize={6} />
-                    </Slider>
-                    <Flex justifyContent="space-between" mt={2}>
-                      <Text fontSize="xs" color="gray.500">5 km</Text>
-                      <Text fontSize="xs" color="gray.500">100 km</Text>
-                    </Flex>
-                  </FormControl>
+                  <LocationSettings
+                    initialLatitude={latitude}
+                    initialLongitude={longitude}
+                    initialMaxDistance={maxDistance}
+                    onSave={(newLatitude, newLongitude, newMaxDistance) => {
+                      setLatitude(newLatitude);
+                      setLongitude(newLongitude);
+                      setMaxDistance(newMaxDistance);
+                    }}
+                  />
                 </Box>
 
                 {/* Availability Grid */}
