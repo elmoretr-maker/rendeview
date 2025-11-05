@@ -41,6 +41,11 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
     );
   }, [userInterests, profile.interests]);
 
+  // Check if user has availability set
+  const hasAvailability = React.useMemo(() => {
+    return profile.typical_availability && Array.isArray(profile.typical_availability) && profile.typical_availability.length > 0;
+  }, [profile.typical_availability]);
+
   const handleDragEnd = (event, info) => {
     if (isLocked) return;
     
@@ -188,6 +193,18 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
                   fontWeight="semibold"
                 >
                   {profile.membership_tier.charAt(0).toUpperCase() + profile.membership_tier.slice(1)}
+                </Badge>
+              )}
+              {hasAvailability && (
+                <Badge 
+                  colorScheme="green"
+                  px={2.5}
+                  py={1}
+                  borderRadius="full"
+                  fontSize="xs"
+                  fontWeight="semibold"
+                >
+                  📅 Availability Set
                 </Badge>
               )}
             </Flex>

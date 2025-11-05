@@ -48,6 +48,7 @@ import {
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { getTierLimits, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
+import AvailabilityGrid, { availabilityGridToTypical, typicalToAvailabilityGrid } from "@/components/AvailabilityGrid";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -135,6 +136,9 @@ function ConsolidatedProfileOnboardingContent() {
   // Location preferences
   const [location, setLocation] = useState("");
   const [maxDistance, setMaxDistance] = useState(50);
+  
+  // Availability grid
+  const [availabilityGrid, setAvailabilityGrid] = useState({});
 
   const totalSteps = 4;
   const stepIndex = 4;
@@ -177,6 +181,10 @@ function ConsolidatedProfileOnboardingContent() {
     
     if (user.location) setLocation(user.location);
     if (typeof user.max_distance === 'number') setMaxDistance(user.max_distance);
+    
+    if (user.typical_availability) {
+      setAvailabilityGrid(typicalToAvailabilityGrid(user.typical_availability));
+    }
   }, [user]);
 
   const handlePhotoUpload = useCallback(async () => {
@@ -301,6 +309,7 @@ function ConsolidatedProfileOnboardingContent() {
           pets: pets || null,
           location: location || null,
           max_distance: maxDistance || null,
+          typical_availability: availabilityGridToTypical(availabilityGrid),
         }),
       });
       if (!res.ok) throw new Error("Failed to save profile");
@@ -630,6 +639,19 @@ function ConsolidatedProfileOnboardingContent() {
                       <Text fontSize="xs" color="gray.500">5 km</Text>
                       <Text fontSize="xs" color="gray.500">100 km</Text>
                     </Flex>
+                  </FormControl>
+                </Box>
+
+                {/* Availability Grid */}
+                <Box pb={6} borderBottom="1px" borderColor="gray.200">
+                  <FormControl>
+                    <FormLabel fontWeight="semibold" color="gray.700">
+                      When are you typically available?
+                    </FormLabel>
+                    <Text fontSize="sm" color="gray.600" mb={4}>
+                      Help others know the best times to schedule video chats with you
+                    </Text>
+                    <AvailabilityGrid value={availabilityGrid} onChange={setAvailabilityGrid} />
                   </FormControl>
                 </Box>
 
