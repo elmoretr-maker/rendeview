@@ -29,6 +29,7 @@ import { useNavigate } from 'react-router';
 import { serializeError } from 'serialize-error';
 import { Toaster } from 'sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 // @ts-ignore
 import { LoadFonts } from 'virtual:load-fonts.jsx';
 import { HotReloadIndicator } from '../__create/HotReload';
@@ -36,6 +37,35 @@ import { useSandboxStore } from '../__create/hmr-sandbox-store';
 import type { Route } from './+types/root';
 import { useDevServerHeartbeat } from '../__create/useDevServerHeartbeat';
 import { SessionTimeoutMonitor } from './components/SessionTimeoutMonitor';
+
+const chakraTheme = extendTheme({
+  colors: {
+    brand: {
+      50: "#f5e6ff",
+      100: "#dab3ff",
+      200: "#bf80ff",
+      300: "#a34dff",
+      400: "#881aff",
+      500: "#7c3aed",
+      600: "#6b32d1",
+      700: "#5a29b5",
+      800: "#4a2199",
+      900: "#39187d",
+    },
+  },
+  fonts: {
+    heading: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`,
+    body: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`,
+  },
+  styles: {
+    global: {
+      body: {
+        bg: "#F9F9F9",
+        color: "#2C3E50",
+      },
+    },
+  },
+});
 
 export const links = () => [];
 
@@ -424,10 +454,12 @@ export default function App() {
 
   return (
     <SessionProvider>
-      <QueryClientProvider client={queryClient}>
-        <SessionTimeoutMonitor />
-        <Outlet />
-      </QueryClientProvider>
+      <ChakraProvider theme={chakraTheme}>
+        <QueryClientProvider client={queryClient}>
+          <SessionTimeoutMonitor />
+          <Outlet />
+        </QueryClientProvider>
+      </ChakraProvider>
     </SessionProvider>
   );
 }
