@@ -41,18 +41,13 @@ export async function POST(request, { params }) {
     `;
 
     // CRITICAL FIX: If this is a photo and the user has no primary_photo_url set, set it now
+    // Using conditional UPDATE for atomicity and efficiency
     if (type === "photo") {
-      const userRows = await sql`
-        SELECT primary_photo_url FROM auth_users WHERE id = ${userId}
+      await sql`
+        UPDATE auth_users 
+        SET primary_photo_url = ${objectPath} 
+        WHERE id = ${userId} AND primary_photo_url IS NULL
       `;
-      
-      if (userRows.length > 0 && !userRows[0].primary_photo_url) {
-        await sql`
-          UPDATE auth_users 
-          SET primary_photo_url = ${objectPath} 
-          WHERE id = ${userId}
-        `;
-      }
     }
 
     return new Response(JSON.stringify({ success: true, objectPath }), {
