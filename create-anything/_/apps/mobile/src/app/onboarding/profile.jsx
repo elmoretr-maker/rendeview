@@ -25,7 +25,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import LocationSettings from "@/components/LocationSettings";
-import { containsPhoneNumber, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
+import { containsExternalContact, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
 import {
   useFonts,
   Inter_400Regular,
@@ -640,7 +640,7 @@ function ConsolidatedProfileOnboardingContent() {
           value={bio}
           onChangeText={(text) => {
             if (text.length > 2000) return;
-            if (containsPhoneNumber(text)) {
+            if (containsExternalContact(text)) {
               Alert.alert("Security Alert", PHONE_NUMBER_SECURITY_MESSAGE);
               return;
             }

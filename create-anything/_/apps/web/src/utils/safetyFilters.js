@@ -113,7 +113,34 @@ export function containsPhoneNumber(text) {
 }
 
 /**
- * Security alert message for phone number detection
+ * Detects email addresses in text
+ * @param {string} text - The text to check
+ * @returns {boolean} - True if email address detected
+ */
+export function containsEmail(text) {
+  if (!text || typeof text !== 'string') return false;
+  
+  // Email pattern: anything @ domain . extension
+  // This catches standard email formats and common variations
+  const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+  
+  // Also check for obfuscated formats like "user at domain dot com"
+  const obfuscatedPattern = /\b\w+\s+(at|@)\s+\w+\s+(dot|\.)\s+\w+\b/i;
+  
+  return emailPattern.test(text) || obfuscatedPattern.test(text);
+}
+
+/**
+ * Detects any external contact information (phone or email)
+ * @param {string} text - The text to check
+ * @returns {boolean} - True if external contact info detected
+ */
+export function containsExternalContact(text) {
+  return containsPhoneNumber(text) || containsEmail(text);
+}
+
+/**
+ * Security alert message for external contact detection
  */
 export const PHONE_NUMBER_SECURITY_MESSAGE = 
-  "Security Alert: For your safety, please do not share phone numbers or external contact info. This chat is designed for quick exchanges to schedule your video date appointment.";
+  "Security Alert: For your safety, please do not share external contact info (emails or phone numbers). This chat is designed for quick exchanges to schedule your video date appointment.";

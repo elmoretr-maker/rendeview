@@ -4,12 +4,14 @@
 This project is a feature-rich dating/matching application providing video calling, messaging, scheduling, and media uploads. It aims to deliver a robust and scalable platform focused on user engagement and seamless communication. The business vision is to capture a significant share of the online dating market by offering a superior user experience and advanced features, driving high user retention and monetization through a tiered membership model. The mobile application is production-ready, transitioning to EAS (Expo Application Services) for deployment with full native functionality. **As of November 2025, the project has achieved 100% aesthetic parity between web and mobile platforms, with consistent Inter font family implementation across all 8 mobile screens.**
 
 ## Recent Changes (November 2025)
-- **Security & Safety Enhancements**: Implemented comprehensive phone number detection across bio and chat message inputs with linguistic bypass protection. System blocks phone numbers in all formats including:
-  - **Numeric formats**: 555-123-4567, (555) 123-4567, +1-555-123-4567
-  - **Spelled-out numbers**: "five five five one two three four five six seven"
-  - **Mixed formats**: "call me at four 555-one-two-three-four"
-  - **Continuous digit blocks**: Detects phone numbers when punctuation is removed
-  - Security alert displays: "For your safety, please do not share phone numbers or external contact info." Bio field now supports 2000 characters with encouraging prompt text to increase profile quality and match success.
+- **Security & Safety Enhancements**: Implemented comprehensive external contact detection across bio and chat message inputs with linguistic bypass protection. System blocks phone numbers and email addresses in all formats including:
+  - **Phone - Numeric formats**: 555-123-4567, (555) 123-4567, +1-555-123-4567
+  - **Phone - Spelled-out numbers**: "five five five one two three four five six seven"
+  - **Phone - Mixed formats**: "call me at four 555-one-two-three-four"
+  - **Phone - Continuous digit blocks**: Detects phone numbers when punctuation is removed
+  - **Email - Standard formats**: user@example.com, name.surname@domain.co.uk
+  - **Email - Obfuscated formats**: "user at domain dot com"
+  - Security alert displays: "For your safety, please do not share external contact info (emails or phone numbers). This chat is designed for quick exchanges to schedule your video date appointment." Bio field now supports 2000 characters with encouraging prompt text to increase profile quality and match success.
 - **Location-Based Discovery Filter**: Complete GPS-based proximity matching system using OpenStreetMap Nominatim API (free, open-source geocoding). Users can search for location by city/address/ZIP or use current GPS location. Discovery filters matches by proximity using Haversine formula. Location setup available in onboarding and profile pages. Completely removed all Google Maps dependencies.
 - **Dynamic Pricing System**: All membership pricing now pulls from Admin Dashboard (`/api/admin/settings`) as single source of truth. Admin pricing changes reflect immediately across web and mobile without redeployment.
 - **Enhanced Admin Dashboard**: Safety Management section now displays flagged user profile photos, membership tiers, and location/timezone alongside existing block counts and account status.
@@ -38,7 +40,7 @@ Key features include:
 - **Membership Model**: A 4-tier system (Free, Casual, Dating, Business) governs media limits, chat durations, and meeting caps, enforced client-side and via API.
 - **Video Calling**: Real-time video call extension system with synchronized timers and integration for paid extensions.
 - **Media Management**: Supports photo uploads and camera-only video recording with tier-based limits.
-- **Authentication & Security**: Global authentication guard, two-step authentication including onboarding completion checks (consent, membership, photos). Security measures include webhook monitoring, idempotency keys, database-backed rate limiting, database constraints, and phone number detection to prevent users from sharing contact information in bios and chat messages.
+- **Authentication & Security**: Global authentication guard, two-step authentication including onboarding completion checks (consent, membership, photos). Security measures include webhook monitoring, idempotency keys, database-backed rate limiting, database constraints, and comprehensive external contact detection to prevent users from sharing phone numbers and email addresses in bios and chat messages.
 - **Chat Monetization**: Hybrid chat monetization with a three-pool message deduction and per-match caps for the Business tier, credit packs available.
 - **Matching System**: Enhanced matching incorporates a comprehensive interests system and a weighted scoring algorithm (v2) for compatibility calculation.
 - **Admin Dashboard**: Features comprehensive user safety management (profile photos, membership tier, location, block count, account status), revenue overview, and dynamic pricing settings for subscription tiers and second date fees. Pricing changes made in the Admin Dashboard immediately propagate to all web and mobile surfaces without requiring redeployment.

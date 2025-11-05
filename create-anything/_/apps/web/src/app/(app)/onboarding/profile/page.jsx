@@ -50,7 +50,7 @@ import { getTierLimits, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import AvailabilityGrid, { availabilityGridToTypical, typicalToAvailabilityGrid } from "@/components/AvailabilityGrid";
 import LocationSettings from "@/components/LocationSettings";
-import { containsPhoneNumber, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
+import { containsExternalContact, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -389,7 +389,7 @@ function ConsolidatedProfileOnboardingContent() {
                     value={bio}
                     onChange={(e) => {
                       const newValue = e.target.value;
-                      if (containsPhoneNumber(newValue)) {
+                      if (containsExternalContact(newValue)) {
                         toast.error(PHONE_NUMBER_SECURITY_MESSAGE);
                         return;
                       }

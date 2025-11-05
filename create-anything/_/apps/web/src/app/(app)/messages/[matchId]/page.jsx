@@ -8,7 +8,7 @@ import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { BuyCreditsModal } from "@/components/BuyCreditsModal";
 import { SmartNudge } from "@/components/SmartNudge";
 import { Video, X, Clock, Crown } from "lucide-react";
-import { containsPhoneNumber, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
+import { containsExternalContact, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
 import {
   Box,
   Button,
@@ -183,7 +183,7 @@ function ChatContent() {
       toast.error("Message exceeds 280 characters. Please keep messages brief and focused on scheduling your video chat!");
       return;
     }
-    if (containsPhoneNumber(trimmed)) {
+    if (containsExternalContact(trimmed)) {
       toast.error(PHONE_NUMBER_SECURITY_MESSAGE);
       return;
     }
