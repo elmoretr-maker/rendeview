@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import KeyboardAvoidingAnimatedView from "@/components/KeyboardAvoidingAnimatedView";
 import { useAuth } from "@/utils/auth/useAuth";
+import { containsPhoneNumber, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
 import {
   useFonts,
   Inter_400Regular,
@@ -101,6 +102,10 @@ export default function Chat() {
     }
     if (text.length > 280) {
       Alert.alert("Message Too Long", "Message exceeds 280 characters. Please keep messages brief and focused on scheduling your video chat!");
+      return;
+    }
+    if (containsPhoneNumber(trimmed)) {
+      Alert.alert("Security Alert", PHONE_NUMBER_SECURITY_MESSAGE);
       return;
     }
     sendMutation.mutate(trimmed);

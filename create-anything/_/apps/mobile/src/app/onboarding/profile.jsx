@@ -25,6 +25,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import LocationSettings from "@/components/LocationSettings";
+import { containsPhoneNumber, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
 import {
   useFonts,
   Inter_400Regular,
@@ -627,19 +628,29 @@ function ConsolidatedProfileOnboardingContent() {
 
         {/* Bio field */}
         <Text style={STYLES.label}>
-          Bio (Optional)
+          Bio
+        </Text>
+        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.7, marginBottom: 8, fontFamily: "Inter_400Regular" }}>
+          Tell us about yourself. The more you share, the more likely you are to find a great match for your profile.
         </Text>
         <TextInput
           style={[STYLES.input, { minHeight: 100, textAlignVertical: "top" }]}
           placeholder="Tell us about yourself..."
           placeholderTextColor="#A0AEC0"
           value={bio}
-          onChangeText={(text) => text.length <= 500 && setBio(text)}
+          onChangeText={(text) => {
+            if (text.length > 2000) return;
+            if (containsPhoneNumber(text)) {
+              Alert.alert("Security Alert", PHONE_NUMBER_SECURITY_MESSAGE);
+              return;
+            }
+            setBio(text);
+          }}
           multiline
           numberOfLines={4}
         />
         <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 16, fontFamily: "Inter_400Regular" }}>
-          {bio.length}/500 characters
+          {bio.length}/2000 characters
         </Text>
 
         {/* Interests field */}

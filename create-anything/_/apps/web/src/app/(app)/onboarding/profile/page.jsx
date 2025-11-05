@@ -50,6 +50,7 @@ import { getTierLimits, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import AvailabilityGrid, { availabilityGridToTypical, typicalToAvailabilityGrid } from "@/components/AvailabilityGrid";
 import LocationSettings from "@/components/LocationSettings";
+import { containsPhoneNumber, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -363,7 +364,7 @@ function ConsolidatedProfileOnboardingContent() {
           <Card>
             <CardHeader>
               <Heading size="lg" color="gray.800">Basic Information</Heading>
-              <Text color="gray.600" mt={2}>Tell us about yourself</Text>
+              <Text color="gray.600" mt={2}>Tell us about yourself. The more you share, the more likely you are to find a great match for your profile.</Text>
             </CardHeader>
             <CardBody>
               <VStack spacing={6} align="stretch">
@@ -386,12 +387,23 @@ function ConsolidatedProfileOnboardingContent() {
                     variant="filled"
                     size="lg"
                     value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    placeholder="Tell us about yourself (optional)"
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      if (containsPhoneNumber(newValue)) {
+                        toast.error(PHONE_NUMBER_SECURITY_MESSAGE);
+                        return;
+                      }
+                      setBio(newValue);
+                    }}
+                    placeholder="Tell us about yourself. The more you share, the more likely you are to find a great match for your profile."
                     rows={4}
+                    maxLength={2000}
                     focusBorderColor="brand.500"
                     _hover={{ bg: "gray.100" }}
                   />
+                  <Text fontSize="sm" color="gray.500" mt={1}>
+                    {bio.length}/2000 characters
+                  </Text>
                 </FormControl>
 
                 <FormControl isRequired>
