@@ -77,41 +77,50 @@ const TIERS = [
     key: "free",
     title: "Free",
     price: "Free",
-    photos: 3,
+    photos: 2,
     videos: 1,
     videoDuration: 15,
     chatMinutes: 5,
     maxMeetings: 3,
+    dailyMessages: 15,
     desc: "Get started with basic features",
   },
   {
     key: "casual",
     title: "Casual",
-    price: "$14.99/mo",
-    photos: 5,
-    videos: 1,
+    price: "$9.99/mo",
+    photos: 6,
+    videos: 3,
     videoDuration: 30,
     chatMinutes: 15,
+    maxMeetings: Infinity,
+    dailyMessages: 24,
     desc: "Expand your profile & chat time",
   },
   {
     key: "dating",
     title: "Dating",
     price: "$29.99/mo",
-    photos: 8,
-    videos: 2,
+    photos: 10,
+    videos: 1,
     videoDuration: 60,
-    chatMinutes: 30,
+    chatMinutes: 25,
+    maxMeetings: Infinity,
+    dailyMessages: 50,
     desc: "Priority matching & longer chats",
   },
   {
     key: "business",
     title: "Business",
     price: "$49.99/mo",
-    photos: 10,
-    videos: 3,
-    videoDuration: 300,
-    chatMinutes: 60,
+    photos: 20,
+    videos: 1,
+    videoDuration: 60,
+    chatMinutes: 45,
+    maxMeetings: Infinity,
+    dailyMessages: 500,
+    perMatchDailyMessages: 50,
+    perMatchDailyMessagesAfterVideo: 75,
     desc: "Maximum exposure & unlimited features",
   },
 ];
@@ -565,15 +574,26 @@ export default function SubscriptionScreen() {
                   • {t.photos} Profile Photos
                 </Text>
                 <Text style={{ color: COLORS.text, fontSize: 13, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
-                  • {t.videos} Video{t.videos !== 1 ? "s" : ""} ({t.videoDuration}s max
-                  each)
+                  • {t.videos} Profile Video{t.videos !== 1 ? "s" : ""} ({t.videoDuration}s max each)
                 </Text>
                 <Text style={{ color: COLORS.text, fontSize: 13, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
-                  • {t.chatMinutes} Minutes Video Chat
+                  • {t.chatMinutes} Min Video Calls
                 </Text>
-                {t.maxMeetings !== undefined && t.maxMeetings !== Infinity && (
+                {t.maxMeetings !== undefined && t.maxMeetings !== Infinity ? (
+                  <Text style={{ color: COLORS.text, fontSize: 13, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
+                    • {t.maxMeetings} Video Meetings/Day
+                  </Text>
+                ) : (
+                  <Text style={{ color: COLORS.text, fontSize: 13, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
+                    • Unlimited Video Meetings
+                  </Text>
+                )}
+                <Text style={{ color: COLORS.text, fontSize: 13, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
+                  • {t.dailyMessages} Messages/Day
+                </Text>
+                {t.perMatchDailyMessages && (
                   <Text style={{ color: COLORS.text, fontSize: 13, fontFamily: "Inter_400Regular" }}>
-                    • {t.maxMeetings} Meeting Limit
+                    • {t.perMatchDailyMessages}/{t.perMatchDailyMessagesAfterVideo || t.perMatchDailyMessages} Messages/Match/Day{t.perMatchDailyMessagesAfterVideo ? ' (after video)' : ''}
                   </Text>
                 )}
               </View>
@@ -617,7 +637,7 @@ export default function SubscriptionScreen() {
           );
         })}
 
-        {/* Call Extensions */}
+        {/* Additional Services & Fees */}
         <View
           style={{
             backgroundColor: COLORS.white,
@@ -627,24 +647,196 @@ export default function SubscriptionScreen() {
           }}
         >
           <Text
-            style={{ fontSize: 16, fontWeight: "700", color: COLORS.text, marginBottom: 8, fontFamily: "Inter_700Bold" }}
+            style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, marginBottom: 12, fontFamily: "Inter_700Bold" }}
           >
-            Call Extensions
+            Additional Services & Fees
           </Text>
+
+          {/* Call Extensions */}
+          <View style={{ marginBottom: 16 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <Text style={{ fontSize: 15, fontWeight: "600", color: COLORS.primary, fontFamily: "Inter_600SemiBold" }}>
+                Video Call Extensions
+              </Text>
+              <View style={{ backgroundColor: "#10B981", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+                <Text style={{ color: "#FFF", fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" }}>$8.00</Text>
+              </View>
+            </View>
+            <Text
+              style={{
+                fontSize: 13,
+                color: COLORS.text,
+                opacity: 0.7,
+                marginBottom: 8,
+                fontFamily: "Inter_400Regular",
+              }}
+            >
+              Running out of time during an important conversation? Extend any video call by 10 minutes for $8.00. Purchase extensions directly during a call when your timer shows less than 1 minute remaining.
+            </Text>
+            <Text style={{ fontSize: 11, color: COLORS.gray600, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
+              • Extensions purchased during active calls
+            </Text>
+            <Text style={{ fontSize: 11, color: COLORS.gray600, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
+              • "Extend Call" button appears at 1 min remaining
+            </Text>
+            <Text style={{ fontSize: 11, color: COLORS.gray600, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
+              • Multiple extensions allowed per call
+            </Text>
+            <Text style={{ fontSize: 11, color: COLORS.gray600, fontFamily: "Inter_400Regular" }}>
+              • Available on all tiers
+            </Text>
+          </View>
+
+          {/* Divider */}
+          <View style={{ height: 1, backgroundColor: "#E5E7EB", marginVertical: 16 }} />
+
+          {/* Message Credits */}
+          <View>
+            <Text style={{ fontSize: 15, fontWeight: "600", color: COLORS.primary, marginBottom: 8, fontFamily: "Inter_600SemiBold" }}>
+              Message Credit Packs
+            </Text>
+            <Text
+              style={{
+                fontSize: 13,
+                color: COLORS.text,
+                opacity: 0.7,
+                marginBottom: 12,
+                fontFamily: "Inter_400Regular",
+              }}
+            >
+              Need more messages beyond your daily limit? Purchase message credits to keep the conversation going. Credits never expire.
+            </Text>
+
+            {/* Credit Packs */}
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
+              <View style={{ flex: 1, borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 8, padding: 10 }}>
+                <Text style={{ fontSize: 10, color: COLORS.gray600, marginBottom: 4, fontFamily: "Inter_400Regular" }}>Small Pack</Text>
+                <Text style={{ fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" }}>10 Messages</Text>
+                <Text style={{ fontSize: 13, color: COLORS.primary, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>$1.99</Text>
+              </View>
+              <View style={{ flex: 1, borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 8, padding: 10 }}>
+                <Text style={{ fontSize: 10, color: COLORS.gray600, marginBottom: 4, fontFamily: "Inter_400Regular" }}>Medium Pack</Text>
+                <Text style={{ fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" }}>20 Messages</Text>
+                <Text style={{ fontSize: 13, color: COLORS.primary, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>$3.99</Text>
+              </View>
+              <View style={{ flex: 1, borderWidth: 2, borderColor: COLORS.primary, backgroundColor: "#F5F3FF", borderRadius: 8, padding: 10 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                  <Text style={{ fontSize: 10, color: COLORS.gray600, fontFamily: "Inter_400Regular" }}>Large Pack</Text>
+                  <View style={{ backgroundColor: COLORS.primary, paddingHorizontal: 4, paddingVertical: 1, borderRadius: 4 }}>
+                    <Text style={{ fontSize: 8, color: "#FFF", fontFamily: "Inter_600SemiBold" }}>BEST</Text>
+                  </View>
+                </View>
+                <Text style={{ fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" }}>50 Messages</Text>
+                <Text style={{ fontSize: 13, color: COLORS.primary, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>$7.99</Text>
+              </View>
+            </View>
+
+            <Text style={{ fontSize: 11, color: COLORS.gray600, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
+              • Credits used when daily limit reached
+            </Text>
+            <Text style={{ fontSize: 11, color: COLORS.gray600, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
+              • Purchase from chat screen when needed
+            </Text>
+            <Text style={{ fontSize: 11, color: COLORS.gray600, marginBottom: 2, fontFamily: "Inter_400Regular" }}>
+              • Credits never expire, roll over indefinitely
+            </Text>
+            <Text style={{ fontSize: 11, color: COLORS.gray600, fontFamily: "Inter_400Regular" }}>
+              • Use with any tier
+            </Text>
+          </View>
+        </View>
+
+        {/* How Messaging Works */}
+        <View
+          style={{
+            backgroundColor: COLORS.white,
+            padding: 16,
+            borderRadius: 12,
+            marginBottom: 16,
+          }}
+        >
           <Text
-            style={{
-              fontSize: 13,
-              color: COLORS.text,
-              opacity: 0.7,
-              marginBottom: 8,
-              fontFamily: "Inter_400Regular",
-            }}
+            style={{ fontSize: 16, fontWeight: "700", color: COLORS.text, marginBottom: 12, fontFamily: "Inter_700Bold" }}
           >
-            Extend any video call beyond your tier's limit
+            How Messaging Works
           </Text>
-          <Text style={{ fontWeight: "700", color: COLORS.accent, fontFamily: "Inter_700Bold" }}>
-            • $8.00 for 10 minutes
+          <Text style={{ fontSize: 14, fontWeight: "600", color: COLORS.primary, marginBottom: 8, fontFamily: "Inter_600SemiBold" }}>
+            Message Deduction Priority:
           </Text>
+          <View style={{ marginBottom: 8 }}>
+            <Text style={{ fontSize: 13, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>1. First Encounter Messages (10 free)</Text>
+            <Text style={{ fontSize: 11, color: COLORS.gray600, fontFamily: "Inter_400Regular" }}>Get to know each new match with 10 complimentary messages</Text>
+          </View>
+          <View style={{ marginBottom: 8 }}>
+            <Text style={{ fontSize: 13, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>2. Daily Tier Limit</Text>
+            <Text style={{ fontSize: 11, color: COLORS.gray600, fontFamily: "Inter_400Regular" }}>Use your tier's daily allowance (15-500 messages)</Text>
+          </View>
+          <View style={{ marginBottom: 8 }}>
+            <Text style={{ fontSize: 13, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>3. Message Credits</Text>
+            <Text style={{ fontSize: 11, color: COLORS.gray600, fontFamily: "Inter_400Regular" }}>Purchased credits used after daily limit exhausted</Text>
+          </View>
+          <View style={{ marginBottom: 12 }}>
+            <Text style={{ fontSize: 13, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>4. Per-Match Limit (Business Only)</Text>
+            <Text style={{ fontSize: 11, color: COLORS.gray600, fontFamily: "Inter_400Regular" }}>50 messages/match/day (increases to 75 after video call)</Text>
+          </View>
+
+          <View style={{ backgroundColor: "#F5F3FF", padding: 12, borderRadius: 8 }}>
+            <Text style={{ fontSize: 12, fontWeight: "600", marginBottom: 4, fontFamily: "Inter_600SemiBold" }}>Example Scenario:</Text>
+            <Text style={{ fontSize: 11, color: COLORS.text, fontFamily: "Inter_400Regular" }}>
+              Free tier user matches → 10 first encounter messages → Uses those → 15 daily messages → Uses all → 
+              Buy credit pack → Continue messaging → Tomorrow resets to 15 new messages
+            </Text>
+          </View>
+        </View>
+
+        {/* Upgrade Benefits */}
+        <View
+          style={{
+            backgroundColor: COLORS.primary,
+            padding: 16,
+            borderRadius: 12,
+            marginBottom: 16,
+          }}
+        >
+          <Text
+            style={{ fontSize: 18, fontWeight: "700", color: "#FFF", marginBottom: 12, fontFamily: "Inter_700Bold" }}
+          >
+            Why Upgrade?
+          </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+            <View style={{ width: "48%" }}>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: "#FFF", marginBottom: 4, fontFamily: "Inter_600SemiBold" }}>
+                📸 More Photos & Videos
+              </Text>
+              <Text style={{ fontSize: 11, color: "#FFF", opacity: 0.9, fontFamily: "Inter_400Regular" }}>
+                Up to 20 photos to showcase yourself
+              </Text>
+            </View>
+            <View style={{ width: "48%" }}>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: "#FFF", marginBottom: 4, fontFamily: "Inter_600SemiBold" }}>
+                ⏱️ Longer Video Calls
+              </Text>
+              <Text style={{ fontSize: 11, color: "#FFF", opacity: 0.9, fontFamily: "Inter_400Regular" }}>
+                Chat for up to 45 minutes
+              </Text>
+            </View>
+            <View style={{ width: "48%" }}>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: "#FFF", marginBottom: 4, fontFamily: "Inter_600SemiBold" }}>
+                🎯 Unlimited Meetings
+              </Text>
+              <Text style={{ fontSize: 11, color: "#FFF", opacity: 0.9, fontFamily: "Inter_400Regular" }}>
+                No daily video meeting limits
+              </Text>
+            </View>
+            <View style={{ width: "48%" }}>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: "#FFF", marginBottom: 4, fontFamily: "Inter_600SemiBold" }}>
+                💬 More Messages
+              </Text>
+              <Text style={{ fontSize: 11, color: "#FFF", opacity: 0.9, fontFamily: "Inter_400Regular" }}>
+                Send up to 500 messages daily
+              </Text>
+            </View>
+          </View>
         </View>
 
         {error && (

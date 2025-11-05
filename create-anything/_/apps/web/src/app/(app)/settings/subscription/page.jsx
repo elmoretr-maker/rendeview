@@ -14,6 +14,7 @@ import {
   CardBody,
   CardHeader,
   Container,
+  Divider,
   Heading,
   HStack,
   Icon,
@@ -25,7 +26,7 @@ import {
   VStack,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { TIER_LIMITS, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
+import { TIER_LIMITS, MEMBERSHIP_TIERS, MESSAGE_CREDIT_PRICING, EXTENSION_PRICING } from "@/utils/membershipTiers";
 
 const TIERS = [
   {
@@ -387,10 +388,18 @@ export default function SubscriptionPage() {
                       
                       <List spacing={1} fontSize="sm" mb={4}>
                         <ListItem>• {t.photos} Profile Photos</ListItem>
-                        <ListItem>• {t.videos} Video{t.videos !== 1 ? 's' : ''} ({t.videoDuration}s max each)</ListItem>
-                        <ListItem>• {t.chatMinutes} Minutes Video Chat</ListItem>
-                        {t.maxMeetings !== undefined && t.maxMeetings !== Infinity && (
-                          <ListItem>• {t.maxMeetings} Meeting Limit</ListItem>
+                        <ListItem>• {t.videos} Profile Video{t.videos !== 1 ? 's' : ''} ({t.videoDuration}s max each)</ListItem>
+                        <ListItem>• {t.chatMinutes} Min Video Calls</ListItem>
+                        {t.maxMeetings !== undefined && t.maxMeetings !== Infinity ? (
+                          <ListItem>• {t.maxMeetings} Video Meetings/Day</ListItem>
+                        ) : (
+                          <ListItem>• Unlimited Video Meetings</ListItem>
+                        )}
+                        <ListItem>• {TIER_LIMITS[t.key]?.dailyMessages || 15} Messages/Day</ListItem>
+                        {TIER_LIMITS[t.key]?.perMatchDailyMessages && (
+                          <ListItem>
+                            • {TIER_LIMITS[t.key].perMatchDailyMessages}/{TIER_LIMITS[t.key].perMatchDailyMessagesAfterVideo || TIER_LIMITS[t.key].perMatchDailyMessages} Messages/Match/Day{TIER_LIMITS[t.key].perMatchDailyMessagesAfterVideo ? ' (after video)' : ''}
+                          </ListItem>
                         )}
                       </List>
                       
@@ -427,16 +436,140 @@ export default function SubscriptionPage() {
             </SimpleGrid>
           </Box>
 
-          {/* Call Extensions */}
+          {/* Additional Services & Fees */}
           <Card>
             <CardBody>
-              <Heading size="md" mb={2}>Call Extensions</Heading>
-              <Text fontSize="sm" color="gray.600" mb={3}>
-                Extend any video call beyond your tier's limit
-              </Text>
-              <Text fontWeight="semibold" color="teal.500">
-                • $8.00 for 10 minutes
-              </Text>
+              <Heading size="md" mb={4}>Additional Services & Fees</Heading>
+              
+              {/* Call Extensions */}
+              <Box mb={6}>
+                <HStack justify="space-between" mb={2}>
+                  <Heading size="sm" color="purple.600">Video Call Extensions</Heading>
+                  <Badge colorScheme="green" fontSize="md" px={3} py={1}>${EXTENSION_PRICING.costPer10Minutes}</Badge>
+                </HStack>
+                <Text fontSize="sm" color="gray.600" mb={3}>
+                  Running out of time during an important conversation? Extend any video call by {EXTENSION_PRICING.durationMinutes} minutes for ${EXTENSION_PRICING.costPer10Minutes}. Purchase extensions directly during a call when your timer shows less than 1 minute remaining.
+                </Text>
+                <List spacing={1} fontSize="xs" color="gray.500">
+                  <ListItem>• Extensions are purchased during active calls</ListItem>
+                  <ListItem>• Timer shows "Extend Call" button at 1 minute remaining</ListItem>
+                  <ListItem>• Multiple extensions allowed per call</ListItem>
+                  <ListItem>• Available on all tiers</ListItem>
+                </List>
+              </Box>
+
+              <Divider mb={6} />
+
+              {/* Message Credits */}
+              <Box>
+                <Heading size="sm" color="purple.600" mb={2}>Message Credit Packs</Heading>
+                <Text fontSize="sm" color="gray.600" mb={4}>
+                  Need more messages beyond your daily limit? Purchase message credits to keep the conversation going. Credits never expire and can be used anytime.
+                </Text>
+                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={3} mb={4}>
+                  <Card borderWidth={1} borderColor="gray.200">
+                    <CardBody py={3}>
+                      <Text fontSize="xs" color="gray.500" mb={1}>Small Pack</Text>
+                      <HStack justify="space-between">
+                        <Text fontWeight="bold">{MESSAGE_CREDIT_PRICING.PACK_SMALL.credits} Messages</Text>
+                        <Text color="purple.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.PACK_SMALL.price}</Text>
+                      </HStack>
+                    </CardBody>
+                  </Card>
+                  <Card borderWidth={1} borderColor="gray.200">
+                    <CardBody py={3}>
+                      <Text fontSize="xs" color="gray.500" mb={1}>Medium Pack</Text>
+                      <HStack justify="space-between">
+                        <Text fontWeight="bold">{MESSAGE_CREDIT_PRICING.PACK_MEDIUM.credits} Messages</Text>
+                        <Text color="purple.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.PACK_MEDIUM.price}</Text>
+                      </HStack>
+                    </CardBody>
+                  </Card>
+                  <Card borderWidth={1} borderColor="purple.200" bg="purple.50">
+                    <CardBody py={3}>
+                      <HStack justify="space-between" mb={1}>
+                        <Text fontSize="xs" color="gray.600">Large Pack</Text>
+                        <Badge colorScheme="purple" fontSize="xs">Best Value</Badge>
+                      </HStack>
+                      <HStack justify="space-between">
+                        <Text fontWeight="bold">{MESSAGE_CREDIT_PRICING.PACK_LARGE.credits} Messages</Text>
+                        <Text color="purple.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.PACK_LARGE.price}</Text>
+                      </HStack>
+                    </CardBody>
+                  </Card>
+                </SimpleGrid>
+                <List spacing={1} fontSize="xs" color="gray.500">
+                  <ListItem>• Credits automatically used when daily limit reached</ListItem>
+                  <ListItem>• Purchase from chat screen when out of messages</ListItem>
+                  <ListItem>• Credits never expire and roll over indefinitely</ListItem>
+                  <ListItem>• Use with any tier - Free, Casual, Dating, or Business</ListItem>
+                </List>
+              </Box>
+            </CardBody>
+          </Card>
+
+          {/* How It Works */}
+          <Card>
+            <CardBody>
+              <Heading size="md" mb={4}>How Messaging Works</Heading>
+              <VStack align="stretch" spacing={4}>
+                <Box>
+                  <Text fontWeight="semibold" mb={2} color="purple.600">Message Deduction Priority:</Text>
+                  <List spacing={2} fontSize="sm">
+                    <ListItem>
+                      <Text fontWeight="medium">1. First Encounter Messages (10 free)</Text>
+                      <Text fontSize="xs" color="gray.600">Get to know each new match with 10 complimentary messages</Text>
+                    </ListItem>
+                    <ListItem>
+                      <Text fontWeight="medium">2. Daily Tier Limit</Text>
+                      <Text fontSize="xs" color="gray.600">Use your tier's daily message allowance (15-500 messages)</Text>
+                    </ListItem>
+                    <ListItem>
+                      <Text fontWeight="medium">3. Message Credits</Text>
+                      <Text fontSize="xs" color="gray.600">Purchased credits used after daily limit exhausted</Text>
+                    </ListItem>
+                    <ListItem>
+                      <Text fontWeight="medium">4. Per-Match Limit (Business Tier Only)</Text>
+                      <Text fontSize="xs" color="gray.600">50 messages/match/day (increases to 75 after video call)</Text>
+                    </ListItem>
+                  </List>
+                </Box>
+                <Box bg="purple.50" p={4} borderRadius="md">
+                  <Text fontSize="sm" fontWeight="semibold" mb={2}>Example Scenario:</Text>
+                  <Text fontSize="xs" color="gray.700">
+                    Free tier user matches with someone → Gets 10 first encounter messages → Uses those up → 
+                    Has 15 daily messages → Uses all 15 → Can purchase credit pack → Continues messaging using credits → 
+                    Tomorrow resets to 15 new daily messages
+                  </Text>
+                </Box>
+              </VStack>
+            </CardBody>
+          </Card>
+
+          {/* Upgrade Benefits */}
+          <Card bg="gradient-to-r" bgGradient="linear(to-r, purple.500, pink.500)">
+            <CardBody>
+              <VStack align="start" spacing={3}>
+                <Heading size="md" color="white">Why Upgrade?</Heading>
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="full">
+                  <Box>
+                    <Text fontWeight="semibold" color="white" fontSize="sm" mb={1}>📸 More Photos & Videos</Text>
+                    <Text fontSize="xs" color="whiteAlpha.900">Showcase your personality with up to 20 photos</Text>
+                  </Box>
+                  <Box>
+                    <Text fontWeight="semibold" color="white" fontSize="sm" mb={1}>⏱️ Longer Video Calls</Text>
+                    <Text fontSize="xs" color="whiteAlpha.900">Chat for up to 45 minutes per call</Text>
+                  </Box>
+                  <Box>
+                    <Text fontWeight="semibold" color="white" fontSize="sm" mb={1}>🎯 Unlimited Meetings</Text>
+                    <Text fontSize="xs" color="whiteAlpha.900">No daily limits on video meetings</Text>
+                  </Box>
+                  <Box>
+                    <Text fontWeight="semibold" color="white" fontSize="sm" mb={1}>💬 More Messages</Text>
+                    <Text fontSize="xs" color="whiteAlpha.900">Send up to 500 messages daily</Text>
+                  </Box>
+                </SimpleGrid>
+              </VStack>
             </CardBody>
           </Card>
 
