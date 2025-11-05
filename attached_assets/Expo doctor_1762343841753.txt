@@ -1,0 +1,48 @@
+﻿Running "expo doctor"
+Running 17 checks on your project...
+14/17 checks passed. 3 checks failed. Possible issues detected:
+Use the --verbose flag to see more details about passed checks.
+
+
+✖ Check for common project setup issues
+The .expo directory is not ignored by Git. It contains machine-specific device history and development server settings and should not be committed.
+Advice:
+Add ".expo/" to your .gitignore to avoid committing local Expo state.
+✖ Check that no duplicate dependencies are installed
+Your project contains duplicate native module dependencies, which should be de-duplicated.
+Native builds may only contain one version of any given native module, and having multiple versions of a single Native module installed may lead to unexpected build errors.
+Found duplicates for react:
+  ├─ react@19.1.0 (at: node_modules/react)
+  └─ react@17.0.1 (at: node_modules/expo-three/node_modules/react)
+Found duplicates for react-native-safe-area-context:
+  ├─ react-native-safe-area-context@5.6.2 (at: node_modules/react-native-safe-area-context)
+  └─ react-native-safe-area-context@4.5.0 (at: node_modules/react-native-calendars/node_modules/react-native-safe-area-context)
+Advice:
+Resolve your dependency issues and deduplicate your dependencies. Learn more: https://expo.fyi/resolving-dependency-issues
+
+
+✖ Check that packages match versions required by installed Expo SDK
+
+
+⚠️ Minor version mismatches
+package                         expected  found   
+@react-native-community/slider  5.0.1     5.1.0   
+
+
+🔧 Patch version mismatches
+package                         expected  found   
+expo-dev-client                 ~6.0.17   6.0.16  
+expo-video                      ~3.0.14   3.0.13  
+
+
+Changelogs:
+- expo-dev-client → https://github.com/expo/expo/blob/sdk-54/packages/expo-dev-client/CHANGELOG.md
+- expo-video → https://github.com/expo/expo/blob/sdk-54/packages/expo-video/CHANGELOG.md
+
+
+3 packages out of date.
+Advice:
+Use 'npx expo install --check' to review and upgrade your dependencies.
+To ignore specific packages, add them to "expo.install.exclude" in package.json. Learn more: https://expo.fyi/dependency-validation
+3 checks failed, indicating possible issues with the project.
+Command "expo doctor" failed.
