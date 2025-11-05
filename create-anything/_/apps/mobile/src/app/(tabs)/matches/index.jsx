@@ -28,6 +28,7 @@ const COLORS = {
   text: "#2C3E50",
   error: "#E74C3C",
   cardBg: "#F3F4F6",
+  gray600: "#6B7280",
 };
 
 export default function Matches() {
@@ -176,10 +177,96 @@ export default function Matches() {
             </TouchableOpacity>
           </View>
         ) : (
-          <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular" }}>
-            Error loading
-          </Text>
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 32 }}>
+            <Text style={{ 
+              color: COLORS.text, 
+              fontFamily: "Inter_600SemiBold",
+              fontSize: 18,
+              marginBottom: 12,
+              textAlign: "center"
+            }}>
+              No matches yet
+            </Text>
+            <Text style={{ 
+              color: COLORS.gray600, 
+              fontFamily: "Inter_400Regular",
+              fontSize: 14,
+              textAlign: "center",
+              marginBottom: 20
+            }}>
+              Visit the Discovery page to start swiping and find people you'd like to connect with!
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.push("/(tabs)/discovery")}
+              style={{
+                backgroundColor: COLORS.primary,
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                borderRadius: 25,
+                shadowColor: COLORS.primary,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 4,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#fff",
+                  fontWeight: "600",
+                  fontFamily: "Inter_600SemiBold",
+                }}
+              >
+                Go to Discovery
+              </Text>
+            </TouchableOpacity>
+          </View>
         )
+      ) : matches.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 32 }}>
+          <Text style={{ 
+            color: COLORS.text, 
+            fontFamily: "Inter_600SemiBold",
+            fontSize: 18,
+            marginBottom: 12,
+            textAlign: "center"
+          }}>
+            No matches yet
+          </Text>
+          <Text style={{ 
+            color: COLORS.gray600, 
+            fontFamily: "Inter_400Regular",
+            fontSize: 14,
+            textAlign: "center",
+            marginBottom: 20
+          }}>
+            Visit the Discovery page to start swiping and find people you'd like to connect with!
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/discovery")}
+            style={{
+              backgroundColor: COLORS.primary,
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+              borderRadius: 25,
+              shadowColor: COLORS.primary,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.3,
+              shadowRadius: 4,
+              elevation: 4,
+            }}
+          >
+            <Text
+              style={{
+                color: "#fff",
+                fontWeight: "600",
+                fontFamily: "Inter_600SemiBold",
+              }}
+            >
+              Go to Discovery
+            </Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <FlatList
           data={matches}

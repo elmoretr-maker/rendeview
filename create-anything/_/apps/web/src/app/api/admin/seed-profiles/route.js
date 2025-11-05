@@ -5,58 +5,76 @@ export async function POST(request) {
   try {
     const profiles = [
       {
-        name: "Alex Chen",
-        email: "alex.chen@example.com",
-        bio: "Software engineer passionate about hiking and cooking. Looking for meaningful connections!",
+        name: "Emma Rodriguez",
+        email: "emma.rodriguez@example.com",
+        bio: "NYC event planner who loves Broadway shows and rooftop bars. Let's explore the city together!",
         age: 28,
-        location: "San Francisco, CA",
-        interests: ["hiking", "cooking", "tech", "photography"],
-        membershipTier: "dating",
-      },
-      {
-        name: "Maria Garcia",
-        email: "maria.garcia@example.com",
-        bio: "Artist and yoga instructor. Love traveling and meeting new people. Let's grab coffee!",
-        age: 26,
-        location: "Austin, TX",
-        interests: ["yoga", "art", "travel", "coffee"],
-        membershipTier: "casual",
-      },
-      {
-        name: "Jordan Smith",
-        email: "jordan.smith@example.com",
-        bio: "Marketing professional by day, musician by night. Always up for a concert or trying new restaurants.",
-        age: 30,
+        gender: "female",
         location: "New York, NY",
-        interests: ["music", "food", "concerts", "marketing"],
+        latitude: 40.7128,
+        longitude: -74.0060,
+        interests: ["theater", "events", "nightlife", "travel"],
         membershipTier: "dating",
       },
       {
-        name: "Taylor Johnson",
-        email: "taylor.johnson@example.com",
-        bio: "Fitness enthusiast and outdoor adventurer. Looking for someone to join me on my next adventure!",
-        age: 27,
-        location: "Denver, CO",
-        interests: ["fitness", "hiking", "skiing", "adventure"],
-        membershipTier: "casual",
-      },
-      {
-        name: "Sam Patel",
-        email: "sam.patel@example.com",
-        bio: "Data scientist who loves board games and trivia nights. Let's test our knowledge together!",
-        age: 29,
-        location: "Seattle, WA",
-        interests: ["games", "trivia", "data", "coffee"],
+        name: "Marcus Johnson",
+        email: "marcus.johnson@example.com",
+        bio: "Detroit entrepreneur and car enthusiast. Love trying new restaurants and weekend road trips.",
+        age: 32,
+        gender: "male",
+        location: "Detroit, MI",
+        latitude: 42.3314,
+        longitude: -83.0458,
+        interests: ["cars", "food", "business", "travel"],
         membershipTier: "business",
       },
       {
-        name: "Casey Williams",
-        email: "casey.williams@example.com",
-        bio: "Teacher and book lover. When I'm not reading, you'll find me at the dog park with my golden retriever!",
-        age: 25,
-        location: "Portland, OR",
-        interests: ["reading", "dogs", "teaching", "nature"],
+        name: "Sophia Chen",
+        email: "sophia.chen@example.com",
+        bio: "Brooklyn artist and yoga instructor. Always looking for coffee shop recommendations and art galleries!",
+        age: 26,
+        gender: "female",
+        location: "Brooklyn, NY",
+        latitude: 40.6782,
+        longitude: -73.9442,
+        interests: ["art", "yoga", "coffee", "photography"],
+        membershipTier: "casual",
+      },
+      {
+        name: "James Martinez",
+        email: "james.martinez@example.com",
+        bio: "Ann Arbor professor who loves hiking, cooking, and live music. Looking for someone to share adventures with!",
+        age: 30,
+        gender: "male",
+        location: "Ann Arbor, MI",
+        latitude: 42.2808,
+        longitude: -83.7430,
+        interests: ["hiking", "cooking", "music", "education"],
         membershipTier: "dating",
+      },
+      {
+        name: "Olivia Taylor",
+        email: "olivia.taylor@example.com",
+        bio: "Manhattan finance professional by day, foodie by night. Let's find the best pizza in NYC together!",
+        age: 29,
+        gender: "female",
+        location: "Manhattan, NY",
+        latitude: 40.7831,
+        longitude: -73.9712,
+        interests: ["finance", "food", "fitness", "wine"],
+        membershipTier: "business",
+      },
+      {
+        name: "Ryan Thompson",
+        email: "ryan.thompson@example.com",
+        bio: "Grand Rapids craft beer lover and outdoor adventurer. When I'm not on the trails, you'll find me at a brewery!",
+        age: 27,
+        gender: "male",
+        location: "Grand Rapids, MI",
+        latitude: 42.9634,
+        longitude: -85.6681,
+        interests: ["beer", "hiking", "outdoors", "music"],
+        membershipTier: "casual",
       },
     ];
 
@@ -80,32 +98,42 @@ export async function POST(request) {
            createdUsers.length === 4 ? "2196F3" : "4CAF50") + 
           "/FFFFFF?text=" + encodeURIComponent(profile.name.split(' ')[0]);
         
+        const timezone = profile.location.includes("MI") ? "America/Detroit" : "America/New_York";
+        
         const created = await sql`
           INSERT INTO auth_users (
             name, 
             email, 
             bio,
+            gender,
             membership_tier, 
             consent_accepted, 
             timezone,
             typical_availability,
-            primary_photo_url
+            primary_photo_url,
+            location,
+            latitude,
+            longitude
           )
           VALUES (
             ${profile.name}, 
             ${profile.email},
             ${profile.bio},
+            ${profile.gender},
             ${profile.membershipTier},
             true,
-            ${"America/New_York"},
+            ${timezone},
             ${JSON.stringify({
               typical: [
                 { days: ["Mon", "Tue", "Wed", "Thu", "Fri"], start: "18:00", end: "22:00" },
                 { days: ["Sat", "Sun"], start: "10:00", end: "20:00" }
               ],
-              timezone: "America/New_York"
+              timezone: timezone
             })}::jsonb,
-            ${primaryPhotoUrl}
+            ${primaryPhotoUrl},
+            ${profile.location},
+            ${profile.latitude},
+            ${profile.longitude}
           )
           RETURNING id`;
         userId = created[0].id;
