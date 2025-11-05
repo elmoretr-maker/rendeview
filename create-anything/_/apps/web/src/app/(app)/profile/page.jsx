@@ -1,22 +1,32 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router";
-import { useUser } from "@/utils/useUser";
+import useUser from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import { Trash2, Upload, Crown, Image, Video } from "lucide-react";
+import { Trash2, Upload, Crown, Image as ImageIcon, Video as VideoIcon } from "lucide-react";
 import { getTierLimits, getRemainingPhotoSlots, getRemainingVideoSlots, MEMBERSHIP_TIERS } from "@/utils/membershipTiers";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { ProfileSkeleton } from "@/app/components/SkeletonLoader";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  bg: "#F9F9F9",
-  text: "#2C3E50",
-  error: "#E74C3C",
-  cardBg: "#F3F4F6",
-};
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Flex,
+  FormControl,
+  FormLabel,
+  Input,
+  Switch,
+  Card,
+  CardBody,
+  Image,
+  IconButton,
+  Badge,
+} from "@chakra-ui/react";
 
 function ProfileContent() {
   const navigate = useNavigate();
@@ -297,12 +307,12 @@ function ProfileContent() {
 
   if (loading || userLoading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="max-w-2xl mx-auto px-4 py-8">
+        <Container maxW="2xl" px={4} py={8}>
           <ProfileSkeleton />
-        </div>
-      </div>
+        </Container>
+      </Box>
     );
   }
 
@@ -313,294 +323,310 @@ function ProfileContent() {
   const remainingVideos = getRemainingVideoSlots(membershipTier, videoCount);
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+    <Box minH="100vh" bg="gray.50">
       <AppHeader />
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold" style={{ color: COLORS.text }}>Profile</h1>
-            <Link
+      <Container maxW="2xl" px={4} py={8}>
+        <VStack align="stretch" spacing={6} mb={6}>
+          <Flex align="center" justify="space-between">
+            <Heading size="xl" color="gray.800">Profile</Heading>
+            <Button
+              as={Link}
               to="/onboarding/membership"
-              className="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
-              style={{ backgroundColor: COLORS.secondary }}
+              leftIcon={<Crown size={18} />}
+              colorScheme="teal"
+              shadow="md"
             >
-              <Crown size={18} />
               {membershipTier?.toUpperCase() || 'FREE'} Tier
-            </Link>
-          </div>
+            </Button>
+          </Flex>
           
-          <Link
+          <Card
+            as={Link}
             to="/profile/media"
-            className="flex items-center gap-3 p-4 rounded-xl shadow-md hover:shadow-lg transition-all"
-            style={{ backgroundColor: "white" }}
+            shadow="md"
+            _hover={{ shadow: "lg" }}
+            transition="all 0.2s"
+            cursor="pointer"
           >
-            <div className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: COLORS.primary + "15" }}>
-              <Image size={24} style={{ color: COLORS.primary }} />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-lg" style={{ color: COLORS.text }}>Manage Photos & Videos</h3>
-              <p className="text-sm text-gray-600">Upload, record, and organize your media with camera-only recording</p>
-            </div>
-            <div className="flex-shrink-0 text-gray-400">
-              <span className="text-sm">→</span>
-            </div>
-          </Link>
-        </div>
+            <CardBody p={4}>
+              <HStack spacing={3}>
+                <Flex
+                  w={12}
+                  h={12}
+                  borderRadius="full"
+                  align="center"
+                  justify="center"
+                  bg="purple.50"
+                >
+                  <ImageIcon size={24} color="#7c3aed" />
+                </Flex>
+                <VStack align="start" flex={1} spacing={0}>
+                  <Heading size="md" color="gray.800">Manage Photos & Videos</Heading>
+                  <Text fontSize="sm" color="gray.600">Upload, record, and organize your media with camera-only recording</Text>
+                </VStack>
+                <Text color="gray.400">→</Text>
+              </HStack>
+            </CardBody>
+          </Card>
+        </VStack>
 
         {error === "AUTH_401" ? (
-          <div className="mb-6">
-            <p className="mb-4" style={{ color: COLORS.text }}>Session expired. Please sign in.</p>
-            <button
+          <VStack align="start" spacing={4} mb={6}>
+            <Text color="gray.800">Session expired. Please sign in.</Text>
+            <Button
               onClick={() => navigate("/account/signin")}
-              className="px-4 py-2 rounded-lg text-white font-semibold shadow-md"
-              style={{ backgroundColor: COLORS.primary }}
+              colorScheme="purple"
+              shadow="md"
             >
               Sign In
-            </button>
-          </div>
+            </Button>
+          </VStack>
         ) : null}
 
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <p className="font-semibold font-playfair text-xl" style={{ color: COLORS.text }}>Profile Video</p>
-            <ObjectUploader
-              maxNumberOfFiles={1}
-              maxFileSize={52428800}
-              allowedFileTypes={['video/*']}
-              onGetUploadParameters={handleVideoUpload}
-              onComplete={handleVideoComplete}
-              buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
-              buttonStyle={{ backgroundColor: remainingVideos > 0 ? COLORS.primary : '#9CA3AF' }}
-            >
-              <Upload size={18} />
-              {remainingVideos > 0 ? 'Upload Video' : 'Limit Reached'}
-            </ObjectUploader>
-          </div>
-          <p className="text-sm mb-3" style={{ color: '#6B7280' }}>
-            {videoCount} of {tierLimits.videos} video{tierLimits.videos !== 1 ? 's' : ''} • Max {tierLimits.videoMaxDuration}s each
-          </p>
-          {videoUrl ? (
-            <div className="relative rounded-xl overflow-hidden bg-black">
-              <video
-                src={`/api${videoUrl}`}
-                controls
-                loop
-                className="w-full"
-                style={{ height: "220px", objectFit: "cover" }}
-              />
-              <button
-                onClick={() => deleteMedia(videoUrl)}
-                className="absolute top-2 right-2 p-2 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600"
+        <VStack align="stretch" spacing={6} mb={6}>
+          <Box>
+            <Flex align="center" justify="space-between" mb={2}>
+              <Heading size="lg" fontFamily="Playfair Display" color="gray.800">Profile Video</Heading>
+              <ObjectUploader
+                maxNumberOfFiles={1}
+                maxFileSize={52428800}
+                allowedFileTypes={['video/*']}
+                onGetUploadParameters={handleVideoUpload}
+                onComplete={handleVideoComplete}
+                buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
+                buttonStyle={{ backgroundColor: remainingVideos > 0 ? '#7c3aed' : '#9CA3AF' }}
               >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          ) : (
-            <div className="rounded-xl border-2 border-dashed p-8 text-center" style={{ borderColor: "#E5E7EB" }}>
-              <p className="text-gray-500">No video uploaded yet. Upload a video to help others get to know you!</p>
-            </div>
-          )}
-        </div>
+                <Upload size={18} />
+                {remainingVideos > 0 ? 'Upload Video' : 'Limit Reached'}
+              </ObjectUploader>
+            </Flex>
+            <Text fontSize="sm" color="gray.600" mb={3}>
+              {videoCount} of {tierLimits.videos} video{tierLimits.videos !== 1 ? 's' : ''} • Max {tierLimits.videoMaxDuration}s each
+            </Text>
+            {videoUrl ? (
+              <Box position="relative" borderRadius="xl" overflow="hidden" bg="black">
+                <Box
+                  as="video"
+                  src={`/api${videoUrl}`}
+                  controls
+                  loop
+                  w="full"
+                  h="220px"
+                  objectFit="cover"
+                />
+                <IconButton
+                  onClick={() => deleteMedia(videoUrl)}
+                  position="absolute"
+                  top={2}
+                  right={2}
+                  icon={<Trash2 size={16} />}
+                  borderRadius="full"
+                  colorScheme="red"
+                  size="sm"
+                  aria-label="Delete video"
+                />
+              </Box>
+            ) : (
+              <Box borderRadius="xl" borderWidth={2} borderStyle="dashed" borderColor="gray.200" p={8} textAlign="center">
+                <Text color="gray.500">No video uploaded yet. Upload a video to help others get to know you!</Text>
+              </Box>
+            )}
+          </Box>
 
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <p className="font-semibold font-playfair text-xl" style={{ color: COLORS.text }}>Your Photos</p>
-            <ObjectUploader
-              maxNumberOfFiles={remainingPhotos}
-              maxFileSize={10485760}
-              allowedFileTypes={['image/*']}
-              onGetUploadParameters={handlePhotoUpload}
-              onComplete={handlePhotoComplete}
-              buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
-              buttonStyle={{ backgroundColor: remainingPhotos > 0 ? COLORS.primary : '#9CA3AF' }}
-            >
-              <Upload size={18} />
-              {remainingPhotos > 0 ? `Upload Photo${remainingPhotos > 1 ? 's' : ''}` : 'Limit Reached'}
-            </ObjectUploader>
-          </div>
-          <p className="text-sm mb-3" style={{ color: '#6B7280' }}>
-            {photoCount} of {tierLimits.photos} photos • {remainingPhotos} slot{remainingPhotos !== 1 ? 's' : ''} remaining
-          </p>
-          {media.filter((m) => m.type === "photo").length > 0 ? (
-            <div className="flex flex-wrap gap-3">
-              {media
-                .filter((m) => m.type === "photo")
-                .map((m, idx) => {
-                  const isPrimary = m.url === primaryPhoto;
-                  return (
-                    <div key={idx} className="relative">
-                      <button
-                        onClick={() => selectPrimary(m.url)}
-                        className="relative block"
-                      >
-                        <img
-                          src={`/api${m.url}`}
-                          alt="Profile"
-                          className="w-32 h-32 rounded-lg object-cover"
-                          style={{ border: `3px solid ${isPrimary ? COLORS.primary : "#E5E7EB"}` }}
+          <Box>
+            <Flex align="center" justify="space-between" mb={2}>
+              <Heading size="lg" fontFamily="Playfair Display" color="gray.800">Your Photos</Heading>
+              <ObjectUploader
+                maxNumberOfFiles={remainingPhotos}
+                maxFileSize={10485760}
+                allowedFileTypes={['image/*']}
+                onGetUploadParameters={handlePhotoUpload}
+                onComplete={handlePhotoComplete}
+                buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
+                buttonStyle={{ backgroundColor: remainingPhotos > 0 ? '#7c3aed' : '#9CA3AF' }}
+              >
+                <Upload size={18} />
+                {remainingPhotos > 0 ? `Upload Photo${remainingPhotos > 1 ? 's' : ''}` : 'Limit Reached'}
+              </ObjectUploader>
+            </Flex>
+            <Text fontSize="sm" color="gray.600" mb={3}>
+              {photoCount} of {tierLimits.photos} photos • {remainingPhotos} slot{remainingPhotos !== 1 ? 's' : ''} remaining
+            </Text>
+            {media.filter((m) => m.type === "photo").length > 0 ? (
+              <Flex flexWrap="wrap" gap={3}>
+                {media
+                  .filter((m) => m.type === "photo")
+                  .map((m, idx) => {
+                    const isPrimary = m.url === primaryPhoto;
+                    return (
+                      <Box key={idx} position="relative">
+                        <Button
+                          onClick={() => selectPrimary(m.url)}
+                          variant="unstyled"
+                          display="block"
+                          p={0}
+                        >
+                          <Image
+                            src={`/api${m.url}`}
+                            alt="Profile"
+                            w={32}
+                            h={32}
+                            borderRadius="lg"
+                            objectFit="cover"
+                            borderWidth={3}
+                            borderColor={isPrimary ? "purple.500" : "gray.200"}
+                          />
+                          <Text
+                            fontSize="xs"
+                            textAlign="center"
+                            mt={1}
+                            fontWeight="semibold"
+                            color={isPrimary ? "purple.600" : "gray.600"}
+                          >
+                            {isPrimary ? "★ Primary" : "Set Primary"}
+                          </Text>
+                        </Button>
+                        <IconButton
+                          onClick={() => deleteMedia(m.url)}
+                          position="absolute"
+                          top={1}
+                          right={1}
+                          icon={<Trash2 size={14} />}
+                          size="xs"
+                          borderRadius="full"
+                          colorScheme="red"
+                          aria-label="Delete photo"
                         />
-                        <p className="text-xs text-center mt-1 font-semibold" style={{ color: isPrimary ? COLORS.primary : "#6B7280" }}>
-                          {isPrimary ? "★ Primary" : "Set Primary"}
-                        </p>
-                      </button>
-                      <button
-                        onClick={() => deleteMedia(m.url)}
-                        className="absolute top-1 right-1 p-1.5 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  );
-                })}
-            </div>
-          ) : (
-            <div className="rounded-xl border-2 border-dashed p-8 text-center" style={{ borderColor: "#E5E7EB" }}>
-              <p className="text-gray-500">No photos uploaded yet. Add photos to make your profile stand out!</p>
-            </div>
-          )}
-        </div>
+                      </Box>
+                    );
+                  })}
+              </Flex>
+            ) : (
+              <Box borderRadius="xl" borderWidth={2} borderStyle="dashed" borderColor="gray.200" p={8} textAlign="center">
+                <Text color="gray.500">No photos uploaded yet. Add photos to make your profile stand out!</Text>
+              </Box>
+            )}
+          </Box>
+        </VStack>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block font-semibold mb-2" style={{ color: COLORS.text }}>Name</label>
-            <input
+        <VStack spacing={4} align="stretch">
+          <FormControl>
+            <FormLabel fontWeight="semibold" color="gray.800">Name</FormLabel>
+            <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
-              className="w-full border rounded-lg px-4 py-2 bg-white"
-              style={{ borderColor: "#E5E7EB" }}
+              borderColor="gray.200"
+              bg="white"
             />
-          </div>
+          </FormControl>
 
-          <div>
-            <label className="block font-semibold mb-2" style={{ color: COLORS.text }}>Timezone</label>
-            <input
+          <FormControl>
+            <FormLabel fontWeight="semibold" color="gray.800">Timezone</FormLabel>
+            <Input
               type="text"
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
               placeholder="America/New_York"
-              className="w-full border rounded-lg px-4 py-2 bg-white"
-              style={{ borderColor: "#E5E7EB" }}
+              borderColor="gray.200"
+              bg="white"
             />
-          </div>
+          </FormControl>
 
-          <div>
-            <label className="block font-semibold mb-2" style={{ color: COLORS.text }}>Typical Availability</label>
-            <input
+          <FormControl>
+            <FormLabel fontWeight="semibold" color="gray.800">Typical Availability</FormLabel>
+            <Input
               type="text"
               value={days}
               onChange={(e) => setDays(e.target.value)}
               placeholder="Mon,Tue,Wed,Thu,Fri"
-              className="w-full border rounded-lg px-4 py-2 bg-white mb-2"
-              style={{ borderColor: "#E5E7EB" }}
+              borderColor="gray.200"
+              bg="white"
+              mb={2}
             />
-            <div className="flex gap-2">
-              <input
+            <HStack spacing={2}>
+              <Input
                 type="text"
                 value={start}
                 onChange={(e) => setStart(e.target.value)}
                 placeholder="18:00"
-                className="flex-1 border rounded-lg px-4 py-2 bg-white"
-                style={{ borderColor: "#E5E7EB" }}
+                borderColor="gray.200"
+                bg="white"
               />
-              <input
+              <Input
                 type="text"
                 value={end}
                 onChange={(e) => setEnd(e.target.value)}
                 placeholder="21:00"
-                className="flex-1 border rounded-lg px-4 py-2 bg-white"
-                style={{ borderColor: "#E5E7EB" }}
+                borderColor="gray.200"
+                bg="white"
               />
-            </div>
-          </div>
+            </HStack>
+          </FormControl>
 
-          <div className="flex items-center justify-between py-2">
-            <span style={{ color: COLORS.text }}>Immediate Availability</span>
-            <button
-              onClick={() => setImmediate(!immediate)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                immediate ? "bg-purple-600" : "bg-gray-300"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  immediate ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
-          </div>
+          <FormControl display="flex" alignItems="center" justifyContent="space-between" py={2}>
+            <FormLabel mb={0} color="gray.800">Immediate Availability</FormLabel>
+            <Switch
+              isChecked={immediate}
+              onChange={() => setImmediate(!immediate)}
+              colorScheme="purple"
+            />
+          </FormControl>
 
-          <div className="flex items-center justify-between py-2">
-            <span style={{ color: COLORS.text }}>Appear Offline (Override)</span>
-            <button
-              onClick={() => setOverride(!override)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                override ? "bg-purple-600" : "bg-gray-300"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  override ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
-          </div>
+          <FormControl display="flex" alignItems="center" justifyContent="space-between" py={2}>
+            <FormLabel mb={0} color="gray.800">Appear Offline (Override)</FormLabel>
+            <Switch
+              isChecked={override}
+              onChange={() => setOverride(!override)}
+              colorScheme="purple"
+            />
+          </FormControl>
 
-          <div className="flex items-center justify-between py-2">
-            <span style={{ color: COLORS.text }}>Accept Video Calls</span>
-            <button
-              onClick={() => setVideoCallAvailable(!videoCallAvailable)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                videoCallAvailable ? "bg-purple-600" : "bg-gray-300"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  videoCallAvailable ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
-          </div>
+          <FormControl display="flex" alignItems="center" justifyContent="space-between" py={2}>
+            <FormLabel mb={0} color="gray.800">Accept Video Calls</FormLabel>
+            <Switch
+              isChecked={videoCallAvailable}
+              onChange={() => setVideoCallAvailable(!videoCallAvailable)}
+              colorScheme="purple"
+            />
+          </FormControl>
 
           {error && error !== "AUTH_401" && (
-            <p style={{ color: COLORS.error }}>{error}</p>
+            <Text color="red.500">{error}</Text>
           )}
 
-          <button
-            onClick={save}
-            className="w-full py-3 rounded-lg text-white font-semibold"
-            style={{ backgroundColor: COLORS.primary }}
-          >
+          <Button onClick={save} colorScheme="purple" size="lg">
             Save
-          </button>
+          </Button>
 
-          <Link
+          <Button
+            as={Link}
             to="/profile/preview"
-            className="w-full py-3 rounded-lg font-semibold text-center block"
-            style={{ backgroundColor: "#EDE9FE", color: COLORS.primary }}
+            size="lg"
+            variant="outline"
+            colorScheme="purple"
+            bg="purple.50"
           >
             Preview Profile
-          </Link>
+          </Button>
 
-          <button
-            onClick={deleteAccount}
-            className="w-full py-3 rounded-lg font-semibold"
-            style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
-          >
+          <Button onClick={deleteAccount} size="lg" variant="outline">
             Delete Account
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={handleSignOut}
-            className="w-full py-3 rounded-lg font-semibold border"
-            style={{ backgroundColor: "#FEE2E2", color: "#B91C1C", borderColor: "#FCA5A5" }}
+            size="lg"
+            colorScheme="red"
+            variant="outline"
+            bg="red.50"
           >
             Sign Out
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </VStack>
+      </Container>
+    </Box>
   );
 }
 

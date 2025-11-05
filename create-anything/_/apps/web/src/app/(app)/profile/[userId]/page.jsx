@@ -5,15 +5,22 @@ import { Heart, X, Video, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  bg: "#F9F9F9",
-  text: "#2C3E50",
-  error: "#E74C3C",
-  cardBg: "#F3F4F6",
-};
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Flex,
+  Spinner,
+  Badge,
+  Card,
+  CardBody,
+  SimpleGrid,
+  Image,
+} from "@chakra-ui/react";
 
 export default function RemoteProfile() {
   const { userId } = useParams();
@@ -91,194 +98,229 @@ export default function RemoteProfile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: COLORS.primary }}></div>
-        </div>
-      </div>
+        <VStack py={12}>
+          <Spinner size="xl" color="purple.500" thickness="4px" />
+        </VStack>
+      </Box>
     );
   }
 
   if (error?.message === "AUTH_401") {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="px-4 py-8 max-w-2xl mx-auto">
-          <p className="mb-4">Session expired. Please sign in.</p>
-          <button
-            onClick={() => navigate("/account/signin")}
-            className="px-4 py-2 rounded-lg text-white font-semibold"
-            style={{ backgroundColor: COLORS.primary }}
-          >
-            Sign In
-          </button>
-        </div>
-      </div>
+        <Container maxW="2xl" px={4} py={8}>
+          <VStack align="start" spacing={4}>
+            <Text>Session expired. Please sign in.</Text>
+            <Button onClick={() => navigate("/account/signin")} colorScheme="purple">
+              Sign In
+            </Button>
+          </VStack>
+        </Container>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="px-4 py-8 max-w-2xl mx-auto">
-          <p className="text-red-600">Error loading profile</p>
-        </div>
-      </div>
+        <Container maxW="2xl" px={4} py={8}>
+          <Text color="red.600">Error loading profile</Text>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+    <Box minH="100vh" bg="gray.50">
       <AppHeader />
-      <div className="px-4 py-8 max-w-2xl mx-auto">
+      <Container maxW="2xl" px={4} py={8}>
         {/* Header with name and membership tier */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: COLORS.text }}>
+        <VStack align="start" spacing={2} mb={6}>
+          <Heading size="2xl" color="gray.800">
             {user?.name || `User ${user?.id}`}
-          </h1>
+          </Heading>
           {user?.membership_tier && (
-            <span 
-              className="inline-block px-3 py-1 rounded-full text-sm font-semibold"
-              style={{ 
-                backgroundColor: COLORS.primary + "20", 
-                color: COLORS.primary 
-              }}
+            <Badge 
+              px={3} 
+              py={1} 
+              borderRadius="full" 
+              fontSize="sm" 
+              fontWeight="semibold"
+              colorScheme="purple"
             >
               {user.membership_tier.charAt(0).toUpperCase() + user.membership_tier.slice(1)} Member
-            </span>
+            </Badge>
           )}
-        </div>
+        </VStack>
 
         {/* Primary photo */}
         {user?.primary_photo_url && (
-          <div className="mb-6 shadow-lg rounded-2xl overflow-hidden">
-            <img
+          <Box mb={6} shadow="lg" borderRadius="2xl" overflow="hidden">
+            <Image
               src={getAbsoluteUrl(user.primary_photo_url)}
               alt={user.name}
-              className="w-full h-96 object-cover"
-              style={{ backgroundColor: COLORS.cardBg }}
+              w="full"
+              h="96"
+              objectFit="cover"
+              bg="gray.100"
             />
-          </div>
+          </Box>
         )}
 
-        {/* About section - prominently displayed */}
+        {/* About section */}
         {user?.bio && (
-          <div className="mb-6 p-6 rounded-2xl shadow-md" style={{ backgroundColor: "white" }}>
-            <h3 className="font-bold text-xl mb-3" style={{ color: COLORS.text }}>About</h3>
-            <p className="text-base leading-relaxed" style={{ color: COLORS.text }}>
-              {user.bio}
-            </p>
-          </div>
+          <Card mb={6} shadow="md">
+            <CardBody p={6}>
+              <Heading size="lg" mb={3} color="gray.800">About</Heading>
+              <Text fontSize="base" lineHeight="relaxed" color="gray.800">
+                {user.bio}
+              </Text>
+            </CardBody>
+          </Card>
         )}
 
         {/* Video */}
         {video?.url && (
-          <div className="mb-6">
-            <h3 className="font-bold text-xl mb-3" style={{ color: COLORS.text }}>Video Introduction</h3>
-            <div className="rounded-2xl overflow-hidden bg-black shadow-lg">
-              <video src={getAbsoluteUrl(video.url)} controls loop className="w-full" style={{ maxHeight: "400px" }} />
-            </div>
-          </div>
+          <Box mb={6}>
+            <Heading size="lg" mb={3} color="gray.800">Video Introduction</Heading>
+            <Box borderRadius="2xl" overflow="hidden" bg="black" shadow="lg">
+              <Box as="video" src={getAbsoluteUrl(video.url)} controls loop w="full" maxH="400px" />
+            </Box>
+          </Box>
         )}
 
         {/* Photo gallery */}
         {media.filter((m) => m.type === "photo").length > 0 && (
-          <div className="mb-6">
-            <h3 className="font-bold text-xl mb-3" style={{ color: COLORS.text }}>
+          <Box mb={6}>
+            <Heading size="lg" mb={3} color="gray.800">
               Photos ({media.filter((m) => m.type === "photo").length})
-            </h3>
-            <div className="grid grid-cols-3 gap-3">
+            </Heading>
+            <SimpleGrid columns={3} spacing={3}>
               {media
                 .filter((m) => m.type === "photo")
                 .map((m, idx) => (
-                  <img
+                  <Image
                     key={idx}
                     src={getAbsoluteUrl(m.url)}
                     alt="Profile"
-                    className="w-full h-32 rounded-xl object-cover shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-                    style={{ backgroundColor: COLORS.cardBg }}
+                    w="full"
+                    h="32"
+                    borderRadius="xl"
+                    objectFit="cover"
+                    shadow="md"
+                    _hover={{ shadow: "lg" }}
+                    transition="all 0.2s"
+                    cursor="pointer"
+                    bg="gray.100"
                   />
                 ))}
-            </div>
-          </div>
+            </SimpleGrid>
+          </Box>
         )}
 
         {/* Availability */}
-        <div className="mb-6 p-6 rounded-2xl shadow-md" style={{ backgroundColor: "white" }}>
-          <h3 className="font-bold text-xl mb-3" style={{ color: COLORS.text }}>Availability</h3>
-          {typical.length > 0 ? (
-            <div className="space-y-2">
-              {typical.map((slot, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <span 
-                    className="w-2 h-2 rounded-full" 
-                    style={{ backgroundColor: COLORS.secondary }}
-                  ></span>
-                  <p style={{ color: COLORS.text }}>
-                    {(slot.days || []).join(", ")} • {slot.start} - {slot.end}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="opacity-60" style={{ color: COLORS.text }}>Availability not shared</p>
-          )}
-          {timezone && (
-            <p className="opacity-60 mt-3 text-sm" style={{ color: COLORS.text }}>
-              Timezone: {timezone}
-            </p>
-          )}
-          {user?.immediate_available && (
-            <div 
-              className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold"
-              style={{ backgroundColor: COLORS.secondary + "20", color: COLORS.secondary }}
-            >
-              <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: COLORS.secondary }}></span>
-              Available now
-            </div>
-          )}
-        </div>
+        <Card mb={6} shadow="md">
+          <CardBody p={6}>
+            <Heading size="lg" mb={3} color="gray.800">Availability</Heading>
+            {typical.length > 0 ? (
+              <VStack align="start" spacing={2}>
+                {typical.map((slot, i) => (
+                  <HStack key={i} spacing={2}>
+                    <Box w={2} h={2} borderRadius="full" bg="teal.500" />
+                    <Text color="gray.800">
+                      {(slot.days || []).join(", ")} • {slot.start} - {slot.end}
+                    </Text>
+                  </HStack>
+                ))}
+              </VStack>
+            ) : (
+              <Text opacity={0.6} color="gray.800">Availability not shared</Text>
+            )}
+            {timezone && (
+              <Text opacity={0.6} mt={3} fontSize="sm" color="gray.800">
+                Timezone: {timezone}
+              </Text>
+            )}
+            {user?.immediate_available && (
+              <Badge 
+                mt={3} 
+                display="inline-flex" 
+                alignItems="center" 
+                gap={2} 
+                px={3} 
+                py={2} 
+                borderRadius="lg" 
+                fontSize="sm" 
+                fontWeight="semibold"
+                colorScheme="teal"
+              >
+                <Box w={2} h={2} borderRadius="full" bg="teal.500" animation="pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" />
+                Available now
+              </Badge>
+            )}
+          </CardBody>
+        </Card>
 
-        {/* Action buttons - improved styling */}
-        <div className="flex gap-4 mt-8 justify-center sticky bottom-8 flex-wrap">
-          <button
+        {/* Action buttons */}
+        <Flex gap={4} mt={8} justify="center" position="sticky" bottom={8} flexWrap="wrap">
+          <Button
             onClick={() => navigate("/discovery")}
-            className="flex items-center gap-2 px-6 py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all"
-            style={{ backgroundColor: "white", color: COLORS.text }}
+            leftIcon={<ArrowLeft size={24} />}
+            size="lg"
+            borderRadius="2xl"
+            fontWeight="bold"
+            bg="white"
+            shadow="lg"
+            _hover={{ shadow: "xl" }}
           >
-            <ArrowLeft size={24} style={{ color: COLORS.text }} />
             Back
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => discardMutation.mutate()}
-            disabled={discardMutation.isPending}
-            className="flex items-center gap-2 px-6 py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
-            style={{ backgroundColor: "white", color: COLORS.text }}
+            isDisabled={discardMutation.isPending}
+            leftIcon={<X size={24} color="#E74C3C" />}
+            size="lg"
+            borderRadius="2xl"
+            fontWeight="bold"
+            bg="white"
+            shadow="lg"
+            _hover={{ shadow: "xl" }}
           >
-            <X size={24} style={{ color: COLORS.error }} />
             Pass
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => likeMutation.mutate()}
-            disabled={likeMutation.isPending}
-            className="flex items-center gap-2 px-6 py-4 rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
-            style={{ backgroundColor: "#EDE7FF", color: COLORS.primary }}
+            isDisabled={likeMutation.isPending}
+            leftIcon={<Heart size={24} color="#7c3aed" />}
+            size="lg"
+            borderRadius="2xl"
+            fontWeight="bold"
+            colorScheme="purple"
+            variant="outline"
+            bg="purple.50"
+            shadow="lg"
+            _hover={{ shadow: "xl" }}
           >
-            <Heart size={24} style={{ color: COLORS.primary }} />
             Like
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => navigate(`/schedule/propose/${targetId}`)}
-            className="flex items-center gap-2 px-6 py-4 rounded-2xl font-bold text-white shadow-lg hover:shadow-xl transition-all"
-            style={{ backgroundColor: COLORS.primary }}
+            leftIcon={<Video size={24} />}
+            size="lg"
+            borderRadius="2xl"
+            fontWeight="bold"
+            colorScheme="purple"
+            shadow="lg"
+            _hover={{ shadow: "xl" }}
           >
-            <Video size={24} />
             Schedule
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </Flex>
+      </Container>
+    </Box>
   );
 }

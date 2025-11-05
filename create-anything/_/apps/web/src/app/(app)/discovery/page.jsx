@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Heart, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
+import { X, Heart, RotateCcw, Video } from "lucide-react";
 import { useNavigate } from "react-router";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
@@ -10,15 +10,21 @@ import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-mo
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { DiscoveryCardSkeleton } from "@/app/components/SkeletonLoader";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  bg: "#F9F9F9",
-  text: "#2C3E50",
-  error: "#E74C3C",
-  cardBg: "#F3F4F6",
-};
+import {
+  Box,
+  Button,
+  Heading,
+  Text,
+  Badge,
+  VStack,
+  HStack,
+  Flex,
+  IconButton,
+  Spinner,
+  Alert,
+  AlertIcon,
+  AlertDescription,
+} from "@chakra-ui/react";
 
 // Swipeable Card Component
 function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, totalCards, isLocked, userInterests }) {
@@ -49,7 +55,8 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
   };
 
   return (
-    <motion.div
+    <Box
+      as={motion.div}
       style={{
         x,
         rotate,
@@ -76,118 +83,152 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
         transition: { duration: 0.3 }
       }}
       whileDrag={isLocked ? {} : { cursor: 'grabbing', scale: 1.05 }}
-      className="touch-none"
+      userSelect="none"
     >
-      <div 
-        className="w-full rounded-3xl shadow-2xl overflow-hidden relative"
-        style={{ backgroundColor: "white" }}
+      <Box 
+        w="full"
+        borderRadius="3xl"
+        shadow="2xl"
+        overflow="hidden"
+        position="relative"
+        bg="white"
       >
-        <button
+        <Box
+          as="button"
           onClick={onTap}
-          className="w-full relative"
+          w="full"
+          position="relative"
+          textAlign="left"
         >
           {profile.photo ? (
-            <div className="relative">
-              <img
+            <Box position="relative">
+              <Box
+                as="img"
                 src={getAbsoluteUrl(profile.photo)}
                 alt={profile.name || `User ${profile.id}`}
-                className="w-full h-[500px] object-cover"
-                style={{ backgroundColor: COLORS.cardBg }}
+                w="full"
+                h="500px"
+                objectFit="cover"
+                bg="gray.100"
               />
               {/* Gradient overlay for text readability */}
-              <div 
-                className="absolute bottom-0 left-0 right-0 h-32"
-                style={{ 
-                  background: "linear-gradient(to top, rgba(0,0,0,0.7), transparent)" 
-                }}
+              <Box 
+                position="absolute"
+                bottom={0}
+                left={0}
+                right={0}
+                h="32"
+                bgGradient="linear(to-t, blackAlpha.700, transparent)"
               />
-            </div>
+            </Box>
           ) : (
-            <div
-              className="w-full h-[500px] flex items-center justify-center"
-              style={{ backgroundColor: COLORS.cardBg }}
+            <Flex
+              w="full"
+              h="500px"
+              align="center"
+              justify="center"
+              bg="gray.100"
             >
-              <span className="text-gray-600">View Profile</span>
-            </div>
+              <Text color="gray.600">View Profile</Text>
+            </Flex>
           )}
           
           {/* Profile info overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-3xl font-bold">
+          <Box position="absolute" bottom={0} left={0} right={0} p={6} color="white">
+            <Flex align="center" justify="space-between" mb={2}>
+              <Heading as="h2" size="xl" fontWeight="bold">
                 {profile.name || "User " + profile.id}
-              </h2>
+              </Heading>
               {profile.immediate_available && (
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-500">
-                  <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                  <span className="text-xs font-semibold">Online</span>
-                </div>
+                <Flex align="center" gap={1.5} px={2} py={1} borderRadius="full" bg="green.500">
+                  <Box w={2} h={2} borderRadius="full" bg="white" animation="pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" />
+                  <Text fontSize="xs" fontWeight="semibold">Online</Text>
+                </Flex>
               )}
-            </div>
+            </Flex>
             
             {/* Special indicators */}
-            <div className="flex flex-wrap gap-2 mb-2">
+            <Flex flexWrap="wrap" gap={2} mb={2}>
               {profile.liked_you && (
-                <span 
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold"
-                  style={{ backgroundColor: COLORS.secondary, color: "white" }}
+                <Badge 
+                  colorScheme="teal"
+                  display="inline-flex"
+                  alignItems="center"
+                  gap={1}
+                  px={2.5}
+                  py={1}
+                  borderRadius="full"
+                  fontSize="xs"
+                  fontWeight="semibold"
                 >
                   <Heart size={12} fill="white" />
                   Likes You
-                </span>
+                </Badge>
               )}
               {mutualInterests.length > 0 && (
-                <span 
-                  className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold"
-                  style={{ backgroundColor: COLORS.primary, color: "white" }}
+                <Badge 
+                  colorScheme="purple"
+                  px={2.5}
+                  py={1}
+                  borderRadius="full"
+                  fontSize="xs"
+                  fontWeight="semibold"
                 >
                   {mutualInterests.length} Shared Interest{mutualInterests.length > 1 ? 's' : ''}
-                </span>
+                </Badge>
               )}
               {profile.membership_tier && (
-                <span 
-                  className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold"
-                  style={{ backgroundColor: "rgba(255,255,255,0.2)", color: "white" }}
+                <Badge 
+                  bg="whiteAlpha.200"
+                  color="white"
+                  px={2.5}
+                  py={1}
+                  borderRadius="full"
+                  fontSize="xs"
+                  fontWeight="semibold"
                 >
                   {profile.membership_tier.charAt(0).toUpperCase() + profile.membership_tier.slice(1)}
-                </span>
+                </Badge>
               )}
-            </div>
+            </Flex>
             
             {/* Show mutual interests details */}
             {mutualInterests.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-2">
+              <Flex flexWrap="wrap" gap={1.5} mb={2}>
                 {mutualInterests.slice(0, 3).map((interest, idx) => (
-                  <span 
+                  <Text 
                     key={idx}
-                    className="text-xs px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
+                    fontSize="xs"
+                    px={2}
+                    py={0.5}
+                    borderRadius="full"
+                    bg="whiteAlpha.150"
                   >
                     {interest}
-                  </span>
+                  </Text>
                 ))}
                 {mutualInterests.length > 3 && (
-                  <span className="text-xs opacity-75">+{mutualInterests.length - 3} more</span>
+                  <Text fontSize="xs" opacity={0.75}>+{mutualInterests.length - 3} more</Text>
                 )}
-              </div>
+              </Flex>
             )}
             
             {profile.bio && (
-              <p className="text-sm opacity-90 line-clamp-2 mt-2">
+              <Text fontSize="sm" opacity={0.9} noOfLines={2} mt={2}>
                 {profile.bio}
-              </p>
+              </Text>
             )}
-          </div>
-        </button>
+          </Box>
+        </Box>
 
         {/* Tap to view full profile hint */}
-        <div className="px-6 py-4 text-center border-t border-gray-100">
-          <p className="text-sm opacity-60" style={{ color: COLORS.text }}>
+        <Box px={6} py={4} textAlign="center" borderTop="1px" borderColor="gray.100">
+          <Text fontSize="sm" opacity={0.6} color="gray.600">
             Swipe or tap photo to interact
-          </p>
-        </div>
-      </div>
-    </motion.div>
+          </Text>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
@@ -346,52 +387,44 @@ function DiscoveryContent() {
 
   if (userLoading || isLoading) {
     return (
-      <div
-        className="min-h-screen"
-        style={{ backgroundColor: COLORS.bg }}
-      >
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="pt-4 px-4">
-          <h1
-            className="text-2xl font-playfair font-bold mb-3 text-center"
-            style={{ color: COLORS.text }}
-          >
+        <VStack pt={4} px={4} spacing={4}>
+          <Heading size="lg" fontFamily="Playfair Display" fontWeight="bold" textAlign="center" color="gray.800">
             Discover Your Match
-          </h1>
+          </Heading>
           <DiscoveryCardSkeleton />
-        </div>
-      </div>
+        </VStack>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="pt-20 px-4" style={{ backgroundColor: COLORS.bg }}>
+      <Box pt={20} px={4} bg="gray.50" minH="100vh">
         {error?.message === "AUTH_401" ? (
-          <div>
-            <p className="mb-3 text-gray-700">
+          <VStack spacing={3} align="start">
+            <Text color="gray.700">
               Session expired. Please sign in.
-            </p>
-            <button
+            </Text>
+            <Button
               onClick={() => navigate("/account/signin")}
-              className="px-4 py-2 rounded-lg text-white font-semibold shadow-lg"
-              style={{ backgroundColor: COLORS.primary }}
+              colorScheme="purple"
+              size="lg"
+              shadow="lg"
             >
               Sign In
-            </button>
-          </div>
+            </Button>
+          </VStack>
         ) : (
-          <p className="text-gray-700">Error loading profiles</p>
+          <Text color="gray.700">Error loading profiles</Text>
         )}
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ backgroundColor: COLORS.bg }}
-    >
+    <Box minH="100vh" bg="gray.50">
       <AppHeader />
       <MatchCelebration
         isOpen={showCelebration}
@@ -400,53 +433,59 @@ function DiscoveryContent() {
       />
       
       {user?.membership_tier === 'free' && (
-        <div className="px-4 pt-4">
-          <div 
-            className="p-4 rounded-xl border-2 flex items-center justify-between"
-            style={{ 
-              backgroundColor: "#EEF2FF", 
-              borderColor: "#818CF8"
-            }}
+        <Box px={4} pt={4}>
+          <Alert 
+            status="info"
+            borderRadius="xl"
+            borderWidth={2}
+            borderColor="indigo.400"
+            bg="indigo.50"
+            p={4}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: "#C7D2FE" }}>
-                <svg className="w-6 h-6" style={{ color: "#4F46E5" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm font-bold" style={{ color: "#4F46E5" }}>
-                  Free Video Calls Today
-                </p>
-                <p className="text-xs" style={{ color: "#6366F1" }}>
-                  {3 - videoMeetingsCount} of 3 remaining
-                </p>
-              </div>
-            </div>
-            {videoMeetingsCount >= 2 && (
-              <button
-                onClick={() => navigate("/settings/subscription")}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
-                style={{ backgroundColor: "#4F46E5" }}
-              >
-                Upgrade
-              </button>
-            )}
-          </div>
-        </div>
+            <Flex align="center" justify="space-between" w="full">
+              <HStack spacing={3}>
+                <Flex
+                  w={10}
+                  h={10}
+                  borderRadius="full"
+                  align="center"
+                  justify="center"
+                  bg="indigo.200"
+                >
+                  <Video size={24} color="#4F46E5" />
+                </Flex>
+                <VStack align="start" spacing={0}>
+                  <Text fontSize="sm" fontWeight="bold" color="indigo.600">
+                    Free Video Calls Today
+                  </Text>
+                  <Text fontSize="xs" color="indigo.500">
+                    {3 - videoMeetingsCount} of 3 remaining
+                  </Text>
+                </VStack>
+              </HStack>
+              {videoMeetingsCount >= 2 && (
+                <Button
+                  onClick={() => navigate("/settings/subscription")}
+                  size="sm"
+                  colorScheme="indigo"
+                  fontSize="xs"
+                >
+                  Upgrade
+                </Button>
+              )}
+            </Flex>
+          </Alert>
+        </Box>
       )}
       
-      <div className="pt-4 px-4">
-        <h1
-          className="text-2xl font-playfair font-bold mb-3 text-center"
-          style={{ color: COLORS.text }}
-        >
+      <VStack pt={4} px={4} spacing={3}>
+        <Heading size="lg" fontFamily="Playfair Display" fontWeight="bold" textAlign="center" color="gray.800">
           Discover Your Match
-        </h1>
+        </Heading>
       {current ? (
-        <div className="flex flex-col items-center max-w-md mx-auto pb-8">
+        <VStack w="full" maxW="md" mx="auto" pb={8} spacing={6}>
           {/* Card Carousel Stack */}
-          <div className="relative w-full mb-6" style={{ height: '580px' }}>
+          <Box position="relative" w="full" h="580px">
             <AnimatePresence>
               {visibleProfiles.slice(0, 3).map((profile, idx) => (
                 <SwipeableCard
@@ -462,58 +501,72 @@ function DiscoveryContent() {
                 />
               ))}
             </AnimatePresence>
-          </div>
+          </Box>
 
-          {/* Counter and Undo */}
-          <div className="flex gap-3 items-center justify-center mb-4">
-            <button
+          {/* Counter and Reset */}
+          <HStack spacing={3} justify="center">
+            <Button
               onClick={() => setRemovedCards([])}
-              disabled={removedCards.length === 0}
-              className="px-4 py-2 rounded-full flex items-center gap-2 font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-              style={{ backgroundColor: "white", color: COLORS.primary }}
+              isDisabled={removedCards.length === 0}
+              leftIcon={<RotateCcw size={18} />}
+              borderRadius="full"
+              colorScheme="purple"
+              variant="outline"
+              bg="white"
+              shadow="md"
+              _hover={{ shadow: "lg" }}
             >
-              <RotateCcw size={18} />
               Reset
-            </button>
-            <span className="text-sm font-medium" style={{ color: COLORS.text }}>
+            </Button>
+            <Text fontSize="sm" fontWeight="medium" color="gray.700">
               {currentIndex + 1} of {profiles.length}
-            </span>
-          </div>
+            </Text>
+          </HStack>
 
           {/* Action buttons */}
-          <div className="flex gap-6 items-center justify-center">
-            <button
+          <HStack spacing={6} justify="center">
+            <IconButton
               onClick={() => discardMutation.mutate(current.id)}
-              disabled={discardMutation.isPending}
-              className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all disabled:opacity-50 hover:scale-110"
-              style={{ backgroundColor: "white" }}
-            >
-              <X color={COLORS.error} size={32} strokeWidth={2.5} />
-            </button>
-            <button
+              isDisabled={discardMutation.isPending}
+              icon={<X color="#E74C3C" size={32} strokeWidth={2.5} />}
+              w={20}
+              h={20}
+              borderRadius="full"
+              bg="white"
+              shadow="lg"
+              _hover={{ shadow: "xl", transform: "scale(1.1)" }}
+              transition="all 0.2s"
+              aria-label="Pass"
+            />
+            <IconButton
               onClick={() => likeMutation.mutate(current.id)}
-              disabled={likeMutation.isPending}
-              className="w-24 h-24 rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl transition-all disabled:opacity-50 hover:scale-110"
-              style={{ backgroundColor: COLORS.primary }}
-            >
-              <Heart color="white" size={36} fill="white" strokeWidth={2.5} />
-            </button>
-          </div>
-        </div>
+              isDisabled={likeMutation.isPending}
+              icon={<Heart color="white" size={36} fill="white" strokeWidth={2.5} />}
+              w={24}
+              h={24}
+              borderRadius="full"
+              colorScheme="purple"
+              shadow="xl"
+              _hover={{ shadow: "2xl", transform: "scale(1.1)" }}
+              transition="all 0.2s"
+              aria-label="Like"
+            />
+          </HStack>
+        </VStack>
       ) : (
-        <div className="flex flex-col items-center justify-center" style={{ minHeight: "60vh" }}>
-          <p className="text-gray-600 mb-3">No more profiles.</p>
-          <button
+        <VStack minH="60vh" justify="center" align="center" spacing={3}>
+          <Text color="gray.600">No more profiles.</Text>
+          <Button
             onClick={() => refetch()}
-            className="px-4 py-2 rounded-lg text-white font-semibold shadow-lg"
-            style={{ backgroundColor: COLORS.primary }}
+            colorScheme="purple"
+            shadow="lg"
           >
             Refresh
-          </button>
-        </div>
+          </Button>
+        </VStack>
       )}
-      </div>
-    </div>
+      </VStack>
+    </Box>
   );
 }
 

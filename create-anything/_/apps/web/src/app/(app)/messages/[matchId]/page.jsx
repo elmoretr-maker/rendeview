@@ -1,22 +1,38 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useUser } from "@/utils/useUser";
+import useUser from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { BuyCreditsModal } from "@/components/BuyCreditsModal";
 import { SmartNudge } from "@/components/SmartNudge";
 import { Video, X, Clock, Crown } from "lucide-react";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  bg: "#F9F9F9",
-  text: "#2C3E50",
-  error: "#E74C3C",
-  cardBg: "#F3F4F6",
-};
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Flex,
+  Spinner,
+  Input,
+  Textarea,
+  Progress,
+  IconButton,
+  Badge,
+  Card,
+  CardBody,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  Divider,
+} from "@chakra-ui/react";
 
 function ChatContent() {
   const { matchId } = useParams();
@@ -278,138 +294,143 @@ function ChatContent() {
 
   if (userLoading || isLoading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: COLORS.primary }}></div>
-            <p className="mt-4" style={{ color: COLORS.text }}>Loading chat...</p>
-          </div>
-        </div>
-      </div>
+        <VStack py={12} spacing={4}>
+          <Spinner size="xl" color="purple.500" thickness="4px" />
+          <Text color="gray.700">Loading chat...</Text>
+        </VStack>
+      </Box>
     );
   }
 
   if (error?.message === "AUTH_401") {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="px-4 py-8 max-w-2xl mx-auto">
-          <h1 className="text-xl font-bold mb-4" style={{ color: COLORS.text }}>Chat</h1>
-          <div>
-            <p className="mb-4" style={{ color: COLORS.text }}>Session expired. Please sign in.</p>
-            <button
+        <Container maxW="2xl" px={4} py={8}>
+          <Heading size="xl" mb={4} color="gray.800">Chat</Heading>
+          <VStack align="start" spacing={4}>
+            <Text color="gray.700">Session expired. Please sign in.</Text>
+            <Button
               onClick={() => navigate("/account/signin")}
-              className="px-4 py-2 rounded-lg text-white font-semibold shadow-md"
-              style={{ backgroundColor: COLORS.primary }}
+              colorScheme="purple"
+              shadow="md"
             >
               Sign In
-            </button>
-          </div>
-        </div>
-      </div>
+            </Button>
+          </VStack>
+        </Container>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="px-4 py-8 max-w-2xl mx-auto">
-          <h1 className="text-xl font-bold mb-4" style={{ color: COLORS.text }}>Chat</h1>
-          <p style={{ color: COLORS.error }}>Error loading messages</p>
-        </div>
-      </div>
+        <Container maxW="2xl" px={4} py={8}>
+          <Heading size="xl" mb={4} color="gray.800">Chat</Heading>
+          <Text color="red.500">Error loading messages</Text>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: COLORS.bg }}>
+    <Box minH="100vh" display="flex" flexDirection="column" bg="gray.50">
       <AppHeader />
-      <div className="max-w-2xl mx-auto w-full flex-1 flex flex-col px-4 py-8">
+      <Container maxW="2xl" w="full" flex="1" display="flex" flexDirection="column" px={4} py={8}>
         {/* Header with Video Call Button */}
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold" style={{ color: COLORS.text }}>
+        <Flex align="center" justify="space-between" mb={4}>
+          <Heading size="xl" color="gray.800">
             Chat with {otherUser?.name || 'User'}
-          </h1>
+          </Heading>
           {otherUser?.video_call_available !== false ? (
-            <button
+            <Button
               onClick={() => setShowVideoCallModal(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white shadow-md hover:shadow-lg transition-all"
-              style={{ backgroundColor: COLORS.secondary }}
+              leftIcon={<Video size={20} />}
+              colorScheme="teal"
+              shadow="md"
+              _hover={{ shadow: "lg" }}
             >
-              <Video size={20} />
-              <span>Start Video Call</span>
-            </button>
+              Start Video Call
+            </Button>
           ) : (
-            <div
-              className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold"
-              style={{ backgroundColor: COLORS.cardBg, color: "#6B7280" }}
+            <Badge
+              display="flex"
+              alignItems="center"
+              gap={2}
+              px={4}
+              py={2}
+              borderRadius="lg"
+              fontSize="sm"
+              fontWeight="semibold"
+              bg="gray.100"
+              color="gray.600"
               title="This user is not accepting video calls at the moment"
             >
               <X size={20} />
-              <span>Video Calls Unavailable</span>
-            </div>
+              <Text>Video Calls Unavailable</Text>
+            </Badge>
           )}
-        </div>
+        </Flex>
         
         {/* Message Quota Counter */}
         {quotaData && (
-          <div className="mb-4 p-4 rounded-xl shadow-sm" style={{ backgroundColor: "white" }}>
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex-1">
-                <p className="text-xs font-medium mb-1" style={{ color: "#6B7280" }}>
-                  First Messages with {otherUser?.name || 'this user'}
-                </p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-2 rounded-full" style={{ backgroundColor: COLORS.cardBg }}>
-                    <div 
-                      className="h-2 rounded-full transition-all" 
-                      style={{ 
-                        backgroundColor: COLORS.secondary,
-                        width: `${(quotaData.quota.firstEncounter.remaining / quotaData.quota.firstEncounter.limit) * 100}%`
-                      }}
+          <Card mb={4} shadow="sm" bg="white">
+            <CardBody p={4}>
+              <Flex gap={4} align="stretch">
+                <VStack flex={1} align="stretch" spacing={1}>
+                  <Text fontSize="xs" fontWeight="medium" color="gray.600">
+                    First Messages with {otherUser?.name || 'this user'}
+                  </Text>
+                  <HStack spacing={2}>
+                    <Progress 
+                      flex={1} 
+                      value={(quotaData.quota.firstEncounter.remaining / quotaData.quota.firstEncounter.limit) * 100}
+                      colorScheme="teal"
+                      borderRadius="full"
+                      size="sm"
                     />
-                  </div>
-                  <span className="text-sm font-bold" style={{ color: COLORS.text }}>
-                    {quotaData.quota.firstEncounter.remaining}/{quotaData.quota.firstEncounter.limit}
-                  </span>
-                </div>
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-medium mb-1" style={{ color: "#6B7280" }}>
-                  Daily Messages ({quotaData.tier})
-                </p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-2 rounded-full" style={{ backgroundColor: COLORS.cardBg }}>
-                    <div 
-                      className="h-2 rounded-full transition-all" 
-                      style={{ 
-                        backgroundColor: COLORS.primary,
-                        width: `${(quotaData.quota.dailyTier.remaining / quotaData.quota.dailyTier.limit) * 100}%`
-                      }}
+                    <Text fontSize="sm" fontWeight="bold" color="gray.800">
+                      {quotaData.quota.firstEncounter.remaining}/{quotaData.quota.firstEncounter.limit}
+                    </Text>
+                  </HStack>
+                </VStack>
+                <VStack flex={1} align="stretch" spacing={1}>
+                  <Text fontSize="xs" fontWeight="medium" color="gray.600">
+                    Daily Messages ({quotaData.tier})
+                  </Text>
+                  <HStack spacing={2}>
+                    <Progress 
+                      flex={1} 
+                      value={(quotaData.quota.dailyTier.remaining / quotaData.quota.dailyTier.limit) * 100}
+                      colorScheme="purple"
+                      borderRadius="full"
+                      size="sm"
                     />
-                  </div>
-                  <span className="text-sm font-bold" style={{ color: COLORS.text }}>
-                    {quotaData.quota.dailyTier.remaining}/{quotaData.quota.dailyTier.limit}
-                  </span>
-                </div>
-              </div>
-            </div>
-            {quotaData.quota.credits.remaining > 0 && (
-              <div className="mt-3 pt-3 border-t" style={{ borderColor: COLORS.cardBg }}>
-                <p className="text-xs" style={{ color: "#6B7280" }}>
-                  💳 Message Credits: <span className="font-bold" style={{ color: COLORS.text }}>{quotaData.quota.credits.remaining}</span>
-                </p>
-              </div>
-            )}
-            {quotaData.hasVideoCalledWith && quotaData.tier === 'business' && (
-              <div className="mt-2 text-xs flex items-center gap-1" style={{ color: COLORS.secondary }}>
-                <span>✓</span>
-                <span className="font-medium">Premium features unlocked</span>
-              </div>
-            )}
-          </div>
+                    <Text fontSize="sm" fontWeight="bold" color="gray.800">
+                      {quotaData.quota.dailyTier.remaining}/{quotaData.quota.dailyTier.limit}
+                    </Text>
+                  </HStack>
+                </VStack>
+              </Flex>
+              {quotaData.quota.credits.remaining > 0 && (
+                <Box mt={3} pt={3} borderTop="1px" borderColor="gray.100">
+                  <Text fontSize="xs" color="gray.600">
+                    💳 Message Credits: <Text as="span" fontWeight="bold" color="gray.800">{quotaData.quota.credits.remaining}</Text>
+                  </Text>
+                </Box>
+              )}
+              {quotaData.hasVideoCalledWith && quotaData.tier === 'business' && (
+                <HStack mt={2} fontSize="xs" color="teal.500">
+                  <Text>✓</Text>
+                  <Text fontWeight="medium">Premium features unlocked</Text>
+                </HStack>
+              )}
+            </CardBody>
+          </Card>
         )}
         
         {/* Smart Nudge */}
@@ -423,125 +444,138 @@ function ChatContent() {
         
         {/* Private Notes Section */}
         {otherUser && (
-          <div className="mb-4 p-4 rounded-xl shadow-sm" style={{ backgroundColor: "white" }}>
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="font-semibold text-sm" style={{ color: COLORS.text }}>
-                📝 Private Note
-              </h2>
-              {!isEditingNote && (
-                <button
-                  onClick={() => setIsEditingNote(true)}
-                  className="text-sm font-medium hover:underline"
-                  style={{ color: COLORS.primary }}
-                >
-                  {noteContent ? "Edit" : "Add Note"}
-                </button>
+          <Card mb={4} shadow="sm" bg="white">
+            <CardBody p={4}>
+              <Flex align="center" justify="space-between" mb={2}>
+                <Heading size="sm" color="gray.800">
+                  📝 Private Note
+                </Heading>
+                {!isEditingNote && (
+                  <Button
+                    onClick={() => setIsEditingNote(true)}
+                    size="sm"
+                    variant="link"
+                    colorScheme="purple"
+                  >
+                    {noteContent ? "Edit" : "Add Note"}
+                  </Button>
+                )}
+              </Flex>
+              
+              {isEditingNote ? (
+                <VStack spacing={2} align="stretch">
+                  <Textarea
+                    value={noteContent}
+                    onChange={(e) => setNoteContent(e.target.value)}
+                    placeholder="Add your thoughts about this person... (e.g., 'Loves hiking', 'Works in tech')"
+                    borderColor="gray.200"
+                    focusBorderColor="purple.500"
+                    rows={3}
+                    maxLength={500}
+                  />
+                  <HStack spacing={2}>
+                    <Button
+                      onClick={() => {
+                        setIsEditingNote(false);
+                        setNoteContent(noteData?.note?.note_content || "");
+                      }}
+                      isDisabled={savingNote}
+                      size="sm"
+                      variant="outline"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={saveNote}
+                      isDisabled={savingNote}
+                      size="sm"
+                      colorScheme="purple"
+                    >
+                      {savingNote ? "Saving..." : "Save"}
+                    </Button>
+                  </HStack>
+                </VStack>
+              ) : (
+                <Text fontSize="sm" color={noteContent ? "gray.800" : "gray.400"}>
+                  {noteContent || "No notes yet. Click 'Add Note' to remember details about this person."}
+                </Text>
               )}
-            </div>
-            
-            {isEditingNote ? (
-              <div>
-                <textarea
-                  value={noteContent}
-                  onChange={(e) => setNoteContent(e.target.value)}
-                  placeholder="Add your thoughts about this person... (e.g., 'Loves hiking', 'Works in tech')"
-                  className="w-full p-3 rounded-lg border-2 resize-none mb-2 focus:outline-none focus:border-purple-500"
-                  style={{ borderColor: COLORS.cardBg }}
-                  rows={3}
-                  maxLength={500}
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setIsEditingNote(false);
-                      setNoteContent(noteData?.note?.note_content || "");
-                    }}
-                    disabled={savingNote}
-                    className="px-3 py-2 text-sm rounded-lg font-medium disabled:opacity-50"
-                    style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={saveNote}
-                    disabled={savingNote}
-                    className="px-3 py-2 text-sm rounded-lg font-medium text-white disabled:opacity-50"
-                    style={{ backgroundColor: COLORS.primary }}
-                  >
-                    {savingNote ? "Saving..." : "Save"}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm" style={{ color: noteContent ? COLORS.text : "#9CA3AF" }}>
-                {noteContent || "No notes yet. Click 'Add Note' to remember details about this person."}
-              </p>
-            )}
-          </div>
+            </CardBody>
+          </Card>
         )}
         
-        <div className="flex-1 overflow-y-auto mb-4 space-y-2">
+        <Box flex={1} overflowY="auto" mb={4}>
           {msgs.length === 0 ? (
-            <div className="py-8">
-              <div className="text-center mb-6">
-                <p className="text-lg font-semibold mb-2" style={{ color: COLORS.text }}>
+            <VStack py={8} spacing={6}>
+              <VStack textAlign="center" spacing={2}>
+                <Heading size="md" color="gray.800">
                   Start the conversation!
-                </p>
-                <p className="text-sm text-gray-500">
+                </Heading>
+                <Text fontSize="sm" color="gray.500">
                   Pick a conversation starter or write your own message
-                </p>
-              </div>
+                </Text>
+              </VStack>
               
-              <div className="grid grid-cols-1 gap-2 max-w-md mx-auto">
+              <VStack spacing={2} maxW="md" w="full" mx="auto">
                 {conversationStarters.map((starter, idx) => (
-                  <button
+                  <Button
                     key={idx}
                     onClick={() => setText(starter)}
-                    className="text-left px-4 py-3 rounded-lg border-2 transition-all hover:shadow-md"
-                    style={{ 
-                      borderColor: COLORS.cardBg,
-                      backgroundColor: "white",
-                      color: COLORS.text
-                    }}
+                    w="full"
+                    textAlign="left"
+                    justifyContent="flex-start"
+                    px={4}
+                    py={3}
+                    h="auto"
+                    whiteSpace="normal"
+                    borderWidth={2}
+                    borderColor="gray.100"
+                    bg="white"
+                    color="gray.800"
+                    _hover={{ shadow: "md" }}
+                    variant="outline"
                   >
-                    <p className="text-sm">{starter}</p>
-                  </button>
+                    <Text fontSize="sm">{starter}</Text>
+                  </Button>
                 ))}
-              </div>
-            </div>
+              </VStack>
+            </VStack>
           ) : (
-            msgs.map((item) => (
-              <div key={item.id} className="py-2">
-                <p className="text-sm" style={{ color: COLORS.text }}>{item.body}</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  {new Date(item.created_at).toLocaleTimeString()}
-                </p>
-              </div>
-            ))
+            <VStack spacing={2} align="stretch">
+              {msgs.map((item) => (
+                <Box key={item.id} py={2}>
+                  <Text fontSize="sm" color="gray.800">{item.body}</Text>
+                  <Text fontSize="xs" color="gray.400" mt={1}>
+                    {new Date(item.created_at).toLocaleTimeString()}
+                  </Text>
+                </Box>
+              ))}
+            </VStack>
           )}
-        </div>
+        </Box>
 
-        <div className="flex gap-2 items-center">
-          <input
+        <HStack spacing={2}>
+          <Input
             type="text"
-            className="flex-1 border rounded-lg px-4 py-2 bg-white"
-            style={{ borderColor: "#E5E7EB" }}
             placeholder="Type a message (max 50)"
             value={text}
             onChange={(e) => e.target.value.length <= 50 && setText(e.target.value)}
             maxLength={50}
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && send()}
+            borderColor="gray.200"
+            bg="white"
           />
-          <button
+          <Button
             onClick={send}
-            disabled={sendMutation.isPending}
-            className="px-4 py-2 rounded-lg text-white font-semibold disabled:opacity-50"
-            style={{ backgroundColor: COLORS.primary }}
+            isDisabled={sendMutation.isPending}
+            colorScheme="purple"
+            isLoading={sendMutation.isPending}
+            loadingText="Sending..."
           >
-            {sendMutation.isPending ? "Sending..." : "Send"}
-          </button>
-        </div>
-      </div>
+            Send
+          </Button>
+        </HStack>
+      </Container>
       
       <BuyCreditsModal 
         isOpen={showBuyCreditsModal} 
@@ -550,138 +584,136 @@ function ChatContent() {
       />
       
       {/* Video Call Confirmation Modal */}
-      {showVideoCallModal && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-          onClick={() => !creatingVideoCall && setShowVideoCallModal(false)}
-        >
-          <div 
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
-            onClick={(e) => e.stopPropagation()}
-            style={{ maxHeight: '90vh', overflowY: 'auto' }}
-          >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div 
-                  className="p-3 rounded-full"
-                  style={{ backgroundColor: COLORS.secondary + "20" }}
-                >
-                  <Video size={28} style={{ color: COLORS.secondary }} />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold" style={{ color: COLORS.text }}>
-                    Start Video Call?
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    Connect with {otherUser?.name || 'this user'}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowVideoCallModal(false)}
-                disabled={creatingVideoCall}
-                className="p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50"
+      <Modal 
+        isOpen={showVideoCallModal} 
+        onClose={() => !creatingVideoCall && setShowVideoCallModal(false)}
+        size="md"
+        isCentered
+      >
+        <ModalOverlay bg="blackAlpha.600" />
+        <ModalContent borderRadius="2xl" shadow="2xl" maxH="90vh" overflowY="auto">
+          <ModalHeader>
+            <HStack spacing={3}>
+              <Flex
+                p={3}
+                borderRadius="full"
+                bg="teal.50"
               >
-                <X size={24} style={{ color: COLORS.text }} />
-              </button>
-            </div>
-
+                <Video size={28} color="#00BFA6" />
+              </Flex>
+              <VStack align="start" spacing={0}>
+                <Heading size="lg" color="gray.800">
+                  Start Video Call?
+                </Heading>
+                <Text fontSize="sm" color="gray.500" fontWeight="normal">
+                  Connect with {otherUser?.name || 'this user'}
+                </Text>
+              </VStack>
+            </HStack>
+          </ModalHeader>
+          <ModalCloseButton isDisabled={creatingVideoCall} />
+          
+          <ModalBody pb={6}>
             {/* Call Details */}
-            <div className="mb-6 p-4 rounded-xl" style={{ backgroundColor: COLORS.bg }}>
-              <div className="flex items-center gap-2 mb-3">
-                <Clock size={20} style={{ color: COLORS.primary }} />
-                <h3 className="font-semibold" style={{ color: COLORS.text }}>
-                  Your Call Duration
-                </h3>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-3xl font-bold" style={{ color: COLORS.primary }}>
-                    {getCallDuration(user?.membership_tier || 'free')} minutes
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {getTierDisplay(user?.membership_tier || 'free')} tier
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-500">Extensions available</p>
-                  <p className="text-sm font-semibold" style={{ color: COLORS.secondary }}>
-                    +10 min for $8
-                  </p>
-                </div>
-              </div>
-            </div>
+            <Card mb={6} bg="gray.50">
+              <CardBody p={4}>
+                <HStack spacing={2} mb={3}>
+                  <Clock size={20} color="#7c3aed" />
+                  <Heading size="sm" color="gray.800">
+                    Your Call Duration
+                  </Heading>
+                </HStack>
+                <Flex justify="space-between" align="center">
+                  <VStack align="start" spacing={1}>
+                    <Heading size="2xl" color="purple.600">
+                      {getCallDuration(user?.membership_tier || 'free')} minutes
+                    </Heading>
+                    <Text fontSize="sm" color="gray.600">
+                      {getTierDisplay(user?.membership_tier || 'free')} tier
+                    </Text>
+                  </VStack>
+                  <VStack align="end" spacing={0}>
+                    <Text fontSize="xs" color="gray.500">Extensions available</Text>
+                    <Text fontSize="sm" fontWeight="semibold" color="teal.500">
+                      +10 min for $8
+                    </Text>
+                  </VStack>
+                </Flex>
+              </CardBody>
+            </Card>
 
             {/* Upgrade Prompt for Free Users */}
             {user?.membership_tier === 'free' && (
-              <div 
-                className="mb-6 p-4 rounded-xl border-2"
-                style={{ 
-                  backgroundColor: COLORS.primary + "10",
-                  borderColor: COLORS.primary + "40"
-                }}
-              >
-                <div className="flex items-start gap-3">
-                  <Crown size={24} style={{ color: COLORS.primary }} />
-                  <div className="flex-1">
-                    <h4 className="font-bold mb-1" style={{ color: COLORS.primary }}>
-                      Get More Time!
-                    </h4>
-                    <p className="text-sm text-gray-700 mb-2">
-                      Upgrade to Casual ($9.99/mo) for 15-minute calls, or Dating ($29.99/mo) for 25-minute calls.
-                    </p>
-                    <button
-                      onClick={() => {
-                        setShowVideoCallModal(false);
-                        navigate("/settings/subscription");
-                      }}
-                      className="text-sm font-semibold hover:underline"
-                      style={{ color: COLORS.primary }}
-                    >
-                      View Plans →
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <Card mb={6} borderWidth={2} borderColor="purple.200" bg="purple.50">
+                <CardBody p={4}>
+                  <HStack align="start" spacing={3}>
+                    <Crown size={24} color="#7c3aed" />
+                    <VStack align="start" flex={1} spacing={2}>
+                      <Heading size="sm" color="purple.600">
+                        Get More Time!
+                      </Heading>
+                      <Text fontSize="sm" color="gray.700">
+                        Upgrade to Casual ($9.99/mo) for 15-minute calls, or Dating ($29.99/mo) for 25-minute calls.
+                      </Text>
+                      <Button
+                        onClick={() => {
+                          setShowVideoCallModal(false);
+                          navigate("/settings/subscription");
+                        }}
+                        size="sm"
+                        variant="link"
+                        colorScheme="purple"
+                      >
+                        View Plans →
+                      </Button>
+                    </VStack>
+                  </HStack>
+                </CardBody>
+              </Card>
             )}
 
             {/* Important Notes */}
-            <div className="mb-6 space-y-2">
-              <p className="text-sm text-gray-600">
+            <VStack align="start" spacing={2} mb={6}>
+              <Text fontSize="sm" color="gray.600">
                 ✓ Video call will start immediately
-              </p>
-              <p className="text-sm text-gray-600">
+              </Text>
+              <Text fontSize="sm" color="gray.600">
                 ✓ Both participants will be notified
-              </p>
-              <p className="text-sm text-gray-600">
+              </Text>
+              <Text fontSize="sm" color="gray.600">
                 ✓ You can extend the call with in-call purchases
-              </p>
-            </div>
+              </Text>
+            </VStack>
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
-              <button
+            <HStack spacing={3}>
+              <Button
                 onClick={() => setShowVideoCallModal(false)}
-                disabled={creatingVideoCall}
-                className="flex-1 px-4 py-3 rounded-xl font-bold shadow-md transition-all disabled:opacity-50"
-                style={{ backgroundColor: COLORS.cardBg, color: COLORS.text }}
+                isDisabled={creatingVideoCall}
+                flex={1}
+                size="lg"
+                variant="outline"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={startVideoCall}
-                disabled={creatingVideoCall}
-                className="flex-1 px-4 py-3 rounded-xl font-bold text-white shadow-md hover:shadow-lg transition-all disabled:opacity-50"
-                style={{ backgroundColor: COLORS.secondary }}
+                isDisabled={creatingVideoCall}
+                isLoading={creatingVideoCall}
+                loadingText="Starting..."
+                flex={1}
+                size="lg"
+                colorScheme="teal"
+                shadow="md"
+                _hover={{ shadow: "lg" }}
               >
-                {creatingVideoCall ? "Starting..." : "Start Call"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+                Start Call
+              </Button>
+            </HStack>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </Box>
   );
 }
 

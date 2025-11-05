@@ -1,19 +1,23 @@
 import React from "react";
 import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useUser } from "@/utils/useUser";
+import useUser from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
-
-const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  bg: "#F9F9F9",
-  text: "#2C3E50",
-  error: "#E74C3C",
-  cardBg: "#F3F4F6",
-};
+import {
+  Box,
+  Button,
+  Container,
+  Heading,
+  Text,
+  Avatar,
+  VStack,
+  HStack,
+  Spinner,
+  Card,
+  CardBody,
+} from "@chakra-ui/react";
 
 export default function Messages() {
   const navigate = useNavigate();
@@ -47,90 +51,95 @@ export default function Messages() {
 
   if (userLoading || isLoading) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: COLORS.primary }}></div>
-            <p className="mt-4" style={{ color: COLORS.text }}>Loading...</p>
-          </div>
-        </div>
-      </div>
+        <VStack py={12} spacing={4}>
+          <Spinner size="xl" color="purple.500" thickness="4px" />
+          <Text color="gray.700">Loading...</Text>
+        </VStack>
+      </Box>
     );
   }
 
   if (error?.message === "AUTH_401") {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <h1 className="text-2xl font-bold mb-4" style={{ color: COLORS.text }}>Messages</h1>
-          <div>
-            <p className="mb-4" style={{ color: COLORS.text }}>Session expired. Please sign in.</p>
-            <button
+        <Container maxW="2xl" px={4} py={8}>
+          <Heading size="xl" mb={4} color="gray.800">Messages</Heading>
+          <VStack align="start" spacing={4}>
+            <Text color="gray.700">Session expired. Please sign in.</Text>
+            <Button
               onClick={() => navigate("/account/signin")}
-              className="px-4 py-2 rounded-lg text-white font-semibold shadow-md"
-              style={{ backgroundColor: COLORS.primary }}
+              colorScheme="purple"
+              shadow="md"
             >
               Sign In
-            </button>
-          </div>
-        </div>
-      </div>
+            </Button>
+          </VStack>
+        </Container>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+      <Box minH="100vh" bg="gray.50">
         <AppHeader />
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <h1 className="text-2xl font-bold mb-4" style={{ color: COLORS.text }}>Messages</h1>
-          <p style={{ color: COLORS.error }}>Error loading messages</p>
-        </div>
-      </div>
+        <Container maxW="2xl" px={4} py={8}>
+          <Heading size="xl" mb={4} color="gray.800">Messages</Heading>
+          <Text color="red.500">Error loading messages</Text>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: COLORS.bg }}>
+    <Box minH="100vh" bg="gray.50">
       <AppHeader />
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6" style={{ color: COLORS.text }}>Messages</h1>
+      <Container maxW="2xl" px={4} py={8}>
+        <Heading size="xl" mb={6} color="gray.800">Messages</Heading>
 
         {matches.length === 0 ? (
-          <div className="text-center py-12">
-            <p style={{ color: COLORS.text }}>No messages yet. Match with someone first!</p>
-          </div>
+          <Box textAlign="center" py={12}>
+            <Text color="gray.700">No messages yet. Match with someone first!</Text>
+          </Box>
         ) : (
-          <div className="space-y-3">
+          <VStack spacing={3} align="stretch">
             {matches.map((item) => (
-              <button
+              <Card
                 key={item.match_id}
+                as="button"
                 onClick={() => navigate(`/messages/${item.match_id}`)}
-                className="w-full flex items-center py-3 px-4 rounded-lg hover:bg-white transition-colors"
-                style={{ backgroundColor: COLORS.cardBg, borderBottom: `1px solid ${COLORS.cardBg}` }}
+                cursor="pointer"
+                _hover={{ bg: "white", shadow: "md" }}
+                transition="all 0.2s"
+                bg="gray.100"
+                variant="outline"
               >
-                {item.user.photo ? (
-                  <img
-                    src={getAbsoluteUrl(item.user.photo)}
-                    alt={item.user.name || "User"}
-                    className="w-12 h-12 rounded-full bg-gray-200"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-gray-200"></div>
-                )}
-                <div className="ml-3 text-left">
-                  <p className="font-semibold" style={{ color: COLORS.text }}>
-                    {item.user.name || `User ${item.user.id}`}
-                  </p>
-                  <p className="text-sm text-gray-500">Tap to chat</p>
-                </div>
-              </button>
+                <CardBody p={4}>
+                  <HStack spacing={3}>
+                    <Avatar
+                      size="md"
+                      src={item.user.photo ? getAbsoluteUrl(item.user.photo) : undefined}
+                      name={item.user.name || `User ${item.user.id}`}
+                      bg="gray.200"
+                    />
+                    <VStack align="start" spacing={0} flex={1}>
+                      <Text fontWeight="semibold" color="gray.800">
+                        {item.user.name || `User ${item.user.id}`}
+                      </Text>
+                      <Text fontSize="sm" color="gray.500">
+                        Tap to chat
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </CardBody>
+              </Card>
             ))}
-          </div>
+          </VStack>
         )}
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 }
