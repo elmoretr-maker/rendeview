@@ -5,6 +5,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
 
 const COLORS = {
   primary: "#7c3aed",
@@ -54,6 +60,7 @@ const STYLES = {
     color: COLORS.white,
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: "Inter_600SemiBold",
   },
 };
 
@@ -62,6 +69,11 @@ function ConsentContent() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const [saving, setSaving] = useState(false);
+  const [loaded, errorFont] = useFonts({
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
   const returnTo =
     typeof params.returnTo === "string" && params.returnTo.length > 0
       ? decodeURIComponent(params.returnTo)
@@ -137,7 +149,7 @@ function ConsentContent() {
             }}
           />
         </View>
-        <Text style={{ marginTop: 6, color: COLORS.text, opacity: 0.7 }}>
+        <Text style={{ marginTop: 6, color: COLORS.text, opacity: 0.7, fontFamily: "Inter_400Regular" }}>
           Step {stepIndex} of {totalSteps}
         </Text>
       </View>
@@ -154,15 +166,15 @@ function ConsentContent() {
         }}
       >
         <Ionicons name="arrow-back" size={24} color={COLORS.gray600} />
-        <Text style={{ marginLeft: 8, color: COLORS.gray600, fontSize: 16 }}>Back</Text>
+        <Text style={{ marginLeft: 8, color: COLORS.gray600, fontSize: 16, fontFamily: "Inter_400Regular" }}>Back</Text>
       </TouchableOpacity>
 
       {/* Card Container */}
       <View style={STYLES.card}>
-        <Text style={{ fontSize: 22, fontWeight: "700", marginBottom: 12, color: COLORS.text }}>
+        <Text style={{ fontSize: 22, fontWeight: "700", marginBottom: 12, color: COLORS.text, fontFamily: "Inter_700Bold" }}>
           Data Consent
         </Text>
-        <Text style={{ color: COLORS.gray600, marginBottom: 24, lineHeight: 22 }}>
+        <Text style={{ color: COLORS.gray600, marginBottom: 24, lineHeight: 22, fontFamily: "Inter_400Regular" }}>
           We use your location and interests to ensure perfect matches and
           reliable scheduling. By consenting, you unlock all features for a
           superior dating experience.
@@ -196,6 +208,7 @@ function ConsentContent() {
               color: "#111827",
               fontWeight: "600",
               fontSize: 16,
+              fontFamily: "Inter_600SemiBold",
             }}
           >
             Decline
