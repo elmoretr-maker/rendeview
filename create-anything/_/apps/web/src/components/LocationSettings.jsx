@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   VStack,
   FormControl,
   FormLabel,
+  Input,
   Slider,
   SliderTrack,
   SliderFilledTrack,
@@ -11,313 +12,252 @@ import {
   Text,
   Button,
   HStack,
-  Card,
-  CardBody,
-  Heading,
   useToast,
+  InputGroup,
+  InputLeftElement,
 } from '@chakra-ui/react';
 
-function MapController({ center }) {
-  const [map, setMap] = useState(null);
-  const [useMapHook, setUseMapHook] = useState(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      import('react-leaflet').then((reactLeaflet) => {
-        setUseMapHook(() => reactLeaflet.useMap);
-      });
-    }
-  }, []);
-
-  if (useMapHook) {
-    const MapUpdater = () => {
-      const mapInstance = useMapHook();
-      
-      useEffect(() => {
-        if (mapInstance && center) {
-          mapInstance.setView(center, mapInstance.getZoom());
-        }
-      }, [center, mapInstance]);
-      
-      return null;
-    };
-    
-    return <MapUpdater />;
-  }
-  
-  return null;
-}
-
-function LocationMap({ center, maxDistance }) {
-  const [MapComponents, setMapComponents] = useState(null);
-  const [L, setL] = useState(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      Promise.all([
-        import('react-leaflet'),
-        import('leaflet'),
-        import('leaflet/dist/leaflet.css'),
-      ]).then(([reactLeaflet, leaflet]) => {
-        setMapComponents(reactLeaflet);
-        setL(leaflet.default);
-        
-        delete leaflet.default.Icon.Default.prototype._getIconUrl;
-        leaflet.default.Icon.Default.mergeOptions({
-          iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-          iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-          shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-        });
-      });
-    }
-  }, []);
-
-  if (!MapComponents || !L) {
-    return (
-      <Box h="300px" borderRadius="lg" overflow="hidden" borderWidth={2} borderColor="gray.200" display="flex" alignItems="center" justifyContent="center" bg="gray.50">
-        <Text color="gray.500">Loading map...</Text>
-      </Box>
-    );
-  }
-
-  const { MapContainer, TileLayer, Marker, Circle, useMap } = MapComponents;
-
-  function MapCenterUpdater() {
-    const map = useMap();
-    
-    useEffect(() => {
-      if (map && center) {
-        map.setView(center, map.getZoom());
-      }
-    }, [center, map]);
-    
-    return null;
-  }
-
-  return (
-    <Box h="300px" borderRadius="lg" overflow="hidden" borderWidth={2} borderColor="gray.200">
-      <MapContainer
-        center={center}
-        zoom={center[0] === 40.7128 ? 4 : 11}
-        style={{ height: '100%', width: '100%' }}
-        scrollWheelZoom={false}
-      >
-        <MapCenterUpdater />
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {center[0] !== 40.7128 && (
-          <>
-            <Marker position={center} />
-            <Circle
-              center={center}
-              radius={maxDistance * 1000}
-              pathOptions={{
-                color: '#7c3aed',
-                fillColor: '#7c3aed',
-                fillOpacity: 0.1,
-              }}
-            />
-          </>
-        )}
-      </MapContainer>
-    </Box>
-  );
-}
-
-export default function LocationSettings({ 
-  initialLatitude, 
-  initialLongitude, 
-  initialMaxDistance,
-  onSave 
+export default function LocationSettings({
+  latitude,
+  longitude,
+  maxDistance,
+  onSave,
 }) {
+  const [localLat, setLocalLat] = useState(latitude || null);
+  const [localLng, setLocalLng] = useState(longitude || null);
+  const [distance, setDistance] = useState(maxDistance || 100);
+  const [locationText, setLocationText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
-  const [latitude, setLatitude] = useState(initialLatitude || null);
-  const [longitude, setLongitude] = useState(initialLongitude || null);
-  const [maxDistance, setMaxDistance] = useState(initialMaxDistance ?? 100);
-  const [loading, setLoading] = useState(false);
-  const [gettingLocation, setGettingLocation] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
+  // Update local state when props change
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (latitude != null) setLocalLat(latitude);
+    if (longitude != null) setLocalLng(longitude);
+    if (maxDistance != null) setDistance(maxDistance);
+  }, [latitude, longitude, maxDistance]);
 
+  // Reverse geocode coordinates to display location text
   useEffect(() => {
-    if (initialLatitude != null) {
-      setLatitude(initialLatitude);
+    if (localLat && localLng && !locationText) {
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${localLat}&lon=${localLng}&format=json`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.display_name) {
+            setLocationText(data.display_name.split(',').slice(0, 3).join(','));
+          }
+        })
+        .catch(() => {
+          // Silently fail reverse geocoding
+        });
     }
-    if (initialLongitude != null) {
-      setLongitude(initialLongitude);
-    }
-  }, [initialLatitude, initialLongitude]);
+  }, [localLat, localLng]);
 
-  useEffect(() => {
-    if (initialMaxDistance != null) {
-      setMaxDistance(initialMaxDistance);
-    }
-  }, [initialMaxDistance]);
-
-  const center = useMemo(() => {
-    if (latitude != null && longitude != null) {
-      return [latitude, longitude];
-    }
-    return [40.7128, -74.0060];
-  }, [latitude, longitude]);
-
-  const hasLocation = latitude != null && longitude != null;
-
-  const getCurrentLocation = () => {
-    setGettingLocation(true);
-    
+  const handleUseCurrentLocation = async () => {
     if (!navigator.geolocation) {
       toast({
         title: 'Geolocation not supported',
-        description: 'Your browser does not support geolocation.',
+        description: 'Your browser does not support geolocation. Please enter your location manually.',
         status: 'error',
-        duration: 3000,
+        duration: 5000,
       });
-      setGettingLocation(false);
       return;
     }
 
+    setIsLoading(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLatitude(position.coords.latitude);
-        setLongitude(position.coords.longitude);
-        setGettingLocation(false);
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        
+        setLocalLat(lat);
+        setLocalLng(lng);
+        
+        // Reverse geocode to get location text
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+          );
+          const data = await res.json();
+          if (data.display_name) {
+            setLocationText(data.display_name.split(',').slice(0, 3).join(','));
+          }
+        } catch (error) {
+          console.error('Reverse geocoding failed:', error);
+        }
+        
+        // Auto-save
+        if (onSave) {
+          onSave(lat, lng, distance);
+        }
+        
+        setIsLoading(false);
         toast({
-          title: 'Location found',
+          title: 'Location updated',
           description: 'Your current location has been set.',
           status: 'success',
-          duration: 2000,
+          duration: 3000,
         });
       },
       (error) => {
-        console.error('Geolocation error:', error);
+        setIsLoading(false);
         toast({
           title: 'Location access denied',
-          description: 'Please allow location access in your browser settings.',
+          description: 'Please allow location access or enter your location manually.',
           status: 'error',
-          duration: 3000,
+          duration: 5000,
         });
-        setGettingLocation(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
       }
     );
   };
 
-  const handleSave = async () => {
-    if (latitude == null || longitude == null) {
+  const handleSearchLocation = async () => {
+    if (!locationText.trim()) {
       toast({
-        title: 'Location required',
-        description: 'Please set your location before saving.',
+        title: 'Enter a location',
+        description: 'Please enter a city, address, or ZIP code.',
         status: 'warning',
-        duration: 2000,
+        duration: 3000,
       });
       return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
     try {
-      await onSave({ latitude, longitude, max_distance: maxDistance });
-      toast({
-        title: 'Location saved',
-        description: 'Your location preferences have been updated.',
-        status: 'success',
-        duration: 2000,
-      });
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationText)}&format=json&limit=1`
+      );
+      const data = await res.json();
+      
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lng = parseFloat(data[0].lon);
+        
+        setLocalLat(lat);
+        setLocalLng(lng);
+        
+        // Auto-save
+        if (onSave) {
+          onSave(lat, lng, distance);
+        }
+        
+        toast({
+          title: 'Location set',
+          description: `Location set to ${data[0].display_name.split(',').slice(0, 3).join(',')}`,
+          status: 'success',
+          duration: 3000,
+        });
+      } else {
+        toast({
+          title: 'Location not found',
+          description: 'Please try a different city or address.',
+          status: 'error',
+          duration: 5000,
+        });
+      }
     } catch (error) {
-      console.error('Save error:', error);
       toast({
-        title: 'Save failed',
-        description: 'Could not save location preferences.',
+        title: 'Search failed',
+        description: 'Unable to search for location. Please try again.',
         status: 'error',
-        duration: 3000,
+        duration: 5000,
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  if (!mounted) {
-    return (
-      <Card shadow="md">
-        <CardBody p={6}>
-          <Text>Loading location settings...</Text>
-        </CardBody>
-      </Card>
-    );
-  }
+  const handleDistanceChange = (value) => {
+    setDistance(value);
+    // Auto-save distance changes
+    if (onSave && localLat && localLng) {
+      onSave(localLat, localLng, value);
+    }
+  };
 
   return (
-    <Card shadow="md">
-      <CardBody p={6}>
-        <VStack spacing={4} align="stretch">
-          <Heading size="md" color="gray.800">Location & Discovery Range</Heading>
-          
-          <Text fontSize="sm" color="gray.600">
-            Set your location to discover matches nearby. Adjust the distance slider to control how far you want to search.
-          </Text>
-
-          <LocationMap center={center} maxDistance={maxDistance} />
-
-          <Button
-            onClick={getCurrentLocation}
-            isLoading={gettingLocation}
-            loadingText="Getting location..."
-            colorScheme="purple"
-            variant="outline"
-            size="sm"
-          >
-            {hasLocation ? 'Update My Location' : 'Use My Current Location'}
-          </Button>
-
-          {hasLocation && (
-            <Text fontSize="xs" color="gray.500">
-              Current: {latitude.toFixed(4)}, {longitude.toFixed(4)}
-            </Text>
-          )}
-
-          <FormControl>
-            <FormLabel fontWeight="semibold" color="gray.800">
-              Discovery Range: {maxDistance} km
-            </FormLabel>
-            <Slider
-              value={maxDistance}
-              onChange={setMaxDistance}
-              min={1}
-              max={200}
-              step={1}
+    <VStack spacing={6} align="stretch">
+      <Box>
+        <FormControl>
+          <FormLabel fontWeight="600" color="gray.700">
+            📍 Your Location
+          </FormLabel>
+          <Input
+            placeholder="Enter city, address, or ZIP code"
+            value={locationText}
+            onChange={(e) => setLocationText(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleSearchLocation();
+              }
+            }}
+            size="lg"
+          />
+          <HStack mt={3} spacing={3}>
+            <Button
+              onClick={handleSearchLocation}
+              isLoading={isLoading}
               colorScheme="purple"
+              size="md"
+              flex={1}
             >
-              <SliderTrack>
-                <SliderFilledTrack />
-              </SliderTrack>
-              <SliderThumb boxSize={6} />
-            </Slider>
-            <HStack justify="space-between" mt={1}>
-              <Text fontSize="xs" color="gray.500">1 km</Text>
-              <Text fontSize="xs" color="gray.500">200 km</Text>
-            </HStack>
-          </FormControl>
+              Search Location
+            </Button>
+            <Button
+              onClick={handleUseCurrentLocation}
+              isLoading={isLoading}
+              colorScheme="purple"
+              variant="outline"
+              size="md"
+              flex={1}
+            >
+              📍 Use Current Location
+            </Button>
+          </HStack>
+        </FormControl>
 
-          <Button
-            onClick={handleSave}
-            isLoading={loading}
-            loadingText="Saving..."
-            colorScheme="purple"
-            isDisabled={!hasLocation}
-          >
-            Save Location Settings
-          </Button>
-        </VStack>
-      </CardBody>
-    </Card>
+        {localLat && localLng && (
+          <Box mt={3} p={3} bg="green.50" borderRadius="md" borderWidth={1} borderColor="green.200">
+            <Text fontSize="sm" color="green.700" fontWeight="500">
+              ✓ Location set: {localLat.toFixed(4)}°, {localLng.toFixed(4)}°
+            </Text>
+          </Box>
+        )}
+      </Box>
+
+      <FormControl>
+        <FormLabel fontWeight="600" color="gray.700">
+          🎯 Search Radius: {distance} km
+        </FormLabel>
+        <Text fontSize="sm" color="gray.600" mb={3}>
+          Find matches within this distance from your location
+        </Text>
+        <Slider
+          value={distance}
+          onChange={handleDistanceChange}
+          min={1}
+          max={200}
+          step={1}
+          colorScheme="purple"
+        >
+          <SliderTrack bg="gray.200">
+            <SliderFilledTrack />
+          </SliderTrack>
+          <SliderThumb boxSize={6} bg="purple.500" />
+        </Slider>
+        <HStack justify="space-between" mt={2}>
+          <Text fontSize="xs" color="gray.500">1 km</Text>
+          <Text fontSize="xs" color="gray.500">200 km</Text>
+        </HStack>
+      </FormControl>
+
+      {!localLat || !localLng ? (
+        <Box p={4} bg="yellow.50" borderRadius="md" borderWidth={1} borderColor="yellow.200">
+          <Text fontSize="sm" color="yellow.800">
+            <strong>💡 Note:</strong> Set your location to enable proximity-based matching. Without a location, you'll see all available matches.
+          </Text>
+        </Box>
+      ) : null}
+    </VStack>
   );
 }
