@@ -1,0 +1,18 @@
+MANDATE FROM ARCHITECT: The aesthetic refactoring must be COMPLETED FIRST. Once finished, execute the following new, comprehensive data integrity and feature implementation:
+
+***TASK 1: COMPLETE AESTHETIC REFACTORING (Current Task)***
+* Finish applying the Chakra UI (Web) and React Native Elements (Mobile) aesthetic to the Subscription, Admin, and Consent pages.
+
+***TASK 2: DATA INTEGRITY AND VISIBILITY (New Feature Implementation)***
+
+1.  **USER AVAILABILITY FEATURE (CRITICAL IMPLEMENTATION):** Re-implement the user availability feature. Users must be able to select their availability in their profile using a grid of **Days of the Week** with **Morning (9am-12pm), Afternoon (12pm-5pm), and Evening (5pm-9pm)** selections. This availability data must be **visible on other users' Profile View pages** to aid in scheduling video chats.
+
+2.  **ADMIN DATA VISIBILITY AUDIT:** Verify the database schema exists and the Admin Dashboard's Safety Management section can access all key user data fields, including **profile photos, location, block_count, and membership_tier**.
+
+3.  **CRITICAL DATA INTEGRITY FIX (AUDIT FIRST):** Audit the mobile app's Membership Tab (create-anything/_/apps/mobile/src/app/(tabs)/membership.jsx) to see if the fix for hardcoded pricing data has already been applied. **If not**, **REPLACE the entire hardcoded TIERS object** with a dynamic reference from the **TIER_LIMITS source of truth**.
+
+4.  **REAL-TIME PRICING CONTROL (AUDIT FIRST):** Audit the codebase to see if the real-time pricing logic has been implemented. **If not**, implement the logic to ensure that prices changed in the **Admin Dashboard** immediately update and reflect across **BOTH** the **Web App** and the **Mobile App**.
+
+5.  **NAVIGATION CLEANUP (AUDIT FIRST):** Audit the Schedule Propose Page (create-anything/_/apps/web/src/app/(app)/schedule/propose/[userId]/page.jsx) to see if the unreliable 'navigate(-1)' has been fixed. **If not**, replace the 'Back' button logic with an **explicit navigation** that sends the user to the **Messages List Page** (/messages).
+
+6.  **SECURITY CLEANUP (MANDATORY):** Complete all necessary documentation and instruct the user to **manually delete the QA_BYPASS_AUTH environment variable** upon completion of this entire process.
