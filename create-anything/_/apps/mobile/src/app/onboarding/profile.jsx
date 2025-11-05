@@ -11,6 +11,7 @@ import {
   Platform,
   Modal,
 } from "react-native";
+import Slider from "@react-native-community/slider";
 import * as RNImagePicker from "expo-image-picker";
 import {
   CameraView,
@@ -25,12 +26,75 @@ import { Ionicons } from "@expo/vector-icons";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 
 const COLORS = {
-  primary: "#5B3BAF",
+  primary: "#7c3aed", // Match web purple
   secondary: "#00BFA6",
   text: "#2C3E50",
   lightGray: "#F3F4F6",
+  filledBg: "#F7FAFC", // Filled input background
   white: "#FFFFFF",
   error: "#EF4444",
+  border: "#E2E8F0",
+};
+
+// Enhanced styles to match web Chakra UI aesthetic
+const STYLES = {
+  card: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  input: {
+    backgroundColor: COLORS.filledBg,
+    borderRadius: 10,
+    padding: 14,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "transparent",
+    color: COLORS.text,
+  },
+  inputFocused: {
+    borderColor: COLORS.primary,
+  },
+  label: {
+    fontWeight: "600",
+    marginBottom: 8,
+    color: COLORS.text,
+    fontSize: 14,
+  },
+  button: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    padding: 16,
+    alignItems: "center",
+    ...Platform.select({
+      ios: {
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  buttonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: "600",
+  },
 };
 
 // Interests configuration
@@ -115,6 +179,8 @@ function ConsolidatedProfileOnboardingContent() {
   const [religion, setReligion] = useState("");
   const [childrenPreference, setChildrenPreference] = useState("");
   const [pets, setPets] = useState("");
+  const [location, setLocation] = useState("");
+  const [maxDistance, setMaxDistance] = useState(50);
   const [showPreferenceModal, setShowPreferenceModal] = useState(null);
   
   // Media state
@@ -181,6 +247,10 @@ function ConsolidatedProfileOnboardingContent() {
             if (user?.religion) setReligion(user.religion);
             if (user?.children_preference) setChildrenPreference(user.children_preference);
             if (user?.pets) setPets(user.pets);
+            if (user?.location) setLocation(user.location);
+            if (user?.max_distance !== undefined && user?.max_distance !== null) {
+              setMaxDistance(user.max_distance);
+            }
           }
         }
       } catch (e) {
@@ -413,6 +483,8 @@ function ConsolidatedProfileOnboardingContent() {
           religion: religion || null,
           children_preference: childrenPreference || null,
           pets: pets || null,
+          location: location.trim() || null,
+          max_distance: maxDistance,
         }),
       });
       
@@ -463,6 +535,8 @@ function ConsolidatedProfileOnboardingContent() {
             setReligion("");
             setChildrenPreference("");
             setPets("");
+            setLocation("");
+            setMaxDistance(50);
             setProgress({ done: 0, total: 0 });
             setError(null);
           },
@@ -517,39 +591,26 @@ function ConsolidatedProfileOnboardingContent() {
         </Text>
 
         {/* Name field */}
-        <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text }}>
+        <Text style={STYLES.label}>
           Display Name *
         </Text>
         <TextInput
-          style={{
-            borderWidth: 1,
-            borderColor: "#EAEAEA",
-            borderRadius: 10,
-            padding: 12,
-            marginBottom: 16,
-            fontSize: 16,
-          }}
+          style={STYLES.input}
           placeholder="Your name"
+          placeholderTextColor="#A0AEC0"
           value={name}
           onChangeText={setName}
         />
+        <View style={{ marginBottom: 16 }} />
 
         {/* Bio field */}
-        <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text }}>
+        <Text style={STYLES.label}>
           Bio (Optional)
         </Text>
         <TextInput
-          style={{
-            borderWidth: 1,
-            borderColor: "#EAEAEA",
-            borderRadius: 10,
-            padding: 12,
-            marginBottom: 16,
-            fontSize: 16,
-            minHeight: 80,
-            textAlignVertical: "top",
-          }}
+          style={[STYLES.input, { minHeight: 100, textAlignVertical: "top" }]}
           placeholder="Tell us about yourself..."
+          placeholderTextColor="#A0AEC0"
           value={bio}
           onChangeText={(text) => text.length <= 500 && setBio(text)}
           multiline
@@ -560,7 +621,7 @@ function ConsolidatedProfileOnboardingContent() {
         </Text>
 
         {/* Interests field */}
-        <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text }}>
+        <Text style={STYLES.label}>
           Interests & Hobbies *
         </Text>
         <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 12 }}>
@@ -569,17 +630,17 @@ function ConsolidatedProfileOnboardingContent() {
         
         <TouchableOpacity
           onPress={() => setShowInterestsModal(true)}
-          style={{
-            borderWidth: 1,
-            borderColor: interests.length < INTERESTS_CONFIG.MIN_REQUIRED ? "#FCA5A5" : "#EAEAEA",
-            borderRadius: 10,
-            padding: 12,
-            backgroundColor: interests.length < INTERESTS_CONFIG.MIN_REQUIRED ? "#FEF2F2" : COLORS.white,
-            marginBottom: 12,
-          }}
+          style={[
+            STYLES.input,
+            interests.length < INTERESTS_CONFIG.MIN_REQUIRED && { 
+              borderColor: "#FCA5A5", 
+              backgroundColor: "#FEF2F2" 
+            },
+            { marginBottom: 12, padding: 14 }
+          ]}
         >
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <Text style={{ color: interests.length > 0 ? COLORS.text : "#9CA3AF", fontSize: 16 }}>
+            <Text style={{ color: interests.length > 0 ? COLORS.text : "#A0AEC0", fontSize: 16 }}>
               {interests.length > 0 ? `${interests.length} selected` : "Tap to select interests"}
             </Text>
             <Ionicons name="chevron-down" size={20} color={COLORS.text} />
@@ -617,15 +678,16 @@ function ConsolidatedProfileOnboardingContent() {
         </Text>
 
         {/* Preferences Section */}
-        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8, color: COLORS.text }}>
-          About You (Optional)
-        </Text>
-        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 16 }}>
-          Help us find better matches by sharing more about yourself
-        </Text>
+        <View style={STYLES.card}>
+          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8, color: COLORS.text }}>
+            About You (Optional)
+          </Text>
+          <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 16 }}>
+            Help us find better matches by sharing more about yourself
+          </Text>
 
-        {/* Preference Fields in Grid */}
-        <View style={{ gap: 12, marginBottom: 24 }}>
+          {/* Preference Fields in Grid */}
+          <View style={{ gap: 12 }}>
           {[
             { label: "Gender", value: gender, setter: setGender, options: PREFERENCE_OPTIONS.GENDER },
             { label: "Sexual Orientation", value: sexualOrientation, setter: setSexualOrientation, options: PREFERENCE_OPTIONS.SEXUAL_ORIENTATION },
@@ -642,19 +704,13 @@ function ConsolidatedProfileOnboardingContent() {
             { label: "Pets", value: pets, setter: setPets, options: PREFERENCE_OPTIONS.PETS },
           ].map((field, idx) => (
             <View key={idx}>
-              <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text }}>{field.label}</Text>
+              <Text style={STYLES.label}>{field.label}</Text>
               <TouchableOpacity
                 onPress={() => setShowPreferenceModal(field)}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#EAEAEA",
-                  borderRadius: 10,
-                  padding: 12,
-                  backgroundColor: COLORS.white,
-                }}
+                style={[STYLES.input, { padding: 14 }]}
               >
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <Text style={{ color: field.value ? COLORS.text : "#9CA3AF", fontSize: 16 }}>
+                  <Text style={{ color: field.value ? COLORS.text : "#A0AEC0", fontSize: 16 }}>
                     {field.value || `Select ${field.label.toLowerCase()}`}
                   </Text>
                   <Ionicons name="chevron-down" size={20} color={COLORS.text} />
@@ -662,12 +718,45 @@ function ConsolidatedProfileOnboardingContent() {
               </TouchableOpacity>
             </View>
           ))}
+          
+          {/* Location field */}
+          <View style={{ marginTop: 12 }}>
+            <Text style={STYLES.label}>Location</Text>
+            <TextInput
+              style={STYLES.input}
+              placeholder="City, Country"
+              placeholderTextColor="#A0AEC0"
+              value={location}
+              onChangeText={setLocation}
+            />
+          </View>
+
+          {/* Max Distance slider */}
+          <View style={{ marginTop: 12 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
+              <Text style={STYLES.label}>Maximum Distance</Text>
+              <Text style={{ color: COLORS.primary, fontWeight: "600" }}>{maxDistance} km</Text>
+            </View>
+            <Slider
+              style={{ height: 40 }}
+              minimumValue={5}
+              maximumValue={100}
+              step={5}
+              value={maxDistance}
+              onValueChange={setMaxDistance}
+              minimumTrackTintColor={COLORS.primary}
+              maximumTrackTintColor="#E2E8F0"
+              thumbTintColor={COLORS.primary}
+            />
+          </View>
+          </View>
         </View>
 
         {/* Photos section */}
-        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text }}>
-          Photos ({photos.length}/{limits.maxPhotos}) *
-        </Text>
+        <View style={STYLES.card}>
+          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text }}>
+            Photos ({photos.length}/{limits.maxPhotos}) *
+          </Text>
         {photos.length === 0 ? (
           <View
             style={{
@@ -720,29 +809,26 @@ function ConsolidatedProfileOnboardingContent() {
         <TouchableOpacity
           onPress={pickImage}
           disabled={photos.length >= limits.maxPhotos}
-          style={{
-            backgroundColor: photos.length >= limits.maxPhotos ? COLORS.lightGray : COLORS.primary,
-            paddingVertical: 12,
-            borderRadius: 12,
-            marginBottom: 24,
-            opacity: photos.length >= limits.maxPhotos ? 0.5 : 1,
-          }}
+          style={[
+            STYLES.button,
+            { marginBottom: 24 },
+            photos.length >= limits.maxPhotos && { 
+              backgroundColor: COLORS.lightGray, 
+              opacity: 0.5 
+            }
+          ]}
         >
-          <Text
-            style={{
-              textAlign: "center",
-              color: photos.length >= limits.maxPhotos ? COLORS.text : COLORS.white,
-              fontWeight: "600",
-            }}
-          >
+          <Text style={[STYLES.buttonText, photos.length >= limits.maxPhotos && { color: COLORS.text }]}>
             {photos.length >= limits.maxPhotos ? "Photo Limit Reached" : "Add Photo"}
           </Text>
         </TouchableOpacity>
+        </View>
 
         {/* Video section */}
-        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text }}>
-          Video Introduction (Optional)
-        </Text>
+        <View style={STYLES.card}>
+          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text }}>
+            Video Introduction (Optional)
+          </Text>
         <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 12 }}>
           Camera-only recording prevents catfishing • Max {Math.floor(limits.maxVideoSec / 60)}:
           {String(limits.maxVideoSec % 60).padStart(2, "0")}
@@ -882,6 +968,7 @@ function ConsolidatedProfileOnboardingContent() {
             )}
           </View>
         )}
+        </View>
 
         {/* Upload progress */}
         {progress.total > 0 && (
@@ -917,22 +1004,13 @@ function ConsolidatedProfileOnboardingContent() {
         <TouchableOpacity
           onPress={onSave}
           disabled={saving || loading || !name.trim() || photos.length < 2}
-          style={{
-            backgroundColor: COLORS.primary,
-            paddingVertical: 14,
-            borderRadius: 12,
-            marginBottom: 12,
-            opacity: saving || loading || !name.trim() || photos.length < 2 ? 0.6 : 1,
-          }}
+          style={[
+            STYLES.button,
+            { marginBottom: 12 },
+            (saving || loading || !name.trim() || photos.length < 2) && { opacity: 0.6 }
+          ]}
         >
-          <Text
-            style={{
-              textAlign: "center",
-              color: COLORS.white,
-              fontWeight: "600",
-              fontSize: 16,
-            }}
-          >
+          <Text style={STYLES.buttonText}>
             {saving || loading ? "Saving..." : "Complete Setup"}
           </Text>
         </TouchableOpacity>
