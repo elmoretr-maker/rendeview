@@ -244,7 +244,7 @@ export default function SubscriptionPage() {
                       Current Plan
                     </Text>
                     <Heading size="lg" color="purple.500">
-                      {TIERS.find(t => t.key === currentTier)?.title || "Free"}
+                      {tiers.find(t => t.key === currentTier)?.title || "Free"}
                     </Heading>
                   </Box>
                   <Badge colorScheme="teal" fontSize="md" px={4} py={2} borderRadius="full">
@@ -255,25 +255,25 @@ export default function SubscriptionPage() {
                   </Badge>
                 </HStack>
                 
-                {TIERS.find(t => t.key === currentTier) && (
+                {tiers.find(t => t.key === currentTier) && (
                   <List spacing={2} fontSize="sm">
                     <ListItem>
                       <ListIcon as={Check} color="teal.500" />
-                      {TIERS.find(t => t.key === currentTier).photos} Profile Photos
+                      {tiers.find(t => t.key === currentTier).photos} Profile Photos
                     </ListItem>
                     <ListItem>
                       <ListIcon as={Check} color="teal.500" />
-                      {TIERS.find(t => t.key === currentTier).videos} Video{TIERS.find(t => t.key === currentTier).videos !== 1 ? 's' : ''} ({TIERS.find(t => t.key === currentTier).videoDuration}s max each)
+                      {tiers.find(t => t.key === currentTier).videos} Video{tiers.find(t => t.key === currentTier).videos !== 1 ? 's' : ''} ({tiers.find(t => t.key === currentTier).videoDuration}s max each)
                     </ListItem>
                     <ListItem>
                       <ListIcon as={Check} color="teal.500" />
-                      {TIERS.find(t => t.key === currentTier).chatMinutes} Minutes Video Chat
+                      {tiers.find(t => t.key === currentTier).chatMinutes} Minutes Video Chat
                     </ListItem>
-                    {TIERS.find(t => t.key === currentTier).maxMeetings !== undefined && 
-                     TIERS.find(t => t.key === currentTier).maxMeetings !== Infinity && (
+                    {tiers.find(t => t.key === currentTier).maxMeetings !== undefined && 
+                     tiers.find(t => t.key === currentTier).maxMeetings !== Infinity && (
                       <ListItem>
                         <ListIcon as={Check} color="teal.500" />
-                        {TIERS.find(t => t.key === currentTier).maxMeetings} Meeting Limit
+                        {tiers.find(t => t.key === currentTier).maxMeetings} Meeting Limit
                       </ListItem>
                     )}
                   </List>
@@ -294,14 +294,14 @@ export default function SubscriptionPage() {
                   </Text>
                   <Box bg="orange.100" p={4} borderRadius="md" mb={3}>
                     <Text fontSize="sm" fontWeight="medium" mb={1}>
-                      Current: {TIERS.find(t => t.key === currentTier)?.title}
+                      Current: {tiers.find(t => t.key === currentTier)?.title}
                     </Text>
                     <Text fontSize="sm" fontWeight="medium">
-                      Scheduled: {TIERS.find(t => t.key === scheduledTier)?.title}
+                      Scheduled: {tiers.find(t => t.key === scheduledTier)?.title}
                     </Text>
                   </Box>
                   <Text fontSize="sm" mb={3}>
-                    You will retain your current {TIERS.find(t => t.key === currentTier)?.title} benefits until {new Date(tierChangeAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
+                    You will retain your current {tiers.find(t => t.key === currentTier)?.title} benefits until {new Date(tierChangeAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
                   </Text>
                   <Button
                     onClick={cancelScheduledDowngrade}
