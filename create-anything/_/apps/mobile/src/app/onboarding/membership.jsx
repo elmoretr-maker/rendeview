@@ -11,6 +11,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -57,6 +63,11 @@ function MembershipScreenContent() {
   const [loading, setLoading] = useState(false);
   const [pricing, setPricing] = useState(null);
   const [error, setError] = useState(null);
+  const [loaded, errorFont] = useFonts({
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
 
   const totalSteps = 4;
   const stepIndex = 3;
@@ -144,7 +155,7 @@ function MembershipScreenContent() {
             }}
           />
         </View>
-        <Text style={{ marginTop: 6, color: COLORS.text, opacity: 0.7 }}>
+        <Text style={{ marginTop: 6, color: COLORS.text, opacity: 0.7, fontFamily: "Inter_400Regular" }}>
           Step {stepIndex} of {totalSteps}
         </Text>
       </View>
@@ -160,7 +171,7 @@ function MembershipScreenContent() {
         }}
       >
         <Ionicons name="arrow-back" size={24} color="#6B7280" />
-        <Text style={{ marginLeft: 8, color: "#6B7280", fontSize: 16 }}>Back</Text>
+        <Text style={{ marginLeft: 8, color: "#6B7280", fontSize: 16, fontFamily: "Inter_400Regular" }}>Back</Text>
       </TouchableOpacity>
 
       <ScrollView contentContainerStyle={{ padding: 24 }}>
@@ -170,11 +181,12 @@ function MembershipScreenContent() {
             fontWeight: "700",
             color: COLORS.text,
             marginBottom: 8,
+            fontFamily: "Inter_700Bold",
           }}
         >
           Choose your plan
         </Text>
-        <Text style={{ color: COLORS.text, opacity: 0.7, marginBottom: 16 }}>
+        <Text style={{ color: COLORS.text, opacity: 0.7, marginBottom: 16, fontFamily: "Inter_400Regular" }}>
           Select a membership to unlock features. You can upgrade anytime.
         </Text>
 
@@ -198,7 +210,7 @@ function MembershipScreenContent() {
               }}
             >
               <Text
-                style={{ fontSize: 18, fontWeight: "700", color: COLORS.text }}
+                style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, fontFamily: "Inter_700Bold" }}
               >
                 {t.title}
               </Text>
@@ -207,12 +219,13 @@ function MembershipScreenContent() {
                   fontSize: 16,
                   fontWeight: "700",
                   color: COLORS.primary,
+                  fontFamily: "Inter_700Bold",
                 }}
               >
                 {t.price}
               </Text>
             </View>
-            <Text style={{ color: COLORS.text, opacity: 0.8, marginTop: 6 }}>
+            <Text style={{ color: COLORS.text, opacity: 0.8, marginTop: 6, fontFamily: "Inter_400Regular" }}>
               {t.desc}
             </Text>
             <TouchableOpacity
@@ -231,6 +244,7 @@ function MembershipScreenContent() {
                   color: COLORS.white,
                   textAlign: "center",
                   fontWeight: "700",
+                  fontFamily: "Inter_700Bold",
                 }}
               >
                 {loading
@@ -257,22 +271,23 @@ function MembershipScreenContent() {
               fontWeight: "700",
               color: COLORS.text,
               marginBottom: 8,
+              fontFamily: "Inter_700Bold",
             }}
           >
             Call extensions
           </Text>
-          <Text style={{ color: COLORS.text, marginBottom: 4 }}>
+          <Text style={{ color: COLORS.text, marginBottom: 4, fontFamily: "Inter_400Regular" }}>
             • $5 for 5 minutes
           </Text>
-          <Text style={{ color: COLORS.text, marginBottom: 4 }}>
+          <Text style={{ color: COLORS.text, marginBottom: 4, fontFamily: "Inter_400Regular" }}>
             • $10 for 15 minutes
           </Text>
-          <Text style={{ color: COLORS.text }}>• $20 for 30 minutes</Text>
+          <Text style={{ color: COLORS.text, fontFamily: "Inter_400Regular" }}>• $20 for 30 minutes</Text>
         </View>
 
         {pricing?.second_date_cents != null && (
           <View style={{ marginTop: 12 }}>
-            <Text style={{ color: COLORS.accent, fontWeight: "700" }}>
+            <Text style={{ color: COLORS.accent, fontWeight: "700", fontFamily: "Inter_700Bold" }}>
               Second Date Fee: ${(pricing.second_date_cents / 100).toFixed(2)}{" "}
               USD
             </Text>
@@ -280,7 +295,7 @@ function MembershipScreenContent() {
         )}
 
         {error ? (
-          <Text style={{ color: "#B91C1C", marginTop: 8 }}>{error}</Text>
+          <Text style={{ color: "#B91C1C", marginTop: 8, fontFamily: "Inter_400Regular" }}>{error}</Text>
         ) : null}
       </ScrollView>
       {loading && (
