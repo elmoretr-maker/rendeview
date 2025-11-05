@@ -24,6 +24,12 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
 
 const COLORS = {
   primary: "#7c3aed", // Match web purple
@@ -72,6 +78,7 @@ const STYLES = {
     marginBottom: 8,
     color: COLORS.text,
     fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
   },
   button: {
     backgroundColor: COLORS.primary,
@@ -94,6 +101,7 @@ const STYLES = {
     color: COLORS.white,
     fontSize: 16,
     fontWeight: "600",
+    fontFamily: "Inter_600SemiBold",
   },
 };
 
@@ -158,6 +166,14 @@ function limitsForTier(tier) {
 function ConsolidatedProfileOnboardingContent() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const [loaded, errorFont] = useFonts({
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
+
+  // Font loading guard
+  if (!loaded) return null;
   
   // Profile fields
   const [name, setName] = useState("");
@@ -571,7 +587,7 @@ function ConsolidatedProfileOnboardingContent() {
               }}
             />
           </View>
-          <Text style={{ marginTop: 6, color: COLORS.text, opacity: 0.7 }}>
+          <Text style={{ marginTop: 6, color: COLORS.text, opacity: 0.7, fontFamily: "Inter_400Regular" }}>
             Step {stepIndex} of {totalSteps}
           </Text>
         </View>
@@ -582,11 +598,12 @@ function ConsolidatedProfileOnboardingContent() {
             fontWeight: "700",
             marginBottom: 8,
             color: COLORS.text,
+            fontFamily: "Inter_700Bold",
           }}
         >
           Complete Your Profile
         </Text>
-        <Text style={{ color: COLORS.text, opacity: 0.7, marginBottom: 24 }}>
+        <Text style={{ color: COLORS.text, opacity: 0.7, marginBottom: 24, fontFamily: "Inter_400Regular" }}>
           Tell us about yourself and add photos (minimum 2 photos required)
         </Text>
 
@@ -616,7 +633,7 @@ function ConsolidatedProfileOnboardingContent() {
           multiline
           numberOfLines={4}
         />
-        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 16, fontFamily: "Inter_400Regular" }}>
           {bio.length}/500 characters
         </Text>
 
@@ -624,7 +641,7 @@ function ConsolidatedProfileOnboardingContent() {
         <Text style={STYLES.label}>
           Interests & Hobbies *
         </Text>
-        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 12 }}>
+        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 12, fontFamily: "Inter_400Regular" }}>
           Select {INTERESTS_CONFIG.MIN_REQUIRED}-{INTERESTS_CONFIG.MAX_ALLOWED} interests to help us find your perfect match
         </Text>
         
@@ -640,7 +657,7 @@ function ConsolidatedProfileOnboardingContent() {
           ]}
         >
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <Text style={{ color: interests.length > 0 ? COLORS.text : "#A0AEC0", fontSize: 16 }}>
+            <Text style={{ color: interests.length > 0 ? COLORS.text : "#A0AEC0", fontSize: 16, fontFamily: "Inter_400Regular" }}>
               {interests.length > 0 ? `${interests.length} selected` : "Tap to select interests"}
             </Text>
             <Ionicons name="chevron-down" size={20} color={COLORS.text} />
@@ -663,7 +680,7 @@ function ConsolidatedProfileOnboardingContent() {
                   marginBottom: 8,
                 }}
               >
-                <Text style={{ color: COLORS.text, marginRight: 6 }}>{interest}</Text>
+                <Text style={{ color: COLORS.text, marginRight: 6, fontFamily: "Inter_400Regular" }}>{interest}</Text>
                 <TouchableOpacity onPress={() => removeInterest(interest)}>
                   <Ionicons name="close-circle" size={18} color={COLORS.primary} />
                 </TouchableOpacity>
@@ -671,7 +688,7 @@ function ConsolidatedProfileOnboardingContent() {
             ))}
           </View>
         )}
-        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 24 }}>
+        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 24, fontFamily: "Inter_400Regular" }}>
           {interests.length < INTERESTS_CONFIG.MIN_REQUIRED 
             ? `${INTERESTS_CONFIG.MIN_REQUIRED - interests.length} more required` 
             : `${interests.length}/${INTERESTS_CONFIG.MAX_ALLOWED} selected`}
@@ -679,10 +696,10 @@ function ConsolidatedProfileOnboardingContent() {
 
         {/* Preferences Section */}
         <View style={STYLES.card}>
-          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8, color: COLORS.text }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8, color: COLORS.text, fontFamily: "Inter_700Bold" }}>
             About You (Optional)
           </Text>
-          <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 16 }}>
+          <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 16, fontFamily: "Inter_400Regular" }}>
             Help us find better matches by sharing more about yourself
           </Text>
 
@@ -710,7 +727,7 @@ function ConsolidatedProfileOnboardingContent() {
                 style={[STYLES.input, { padding: 14 }]}
               >
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <Text style={{ color: field.value ? COLORS.text : "#A0AEC0", fontSize: 16 }}>
+                  <Text style={{ color: field.value ? COLORS.text : "#A0AEC0", fontSize: 16, fontFamily: "Inter_400Regular" }}>
                     {field.value || `Select ${field.label.toLowerCase()}`}
                   </Text>
                   <Ionicons name="chevron-down" size={20} color={COLORS.text} />
@@ -735,7 +752,7 @@ function ConsolidatedProfileOnboardingContent() {
           <View style={{ marginTop: 12 }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
               <Text style={STYLES.label}>Maximum Distance</Text>
-              <Text style={{ color: COLORS.primary, fontWeight: "600" }}>{maxDistance} km</Text>
+              <Text style={{ color: COLORS.primary, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>{maxDistance} km</Text>
             </View>
             <Slider
               style={{ height: 40 }}
@@ -754,7 +771,7 @@ function ConsolidatedProfileOnboardingContent() {
 
         {/* Photos section */}
         <View style={STYLES.card}>
-          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text, fontFamily: "Inter_700Bold" }}>
             Photos ({photos.length}/{limits.maxPhotos}) *
           </Text>
         {photos.length === 0 ? (
@@ -772,7 +789,7 @@ function ConsolidatedProfileOnboardingContent() {
             }}
           >
             <Ionicons name="images-outline" size={48} color={COLORS.text} opacity={0.3} />
-            <Text style={{ color: COLORS.text, opacity: 0.7, marginTop: 8 }}>
+            <Text style={{ color: COLORS.text, opacity: 0.7, marginTop: 8, fontFamily: "Inter_400Regular" }}>
               Add at least 2 photos
             </Text>
           </View>
@@ -826,10 +843,10 @@ function ConsolidatedProfileOnboardingContent() {
 
         {/* Video section */}
         <View style={STYLES.card}>
-          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text, fontFamily: "Inter_700Bold" }}>
             Video Introduction (Optional)
           </Text>
-        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 12 }}>
+        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 12, fontFamily: "Inter_400Regular" }}>
           Camera-only recording prevents catfishing • Max {Math.floor(limits.maxVideoSec / 60)}:
           {String(limits.maxVideoSec % 60).padStart(2, "0")}
         </Text>
@@ -874,6 +891,7 @@ function ConsolidatedProfileOnboardingContent() {
                 textAlign: "center",
                 color: COLORS.white,
                 fontWeight: "700",
+                fontFamily: "Inter_700Bold",
               }}
             >
               {recording
@@ -899,6 +917,7 @@ function ConsolidatedProfileOnboardingContent() {
                       textAlign: "center",
                       color: COLORS.white,
                       fontWeight: "700",
+                      fontFamily: "Inter_700Bold",
                     }}
                   >
                     Accept Video
@@ -918,6 +937,7 @@ function ConsolidatedProfileOnboardingContent() {
                       textAlign: "center",
                       color: "#991B1B",
                       fontWeight: "700",
+                      fontFamily: "Inter_700Bold",
                     }}
                   >
                     Redo
@@ -940,6 +960,7 @@ function ConsolidatedProfileOnboardingContent() {
                       color: "#065F46",
                       fontWeight: "700",
                       paddingVertical: 12,
+                      fontFamily: "Inter_700Bold",
                     }}
                   >
                     ✓ Video accepted
@@ -959,6 +980,7 @@ function ConsolidatedProfileOnboardingContent() {
                       textAlign: "center",
                       color: COLORS.primary,
                       fontWeight: "700",
+                      fontFamily: "Inter_700Bold",
                     }}
                   >
                     Change Video
@@ -973,7 +995,7 @@ function ConsolidatedProfileOnboardingContent() {
         {/* Upload progress */}
         {progress.total > 0 && (
           <View style={{ backgroundColor: "#EDE9FE", padding: 12, borderRadius: 12, marginBottom: 16 }}>
-            <Text style={{ color: "#5B3BAF", fontSize: 14, textAlign: "center", fontWeight: "600" }}>
+            <Text style={{ color: "#5B3BAF", fontSize: 14, textAlign: "center", fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>
               {progress.done < progress.total 
                 ? `📤 Uploading ${progress.done}/${progress.total}...`
                 : `✓ All ${progress.total} item${progress.total > 1 ? 's' : ''} uploaded!`
@@ -994,7 +1016,7 @@ function ConsolidatedProfileOnboardingContent() {
         {/* Photo requirement reminder */}
         {photos.length < 2 && (
           <View style={{ backgroundColor: "#FEF3C7", padding: 12, borderRadius: 12, marginBottom: 16 }}>
-            <Text style={{ color: "#92400E", fontSize: 14, textAlign: "center" }}>
+            <Text style={{ color: "#92400E", fontSize: 14, textAlign: "center", fontFamily: "Inter_400Regular" }}>
               📸 Please add at least 2 photos to continue ({photos.length}/2)
             </Text>
           </View>
@@ -1032,6 +1054,7 @@ function ConsolidatedProfileOnboardingContent() {
               color: "#E74C3C",
               fontWeight: "600",
               fontSize: 14,
+              fontFamily: "Inter_600SemiBold",
             }}
           >
             🔄 Start Over
@@ -1050,15 +1073,16 @@ function ConsolidatedProfileOnboardingContent() {
               opacity: 0.7,
               fontWeight: "600",
               fontSize: 16,
+              fontFamily: "Inter_600SemiBold",
             }}
           >
             Back to Membership
           </Text>
         </TouchableOpacity>
 
-        {error && <Text style={{ color: COLORS.error, marginTop: 8, textAlign: "center" }}>{error}</Text>}
+        {error && <Text style={{ color: COLORS.error, marginTop: 8, textAlign: "center", fontFamily: "Inter_400Regular" }}>{error}</Text>}
         
-        <Text style={{ fontSize: 12, textAlign: "center", color: COLORS.text, opacity: 0.6, marginTop: 16 }}>
+        <Text style={{ fontSize: 12, textAlign: "center", color: COLORS.text, opacity: 0.6, marginTop: 16, fontFamily: "Inter_400Regular" }}>
           * Required fields
         </Text>
       </ScrollView>
@@ -1080,17 +1104,17 @@ function ConsolidatedProfileOnboardingContent() {
             borderBottomWidth: 1,
             borderBottomColor: "#E5E7EB"
           }}>
-            <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text }}>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, fontFamily: "Inter_700Bold" }}>
               Select Interests
             </Text>
             <TouchableOpacity onPress={() => setShowInterestsModal(false)}>
-              <Text style={{ color: COLORS.primary, fontSize: 16, fontWeight: "600" }}>Done</Text>
+              <Text style={{ color: COLORS.primary, fontSize: 16, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>Done</Text>
             </TouchableOpacity>
           </View>
 
           {/* Selection Counter */}
           <View style={{ padding: 16, backgroundColor: "#F9FAFB" }}>
-            <Text style={{ fontSize: 14, color: COLORS.text, textAlign: "center" }}>
+            <Text style={{ fontSize: 14, color: COLORS.text, textAlign: "center", fontFamily: "Inter_400Regular" }}>
               {interests.length < INTERESTS_CONFIG.MIN_REQUIRED 
                 ? `Select ${INTERESTS_CONFIG.MIN_REQUIRED - interests.length} more (${interests.length}/${INTERESTS_CONFIG.MIN_REQUIRED} minimum)`
                 : `${interests.length}/${INTERESTS_CONFIG.MAX_ALLOWED} selected`}
@@ -1117,7 +1141,8 @@ function ConsolidatedProfileOnboardingContent() {
                   >
                     <Text style={{ 
                       color: isSelected ? COLORS.primary : COLORS.text,
-                      fontWeight: isSelected ? "600" : "400"
+                      fontWeight: isSelected ? "600" : "400",
+                      fontFamily: isSelected ? "Inter_600SemiBold" : "Inter_400Regular"
                     }}>
                       {isSelected ? "✓ " : ""}{interest}
                     </Text>
@@ -1147,11 +1172,11 @@ function ConsolidatedProfileOnboardingContent() {
               borderBottomWidth: 1,
               borderBottomColor: "#E5E7EB"
             }}>
-              <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text }}>
+              <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, fontFamily: "Inter_700Bold" }}>
                 Select {showPreferenceModal.label}
               </Text>
               <TouchableOpacity onPress={() => setShowPreferenceModal(null)}>
-                <Text style={{ color: COLORS.primary, fontSize: 16, fontWeight: "600" }}>Done</Text>
+                <Text style={{ color: COLORS.primary, fontSize: 16, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>Done</Text>
               </TouchableOpacity>
             </View>
 
@@ -1180,7 +1205,8 @@ function ConsolidatedProfileOnboardingContent() {
                       <Text style={{ 
                         color: isSelected ? COLORS.primary : COLORS.text,
                         fontWeight: isSelected ? "600" : "400",
-                        fontSize: 16
+                        fontSize: 16,
+                        fontFamily: isSelected ? "Inter_600SemiBold" : "Inter_400Regular"
                       }}>
                         {option}
                       </Text>

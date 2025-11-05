@@ -599,16 +599,17 @@ export default function Profile() {
             fontWeight: "700",
             marginBottom: 8,
             color: COLORS.text,
+            ...STYLES.text.bold,
           }}
         >
           Your Profile
         </Text>
-        <Text style={{ color: COLORS.text, opacity: 0.7, marginBottom: 24 }}>
+        <Text style={{ color: COLORS.text, opacity: 0.7, marginBottom: 24, ...STYLES.text.regular }}>
           Update your profile information, photos, and preferences
         </Text>
 
         {/* Name field */}
-        <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text }}>
+        <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text, ...STYLES.text.semiBold }}>
           Display Name *
         </Text>
         <TextInput
@@ -626,7 +627,7 @@ export default function Profile() {
         />
 
         {/* Bio field */}
-        <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text }}>
+        <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text, ...STYLES.text.semiBold }}>
           Bio (Optional)
         </Text>
         <TextInput
@@ -646,15 +647,15 @@ export default function Profile() {
           multiline
           numberOfLines={4}
         />
-        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 16, ...STYLES.text.regular }}>
           {bio.length}/500 characters
         </Text>
 
         {/* Interests field */}
-        <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text }}>
+        <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text, ...STYLES.text.semiBold }}>
           Interests & Hobbies *
         </Text>
-        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 12 }}>
+        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 12, ...STYLES.text.regular }}>
           Select {INTERESTS_CONFIG.MIN_REQUIRED}-{INTERESTS_CONFIG.MAX_ALLOWED} interests to help us find your perfect match
         </Text>
         
@@ -670,7 +671,7 @@ export default function Profile() {
           }}
         >
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <Text style={{ color: interests.length > 0 ? COLORS.text : "#9CA3AF", fontSize: 16 }}>
+            <Text style={{ color: interests.length > 0 ? COLORS.text : "#9CA3AF", fontSize: 16, ...STYLES.text.regular }}>
               {interests.length > 0 ? `${interests.length} selected` : "Tap to select interests"}
             </Text>
             <Ionicons name="chevron-down" size={20} color={COLORS.text} />
@@ -708,10 +709,10 @@ export default function Profile() {
         </Text>
 
         {/* Preferences Section */}
-        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8, color: COLORS.text }}>
+        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8, color: COLORS.text, ...STYLES.text.bold }}>
           About You (Optional)
         </Text>
-        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 16, ...STYLES.text.regular }}>
           Help us find better matches by sharing more about yourself
         </Text>
 
@@ -733,7 +734,7 @@ export default function Profile() {
             { label: "Pets", value: pets, setter: setPets, options: PREFERENCE_OPTIONS.PETS },
           ].map((field, idx) => (
             <View key={idx}>
-              <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text }}>{field.label}</Text>
+              <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text, ...STYLES.text.semiBold }}>{field.label}</Text>
               <TouchableOpacity
                 onPress={() => setShowPreferenceModal(field)}
                 style={{
@@ -745,7 +746,7 @@ export default function Profile() {
                 }}
               >
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <Text style={{ color: field.value ? COLORS.text : "#9CA3AF", fontSize: 16 }}>
+                  <Text style={{ color: field.value ? COLORS.text : "#9CA3AF", fontSize: 16, ...STYLES.text.regular }}>
                     {field.value || `Select ${field.label.toLowerCase()}`}
                   </Text>
                   <Ionicons name="chevron-down" size={20} color={COLORS.text} />
@@ -756,7 +757,7 @@ export default function Profile() {
         </View>
 
         {/* Photos section */}
-        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text }}>
+        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text, ...STYLES.text.bold }}>
           Photos ({photos.length}/{limits.maxPhotos}) *
         </Text>
         {photos.length === 0 ? (
@@ -774,7 +775,7 @@ export default function Profile() {
             }}
           >
             <Ionicons name="images-outline" size={48} color={COLORS.text} opacity={0.3} />
-            <Text style={{ color: COLORS.text, opacity: 0.7, marginTop: 8 }}>
+            <Text style={{ color: COLORS.text, opacity: 0.7, marginTop: 8, ...STYLES.text.regular }}>
               Add at least 2 photos
             </Text>
           </View>
@@ -831,10 +832,10 @@ export default function Profile() {
         </TouchableOpacity>
 
         {/* Video section */}
-        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text }}>
+        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text, ...STYLES.text.bold }}>
           Video Introduction (Optional)
         </Text>
-        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 12 }}>
+        <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 12, ...STYLES.text.regular }}>
           Camera-only recording prevents catfishing • Max {Math.floor(limits.maxVideoSec / 60)}:
           {String(limits.maxVideoSec % 60).padStart(2, "0")}
         </Text>
@@ -977,7 +978,7 @@ export default function Profile() {
         {/* Upload progress */}
         {progress.total > 0 && (
           <View style={{ backgroundColor: "#EDE9FE", padding: 12, borderRadius: 12, marginBottom: 16 }}>
-            <Text style={{ color: "#5B3BAF", fontSize: 14, textAlign: "center", fontWeight: "600" }}>
+            <Text style={{ color: "#5B3BAF", fontSize: 14, textAlign: "center", fontWeight: "600", ...STYLES.text.semiBold }}>
               {progress.done < progress.total 
                 ? `📤 Uploading ${progress.done}/${progress.total}...`
                 : `✓ All ${progress.total} item${progress.total > 1 ? 's' : ''} uploaded!`
@@ -998,7 +999,7 @@ export default function Profile() {
         {/* Photo requirement reminder */}
         {photos.length < 2 && (
           <View style={{ backgroundColor: "#FEF3C7", padding: 12, borderRadius: 12, marginBottom: 16 }}>
-            <Text style={{ color: "#92400E", fontSize: 14, textAlign: "center" }}>
+            <Text style={{ color: "#92400E", fontSize: 14, textAlign: "center", ...STYLES.text.regular }}>
               📸 Please add at least 2 photos to continue ({photos.length}/2)
             </Text>
           </View>
@@ -1006,13 +1007,13 @@ export default function Profile() {
 
         {/* Availability Settings */}
         <View style={{ backgroundColor: COLORS.white, padding: 16, borderRadius: 12, marginBottom: 16, borderWidth: 1, borderColor: "#E5E7EB" }}>
-          <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 12 }}>
+          <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 12, ...STYLES.text.semiBold }}>
             Availability Settings
           </Text>
           
           {/* Immediate Availability Toggle */}
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <Text style={{ color: COLORS.text, fontSize: 14 }}>Show as Online</Text>
+            <Text style={{ color: COLORS.text, fontSize: 14, ...STYLES.text.regular }}>Show as Online</Text>
             <TouchableOpacity
               onPress={() => setImmediateAvailable(!immediateAvailable)}
               style={{
@@ -1038,7 +1039,7 @@ export default function Profile() {
 
           {/* Appear Offline Override Toggle */}
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <Text style={{ color: COLORS.text, fontSize: 14 }}>Appear Offline (Override)</Text>
+            <Text style={{ color: COLORS.text, fontSize: 14, ...STYLES.text.regular }}>Appear Offline (Override)</Text>
             <TouchableOpacity
               onPress={() => setAvailabilityOverride(!availabilityOverride)}
               style={{
@@ -1064,7 +1065,7 @@ export default function Profile() {
 
           {/* Accept Video Calls Toggle */}
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <Text style={{ color: COLORS.text, fontSize: 14 }}>Accept Video Calls</Text>
+            <Text style={{ color: COLORS.text, fontSize: 14, ...STYLES.text.regular }}>Accept Video Calls</Text>
             <TouchableOpacity
               onPress={() => setVideoCallAvailable(!videoCallAvailable)}
               style={{
@@ -1175,15 +1176,16 @@ export default function Profile() {
               color: "#9CA3AF",
               fontWeight: "600",
               fontSize: 14,
+              ...STYLES.text.semiBold,
             }}
           >
             Reset All Fields
           </Text>
         </TouchableOpacity>
 
-        {error && <Text style={{ color: COLORS.error, marginTop: 8, textAlign: "center" }}>{error}</Text>}
+        {error && <Text style={{ color: COLORS.error, marginTop: 8, textAlign: "center", ...STYLES.text.regular }}>{error}</Text>}
         
-        <Text style={{ fontSize: 12, textAlign: "center", color: COLORS.text, opacity: 0.6, marginTop: 16 }}>
+        <Text style={{ fontSize: 12, textAlign: "center", color: COLORS.text, opacity: 0.6, marginTop: 16, ...STYLES.text.regular }}>
           * Required fields
         </Text>
       </ScrollView>
@@ -1205,17 +1207,17 @@ export default function Profile() {
             borderBottomWidth: 1,
             borderBottomColor: "#E5E7EB"
           }}>
-            <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text }}>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, ...STYLES.text.bold }}>
               Select Interests
             </Text>
             <TouchableOpacity onPress={() => setShowInterestsModal(false)}>
-              <Text style={{ color: COLORS.primary, fontSize: 16, fontWeight: "600" }}>Done</Text>
+              <Text style={{ color: COLORS.primary, fontSize: 16, fontWeight: "600", ...STYLES.text.semiBold }}>Done</Text>
             </TouchableOpacity>
           </View>
 
           {/* Selection Counter */}
           <View style={{ padding: 16, backgroundColor: "#F9FAFB" }}>
-            <Text style={{ fontSize: 14, color: COLORS.text, textAlign: "center" }}>
+            <Text style={{ fontSize: 14, color: COLORS.text, textAlign: "center", ...STYLES.text.regular }}>
               {interests.length < INTERESTS_CONFIG.MIN_REQUIRED 
                 ? `Select ${INTERESTS_CONFIG.MIN_REQUIRED - interests.length} more (${interests.length}/${INTERESTS_CONFIG.MIN_REQUIRED} minimum)`
                 : `${interests.length}/${INTERESTS_CONFIG.MAX_ALLOWED} selected`}
@@ -1242,7 +1244,8 @@ export default function Profile() {
                   >
                     <Text style={{ 
                       color: isSelected ? COLORS.primary : COLORS.text,
-                      fontWeight: isSelected ? "600" : "400"
+                      fontWeight: isSelected ? "600" : "400",
+                      ...(isSelected ? STYLES.text.semiBold : STYLES.text.regular)
                     }}>
                       {isSelected ? "✓ " : ""}{interest}
                     </Text>
@@ -1272,11 +1275,11 @@ export default function Profile() {
               borderBottomWidth: 1,
               borderBottomColor: "#E5E7EB"
             }}>
-              <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text }}>
+              <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, ...STYLES.text.bold }}>
                 Select {showPreferenceModal.label}
               </Text>
               <TouchableOpacity onPress={() => setShowPreferenceModal(null)}>
-                <Text style={{ color: COLORS.primary, fontSize: 16, fontWeight: "600" }}>Done</Text>
+                <Text style={{ color: COLORS.primary, fontSize: 16, fontWeight: "600", ...STYLES.text.semiBold }}>Done</Text>
               </TouchableOpacity>
             </View>
 
@@ -1305,7 +1308,8 @@ export default function Profile() {
                       <Text style={{ 
                         color: isSelected ? COLORS.primary : COLORS.text,
                         fontWeight: isSelected ? "600" : "400",
-                        fontSize: 16
+                        fontSize: 16,
+                        ...(isSelected ? STYLES.text.semiBold : STYLES.text.regular)
                       }}>
                         {option}
                       </Text>
