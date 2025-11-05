@@ -26,9 +26,5 @@ export default function AppLayout() {
     }
   }, [status, location.pathname, navigate]);
 
-  if (status === "loading") {
-    return null;
-  }
-
   return <Outlet />;
 }
