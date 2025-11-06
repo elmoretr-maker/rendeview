@@ -12,7 +12,7 @@ The application utilizes a client-server architecture. The frontend uses React 1
 Key features include:
 - **UI/UX**: Mobile-first design with Tinder-style profile cards, gradient overlays, and a consistent purple brand theme. 100% aesthetic parity achieved with Inter font family implemented across all 8 mobile screens.
 - **Core Features**: Discovery with location-based proximity filtering, Matches, Messages with real-time chat, Profile management, and a consolidated onboarding flow. Includes smart matching with prioritization, mutual interests, activity-based matching, conversation starters, Daily Picks, and Reverse Discovery.
-- **Messaging System**: Separated Matches (mutual likes) from Messages/Chats (anyone can message anyone). Implemented standalone conversations system with new database tables and migrated existing messages.
+- **Messaging System**: Separated Matches (mutual likes) from Messages/Chats (anyone can message anyone). Implemented standalone conversations system with new database tables and migrated existing messages. **Enhanced UI** features large profile pictures, clickable "Open Chat" buttons, and unread message badges. **Comprehensive blocking enforcement** prevents blocked users from appearing in conversation lists or accessing/sending messages via API (enforced bidirectionally in GET/POST endpoints with 403 responses).
 - **Membership Model**: A 4-tier system (Free, Casual, Dating, Business) governs media limits, chat durations, and meeting caps, enforced client-side and via API.
 - **Video Calling**: Real-time video call extension system with synchronized timers and integration for paid extensions.
 - **Media Management**: Supports photo uploads and camera-only video recording with tier-based limits.
