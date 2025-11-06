@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Heart, RotateCcw, Video } from "lucide-react";
+import { X, Heart, RotateCcw, Video, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
@@ -352,7 +352,18 @@ function DiscoveryContent() {
     },
   });
 
-  const discardMutation = useMutation({
+  // Skip to next profile without blocking (swipe left)
+  const handleSkip = () => {
+    setIndex((i) => Math.min(i + 1, profiles.length - 1));
+  };
+
+  // Go back to previous profile
+  const handlePrevious = () => {
+    setIndex((i) => Math.max(0, i - 1));
+  };
+
+  // Permanent block (separate explicit action)
+  const blockMutation = useMutation({
     mutationFn: async (blockedId) => {
       const res = await fetch("/api/blockers", {
         method: "POST",
@@ -364,7 +375,7 @@ function DiscoveryContent() {
         err.code = 401;
         throw err;
       }
-      if (!res.ok) throw new Error("Failed to discard");
+      if (!res.ok) throw new Error("Failed to block");
       return res.json();
     },
     onMutate: async (blockedId) => {
@@ -376,6 +387,7 @@ function DiscoveryContent() {
     },
     onSuccess: (data, blockedId) => {
       queryClient.invalidateQueries({ queryKey: ["discovery"] });
+      toast.success("Profile blocked");
       
       if (data?.warning) {
         toast.warning(data.warning, { duration: 6000 });
@@ -394,14 +406,15 @@ function DiscoveryContent() {
         navigate("/account/signin");
         return;
       }
-      toast.error("Could not discard profile");
+      toast.error("Could not block profile");
     },
   });
 
   const profiles = data?.profiles || [];
   const visibleProfiles = profiles.filter((_, i) => !removedCards.includes(i));
-  const currentIndex = profiles.findIndex((_, i) => !removedCards.includes(i));
-  const current = visibleProfiles[0];
+  const current = profiles[index];
+  const isFirstProfile = index === 0;
+  const isLastProfile = index === profiles.length - 1;
 
   if (userLoading || isLoading) {
     return (
@@ -498,9 +511,9 @@ function DiscoveryContent() {
                   profile={profile}
                   index={idx}
                   totalCards={Math.min(3, visibleProfiles.length)}
-                  isLocked={idx === 0 && (likeMutation.isPending || discardMutation.isPending)}
+                  isLocked={idx === 0 && likeMutation.isPending}
                   userInterests={user?.interests || []}
-                  onSwipeLeft={() => discardMutation.mutate(profile.id)}
+                  onSwipeLeft={handleSkip}
                   onSwipeRight={() => likeMutation.mutate(profile.id)}
                   onTap={() => navigate(`/profile/${profile.id}`)}
                 />
@@ -508,31 +521,42 @@ function DiscoveryContent() {
             </AnimatePresence>
           </Box>
 
-          {/* Counter and Reset */}
-          <HStack spacing={3} justify="center">
-            <Button
-              onClick={() => setRemovedCards([])}
-              isDisabled={removedCards.length === 0}
-              leftIcon={<RotateCcw size={18} />}
+          {/* Navigation Counter */}
+          <HStack spacing={4} justify="center">
+            <IconButton
+              onClick={handlePrevious}
+              isDisabled={isFirstProfile}
+              icon={<ChevronLeft size={24} />}
               borderRadius="full"
-              colorScheme="purple"
               variant="outline"
+              colorScheme="purple"
               bg="white"
               shadow="md"
               _hover={{ shadow: "lg" }}
-            >
-              Reset
-            </Button>
-            <Text fontSize="sm" fontWeight="medium" color="gray.700">
-              {currentIndex + 1} of {profiles.length}
+              aria-label="Previous profile"
+            />
+            <Text fontSize="sm" fontWeight="medium" color="gray.700" minW="80px" textAlign="center">
+              {index + 1} of {profiles.length}
             </Text>
+            <IconButton
+              onClick={handleSkip}
+              isDisabled={isLastProfile}
+              icon={<ChevronRight size={24} />}
+              borderRadius="full"
+              variant="outline"
+              colorScheme="purple"
+              bg="white"
+              shadow="md"
+              _hover={{ shadow: "lg" }}
+              aria-label="Next profile"
+            />
           </HStack>
 
           {/* Action buttons */}
           <HStack spacing={6} justify="center">
             <IconButton
-              onClick={() => discardMutation.mutate(current.id)}
-              isDisabled={discardMutation.isPending}
+              onClick={handleSkip}
+              isDisabled={isLastProfile}
               icon={<X color="#E74C3C" size={32} strokeWidth={2.5} />}
               w={20}
               h={20}
@@ -541,7 +565,7 @@ function DiscoveryContent() {
               shadow="lg"
               _hover={{ shadow: "xl", transform: "scale(1.1)" }}
               transition="all 0.2s"
-              aria-label="Pass"
+              aria-label="Skip to next profile"
             />
             <IconButton
               onClick={() => likeMutation.mutate(current.id)}
