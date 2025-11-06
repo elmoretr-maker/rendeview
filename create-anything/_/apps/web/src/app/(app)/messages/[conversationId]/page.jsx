@@ -10,6 +10,7 @@ import { BuyCreditsModal } from "@/components/BuyCreditsModal";
 import { SmartNudge } from "@/components/SmartNudge";
 import { Video, X, Clock, Crown } from "lucide-react";
 import { containsExternalContact, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
+import { getAbsoluteUrl } from "@/utils/urlHelpers";
 import {
   Box,
   Button,
@@ -34,6 +35,7 @@ import {
   ModalBody,
   ModalCloseButton,
   Divider,
+  Avatar,
 } from "@chakra-ui/react";
 
 function ChatContent() {
