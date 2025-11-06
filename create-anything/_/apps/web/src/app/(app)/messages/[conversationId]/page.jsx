@@ -8,7 +8,7 @@ import SessionExpired from "@/components/SessionExpired";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { BuyCreditsModal } from "@/components/BuyCreditsModal";
 import { SmartNudge } from "@/components/SmartNudge";
-import { Video, X, Clock, Crown } from "lucide-react";
+import { Video, X, Clock, Crown, ArrowLeft } from "lucide-react";
 import { containsExternalContact, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
 import {
@@ -340,8 +340,17 @@ function ChatContent() {
     <Box minH="100vh" display="flex" flexDirection="column" bg="gray.50">
       <AppHeader />
       <Container maxW="2xl" w="full" flex="1" display="flex" flexDirection="column" px={4} py={8}>
-        {/* Header with Profile Picture, Name, and Back Button */}
+        {/* Header with Back Button, Profile Picture, and Name */}
         <HStack spacing={4} mb={4} align="center">
+          <IconButton
+            icon={<ArrowLeft size={20} />}
+            onClick={() => navigate('/messages')}
+            variant="ghost"
+            colorScheme="gray"
+            aria-label="Back to Messages"
+            size="md"
+            _hover={{ bg: "gray.100" }}
+          />
           <Box
             onClick={() => otherUser?.id && navigate(`/profile/${otherUser.id}`)}
             cursor="pointer"
