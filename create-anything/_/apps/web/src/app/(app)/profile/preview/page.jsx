@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Video, MapPin } from "lucide-react";
+import { ArrowLeft, Video } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
 import {
@@ -143,10 +143,9 @@ export default function ProfilePreview() {
                   {tierDisplay}
                 </Badge>
                 {user.location && (
-                  <HStack spacing={1} color="gray.600" fontSize="sm">
-                    <MapPin size={14} />
-                    <Text>{user.location}</Text>
-                  </HStack>
+                  <Text color="gray.600" fontSize="sm">
+                    📍 {user.location}
+                  </Text>
                 )}
               </VStack>
             </HStack>
