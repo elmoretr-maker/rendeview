@@ -4,14 +4,6 @@ import useUser from '@/utils/useUser';
 export default function Page() {
   const { data: user, loading } = useUser();
 
-  // Debug logging
-  console.log('[INDEX PAGE] Loading:', loading);
-  console.log('[INDEX PAGE] User data:', user);
-  console.log('[INDEX PAGE] consent_accepted:', user?.consent_accepted);
-  console.log('[INDEX PAGE] role:', user?.role);
-  console.log('[INDEX PAGE] membership_tier:', user?.membership_tier);
-  console.log('[INDEX PAGE] name:', user?.name);
-
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }

@@ -26,12 +26,12 @@ export async function GET(request) {
 
     const matches = [];
     for (const r of rows) {
-      const [u] = await sql`SELECT id, name, image, primary_photo_url FROM auth_users WHERE id = ${r.other_id}`;
+      const [u] = await sql`SELECT id, name, image FROM auth_users WHERE id = ${r.other_id}`;
+      const [pm] = await sql`SELECT url FROM profile_media WHERE user_id = ${r.other_id} AND type = 'photo' ORDER BY sort_order ASC LIMIT 1`;
       
-      // CRITICAL FIX: Use primary_photo_url instead of profile_media to get correct photo per user
       // Transform photo URL: /objects/... -> /api/objects/...
-      const photoUrl = u?.primary_photo_url 
-        ? (u.primary_photo_url.startsWith('/objects/') ? `/api${u.primary_photo_url}` : u.primary_photo_url)
+      const photoUrl = pm?.url 
+        ? (pm.url.startsWith('/objects/') ? `/api${pm.url}` : pm.url)
         : null;
       
       matches.push({ 

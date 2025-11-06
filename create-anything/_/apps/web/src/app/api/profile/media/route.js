@@ -40,16 +40,6 @@ export async function POST(request, { params }) {
       VALUES (${userId}, ${type}, ${objectPath})
     `;
 
-    // CRITICAL FIX: If this is a photo and the user has no primary_photo_url set, set it now
-    // Using conditional UPDATE for atomicity and efficiency
-    if (type === "photo") {
-      await sql`
-        UPDATE auth_users 
-        SET primary_photo_url = ${objectPath} 
-        WHERE id = ${userId} AND primary_photo_url IS NULL
-      `;
-    }
-
     return new Response(JSON.stringify({ success: true, objectPath }), {
       status: 200,
       headers: { "Content-Type": "application/json" },

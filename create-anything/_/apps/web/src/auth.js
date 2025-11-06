@@ -255,35 +255,6 @@ const pool = new Pool({
 const adapter = Adapter(pool);
 
 export const { auth } = CreateAuth({
-  adapter: adapter,
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60,
-  },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.email = user.email;
-        token.name = user.name;
-        token.role = user.role;
-        token.membership_tier = user.membership_tier;
-        token.consent_accepted = user.consent_accepted;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id;
-        session.user.email = token.email;
-        session.user.name = token.name;
-        session.user.role = token.role;
-        session.user.membership_tier = token.membership_tier;
-        session.user.consent_accepted = token.consent_accepted;
-      }
-      return session;
-    },
-  },
   providers: [Credentials({
   id: 'credentials-signin',
   name: 'Credentials Sign in',
@@ -324,27 +295,8 @@ export const { auth } = CreateAuth({
       return null;
     }
 
-    // Fetch complete user data from application users table
-    try {
-      const appUserResult = await pool.query(
-        'SELECT role, membership_tier, consent_accepted, name FROM users WHERE id = $1',
-        [user.id]
-      );
-      const appUser = appUserResult.rows[0];
-
-      // Merge auth_users data with application users data
-      return {
-        ...user,
-        role: appUser?.role,
-        membership_tier: appUser?.membership_tier,
-        consent_accepted: appUser?.consent_accepted,
-        name: appUser?.name || user.name, // Prefer app name over auth name
-      };
-    } catch (error) {
-      console.error('[AUTH] Failed to fetch user from users table:', error);
-      // Fallback to basic auth_users data if query fails
-      return user;
-    }
+    // return user object with the their profile data
+    return user;
   },
 }),
   Credentials({
@@ -397,28 +349,7 @@ export const { auth } = CreateAuth({
         providerAccountId: newUser.id,
         provider: 'credentials',
       });
-      
-      // Fetch complete user data from application users table
-      try {
-        const appUserResult = await pool.query(
-          'SELECT role, membership_tier, consent_accepted, name FROM users WHERE id = $1',
-          [newUser.id]
-        );
-        const appUser = appUserResult.rows[0];
-
-        // Merge auth_users data with application users data
-        return {
-          ...newUser,
-          role: appUser?.role,
-          membership_tier: appUser?.membership_tier,
-          consent_accepted: appUser?.consent_accepted,
-          name: appUser?.name || newUser.name, // Prefer app name over auth name
-        };
-      } catch (error) {
-        console.error('[AUTH] Failed to fetch user from users table:', error);
-        // Fallback to basic auth_users data if query fails
-        return newUser;
-      }
+      return newUser;
     }
     return null;
   },
