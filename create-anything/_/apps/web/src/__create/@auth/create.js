@@ -63,6 +63,25 @@ export default function CreateAuth(config = {}) {
                 }
                 
                 if (token) {
+                        console.log('[CREATE-AUTH] JWT-only fallback - creating database session for user:', token.sub);
+                        
+                        if (adapter && adapter.createSession) {
+                                try {
+                                        const sessionToken = crypto.randomUUID();
+                                        const expires = new Date(Date.now() + 12 * 60 * 60 * 1000);
+                                        
+                                        await adapter.createSession({
+                                                sessionToken,
+                                                userId: token.sub,
+                                                expires,
+                                        });
+                                        
+                                        console.log('[CREATE-AUTH] Database session created successfully for user:', token.sub);
+                                } catch (error) {
+                                        console.error('[CREATE-AUTH] Failed to create database session:', error);
+                                }
+                        }
+                        
                         return {
                                 user: {
                                         id: token.sub,

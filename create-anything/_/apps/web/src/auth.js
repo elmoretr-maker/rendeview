@@ -294,7 +294,6 @@ export const { auth } = CreateAuth({
     },
   },
   authorize: async (credentials) => {
-    throw new Error('🔥 AUTHORIZE FUNCTION CALLED - credentials-signin');
     const { email, password } = credentials;
     if (!email || !password) {
       return null;
