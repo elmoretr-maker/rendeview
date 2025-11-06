@@ -43,9 +43,11 @@ export const CACHE_DURATIONS = {
   IDEMPOTENCY_KEY: 24 * 60 * 60 * 1000,
   
   // Session timeout: 30 minutes (in milliseconds)
+  // Note: Matches server-side Auth.js timeout
   SESSION_TIMEOUT: 30 * 60 * 1000,
   
   // Session warning: 5 minutes before timeout (in milliseconds)
+  // Warning appears at 25-minute mark, giving user 5 min to extend session
   SESSION_WARNING: 5 * 60 * 1000
 };
 
