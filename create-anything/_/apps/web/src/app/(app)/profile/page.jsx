@@ -126,6 +126,7 @@ function ProfileContent() {
   const [religion, setReligion] = useState("");
   const [childrenPreference, setChildrenPreference] = useState("");
   const [pets, setPets] = useState("");
+  const [savedByCount, setSavedByCount] = useState(0);
   
   const { isOpen: isInterestsOpen, onOpen: onInterestsOpen, onClose: onInterestsClose } = useDisclosure();
 
@@ -184,6 +185,19 @@ function ProfileContent() {
       }
     };
     fetchProfile();
+    
+    const fetchSavedByCount = async () => {
+      try {
+        const res = await fetch("/api/saved-by-count");
+        if (res.ok) {
+          const data = await res.json();
+          setSavedByCount(data.count || 0);
+        }
+      } catch (e) {
+        console.error("Failed to fetch saved-by count", e);
+      }
+    };
+    fetchSavedByCount();
   }, []);
 
   const save = useCallback(async () => {
@@ -534,6 +548,32 @@ function ProfileContent() {
                 </VStack>
                 <Text color="gray.400">→</Text>
               </HStack>
+            </CardBody>
+          </Card>
+
+          <Card shadow="md" bg="gradient-to-r from-purple.50 to-pink.50">
+            <CardBody p={6}>
+              <VStack align="center" spacing={2}>
+                <Heading size="md" color="gray.800" textAlign="center">
+                  Saved in Top Picks
+                </Heading>
+                <Flex
+                  w={20}
+                  h={20}
+                  borderRadius="full"
+                  align="center"
+                  justify="center"
+                  bg="white"
+                  shadow="md"
+                >
+                  <Text fontSize="4xl" fontWeight="bold" color="purple.600">
+                    {savedByCount}
+                  </Text>
+                </Flex>
+                <Text fontSize="sm" color="gray.600" textAlign="center">
+                  {savedByCount === 1 ? 'person has' : 'people have'} saved your profile
+                </Text>
+              </VStack>
             </CardBody>
           </Card>
         </VStack>
