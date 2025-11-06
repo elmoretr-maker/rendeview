@@ -1,12 +1,13 @@
 import React from "react";
 import { useNavigate, Link } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import SessionExpired from "@/components/SessionExpired";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
+import { Star, X } from "lucide-react";
 import {
   Box,
   Button,
@@ -20,10 +21,13 @@ import {
   Spinner,
   Card,
   CardBody,
+  IconButton,
+  Badge,
 } from "@chakra-ui/react";
 
 function MatchesContent() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, isLoading: userLoading} = useUser();
 
   const { data, isLoading, error } = useQuery({
@@ -44,7 +48,36 @@ function MatchesContent() {
     },
   });
 
+  // Fetch saved profiles (Top Picks)
+  const { data: savedData, isLoading: savedLoading } = useQuery({
+    queryKey: ["savedProfiles"],
+    queryFn: async () => {
+      const res = await fetch("/api/saved-profiles");
+      if (!res.ok) throw new Error("Failed to load saved profiles");
+      return res.json();
+    },
+  });
+
+  // Remove from Top Picks mutation
+  const removeSavedMutation = useMutation({
+    mutationFn: async (savedUserId) => {
+      const res = await fetch(`/api/saved-profiles?savedUserId=${savedUserId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to remove from Top Picks");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["savedProfiles"] });
+      toast.success("Removed from Top Picks");
+    },
+    onError: () => {
+      toast.error("Could not remove from Top Picks");
+    },
+  });
+
   const matches = data?.matches || [];
+  const savedProfiles = savedData?.savedProfiles || [];
   
   // Fetch notes for all matched users
   const { data: notesData } = useQuery({
@@ -124,6 +157,95 @@ function MatchesContent() {
             View Likers
           </Button>
         </Flex>
+
+        {/* Top Picks Section */}
+        {savedProfiles.length > 0 && (
+          <Box mb={8}>
+            <Flex align="center" gap={2} mb={4}>
+              <Star size={24} color="#FFD700" fill="#FFD700" />
+              <Heading size="md" color="gray.800">Top Picks</Heading>
+              <Badge colorScheme="purple" fontSize="xs" px={2} py={0.5} borderRadius="full">
+                {savedProfiles.length}/5
+              </Badge>
+            </Flex>
+            
+            <VStack spacing={3} align="stretch">
+              {savedProfiles.map((profile) => (
+                <Card
+                  key={profile.id}
+                  cursor="pointer"
+                  _hover={{ bg: "white", shadow: "md" }}
+                  transition="all 0.2s"
+                  bg="purple.50"
+                  variant="outline"
+                  borderColor="purple.200"
+                  position="relative"
+                >
+                  <CardBody p={4} onClick={() => navigate(`/profile/${profile.id}`)}>
+                    <HStack spacing={3}>
+                      <Box
+                        w="48px"
+                        h="48px"
+                        borderRadius="full"
+                        overflow="hidden"
+                        flexShrink={0}
+                        bg="gray.200"
+                      >
+                        {profile.photo ? (
+                          <Box
+                            as="img"
+                            src={getAbsoluteUrl(profile.photo)}
+                            alt={profile.name || `User ${profile.id}`}
+                            w="full"
+                            h="full"
+                            objectFit="cover"
+                          />
+                        ) : (
+                          <Flex w="full" h="full" align="center" justify="center" bg="gray.300" color="gray.600" fontWeight="semibold" fontSize="lg">
+                            {(profile.name || 'U').charAt(0).toUpperCase()}
+                          </Flex>
+                        )}
+                      </Box>
+                      <VStack align="start" spacing={0} flex={1}>
+                        <Text fontWeight="semibold" color="gray.800">
+                          {profile.name || `User ${profile.id}`}
+                        </Text>
+                        <Text fontSize="sm" color="gray.600" noOfLines={1}>
+                          {profile.bio || "No bio available"}
+                        </Text>
+                      </VStack>
+                      <IconButton
+                        icon={<X size={18} />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeSavedMutation.mutate(profile.id);
+                        }}
+                        size="sm"
+                        variant="ghost"
+                        colorScheme="red"
+                        borderRadius="full"
+                        aria-label="Remove from Top Picks"
+                      />
+                    </HStack>
+                  </CardBody>
+                </Card>
+              ))}
+            </VStack>
+            
+            {savedProfiles.length < 5 && (
+              <Text fontSize="sm" color="gray.600" mt={2} textAlign="center">
+                Save up to 5 profiles from Discovery to your Top Picks
+              </Text>
+            )}
+          </Box>
+        )}
+
+        {/* Regular Matches Section */}
+        {savedProfiles.length > 0 && (
+          <Heading size="md" color="gray.800" mb={4}>
+            All Matches
+          </Heading>
+        )}
 
         {matches.length === 0 ? (
           <VStack spacing={4} py={12}>

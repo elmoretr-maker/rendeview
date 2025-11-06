@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Heart, RotateCcw, Video, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Heart, RotateCcw, Video, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useNavigate } from "react-router";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
@@ -28,7 +28,7 @@ import {
 } from "@chakra-ui/react";
 
 // Swipeable Card Component
-function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, totalCards, isLocked, userInterests }) {
+function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, totalCards, isLocked, userInterests, isSaved, onSave }) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 0, 200], [-25, 0, 25]);
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
@@ -116,6 +116,26 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
                 h="500px"
                 objectFit="cover"
                 bg="gray.100"
+              />
+              {/* Save button */}
+              <IconButton
+                icon={<Star size={20} fill={isSaved ? "#FFD700" : "none"} color={isSaved ? "#FFD700" : "white"} strokeWidth={2.5} />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSave();
+                }}
+                position="absolute"
+                top={4}
+                right={4}
+                borderRadius="full"
+                bg={isSaved ? "white" : "blackAlpha.600"}
+                _hover={{ bg: isSaved ? "white" : "blackAlpha.800", transform: "scale(1.1)" }}
+                shadow="lg"
+                w={12}
+                h={12}
+                transition="all 0.2s"
+                aria-label={isSaved ? "Remove from Top Picks" : "Add to Top Picks"}
+                zIndex={2}
               />
               {/* Gradient overlay for text readability */}
               <Box 
@@ -291,6 +311,20 @@ function DiscoveryContent() {
   const [removedCards, setRemovedCards] = useState([]);
   const [showCelebration, setShowCelebration] = useState(false);
   const [matchedUser, setMatchedUser] = useState(null);
+  const [savedProfileIds, setSavedProfileIds] = useState(new Set());
+
+  // Load saved profiles
+  const { data: savedData } = useQuery({
+    queryKey: ["savedProfiles"],
+    queryFn: async () => {
+      const res = await fetch("/api/saved-profiles");
+      if (!res.ok) throw new Error("Failed to load saved profiles");
+      const data = await res.json();
+      const ids = new Set(data.savedProfiles?.map(p => p.id) || []);
+      setSavedProfileIds(ids);
+      return data;
+    },
+  });
   
   useEffect(() => {
     setIndex(0);
@@ -361,6 +395,54 @@ function DiscoveryContent() {
   const handlePrevious = () => {
     setIndex((i) => Math.max(0, i - 1));
   };
+
+  // Save/unsave profile mutation
+  const saveMutation = useMutation({
+    mutationFn: async ({ profileId, action }) => {
+      if (action === "save") {
+        const res = await fetch("/api/saved-profiles", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ savedUserId: profileId }),
+        });
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || "Failed to save profile");
+        }
+        return res.json();
+      } else {
+        const res = await fetch(`/api/saved-profiles?savedUserId=${profileId}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("Failed to unsave profile");
+        return res.json();
+      }
+    },
+    onSuccess: (data, { profileId, action }) => {
+      queryClient.invalidateQueries({ queryKey: ["savedProfiles"] });
+      
+      if (action === "save") {
+        if (data.alreadySaved) {
+          toast.info("Profile already in Top Picks");
+        } else if (data.limitReached) {
+          toast.error("Maximum 5 profiles allowed in Top Picks");
+        } else {
+          setSavedProfileIds(prev => new Set([...prev, profileId]));
+          toast.success("Added to Top Picks ⭐");
+        }
+      } else {
+        setSavedProfileIds(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(profileId);
+          return newSet;
+        });
+        toast.success("Removed from Top Picks");
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || "Could not update Top Picks");
+    },
+  });
 
   // Permanent block (separate explicit action)
   const blockMutation = useMutation({
@@ -516,6 +598,11 @@ function DiscoveryContent() {
                   onSwipeLeft={handleSkip}
                   onSwipeRight={() => likeMutation.mutate(profile.id)}
                   onTap={() => navigate(`/profile/${profile.id}`)}
+                  isSaved={savedProfileIds.has(profile.id)}
+                  onSave={() => {
+                    const action = savedProfileIds.has(profile.id) ? "unsave" : "save";
+                    saveMutation.mutate({ profileId: profile.id, action });
+                  }}
                 />
               ))}
             </AnimatePresence>
