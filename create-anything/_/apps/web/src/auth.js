@@ -255,6 +255,7 @@ const pool = new Pool({
 const adapter = Adapter(pool);
 
 export const { auth } = CreateAuth({
+  adapter: adapter,
   session: {
     strategy: "database",
     maxAge: 12 * 60 * 60, // 12 hours in seconds
