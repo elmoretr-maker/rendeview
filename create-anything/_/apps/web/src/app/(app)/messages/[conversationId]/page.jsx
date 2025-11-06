@@ -283,6 +283,10 @@ function ChatContent() {
     return diffDays;
   }, [msgs]);
 
+  // Anti-catfishing nudge state
+  const [dismissedCatfishNudge, setDismissedCatfishNudge] = React.useState(false);
+  const showCatfishNudge = msgs.length >= 5 && !dismissedCatfishNudge;
+
   // Conversation starters based on profile info
   const conversationStarters = React.useMemo(() => {
     const starters = [
@@ -425,6 +429,46 @@ function ChatContent() {
             </HStack>
           </CardBody>
         </Card>
+
+        {/* Anti-Catfishing Nudge */}
+        {showCatfishNudge && (
+          <Card mb={4} shadow="md" bg="gradient-to-r from-orange.50 to-red.50" borderColor="orange.300" borderWidth="2px">
+            <CardBody p={4}>
+              <Flex align="start" gap={3}>
+                <Box fontSize="3xl" flexShrink={0}>🚨</Box>
+                <VStack align="start" spacing={2} flex={1}>
+                  <Heading size="sm" color="red.800">
+                    Don't Wanna Be Catfished?
+                  </Heading>
+                  <Text fontSize="sm" color="red.900" fontWeight="medium" lineHeight="1.6">
+                    You've exchanged {msgs.length} messages but haven't video chatted yet. Real people show their faces! 
+                    Start a Video Chat now and verify who you're really talking to. It's the PRIMARY feature of this app! 🎥
+                  </Text>
+                  <HStack spacing={2} mt={1}>
+                    <Button
+                      onClick={() => setShowVideoCallModal(true)}
+                      leftIcon={<Video size={18} />}
+                      colorScheme="red"
+                      size="sm"
+                      shadow="md"
+                      fontWeight="bold"
+                    >
+                      Start Video Chat Now
+                    </Button>
+                    <Button
+                      onClick={() => setDismissedCatfishNudge(true)}
+                      variant="ghost"
+                      size="sm"
+                      color="red.700"
+                    >
+                      Dismiss
+                    </Button>
+                  </HStack>
+                </VStack>
+              </Flex>
+            </CardBody>
+          </Card>
+        )}
         
         {/* Message Quota Counter */}
         {quotaData && (
