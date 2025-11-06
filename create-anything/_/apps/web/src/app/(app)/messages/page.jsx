@@ -111,27 +111,33 @@ export default function Messages() {
               >
                 <CardBody p={4}>
                   <HStack spacing={4} align="center">
-                    <Avatar
-                      size="lg"
-                      src={item.other_user_photo ? getAbsoluteUrl(item.other_user_photo) : undefined}
-                      name={item.other_user_name || `User ${item.other_user_id}`}
-                      bg="purple.100"
-                      color="purple.600"
+                    <Box
                       cursor="pointer"
                       onClick={() => navigate(`/profile/${item.other_user_id}`)}
                       _hover={{ opacity: 0.8 }}
-                    />
+                      transition="opacity 0.2s"
+                    >
+                      <Avatar
+                        size="lg"
+                        src={item.other_user_photo ? getAbsoluteUrl(item.other_user_photo) : undefined}
+                        name={item.other_user_name || `User ${item.other_user_id}`}
+                        bg="purple.100"
+                        color="purple.600"
+                      />
+                    </Box>
                     <VStack align="start" spacing={1} flex={1}>
-                      <Text 
+                      <Box
+                        as="span"
                         fontWeight="bold" 
                         color="gray.800"
                         fontSize="lg"
                         cursor="pointer"
                         onClick={() => navigate(`/profile/${item.other_user_id}`)}
                         _hover={{ color: "purple.600" }}
+                        transition="color 0.2s"
                       >
                         {item.other_user_name || `User ${item.other_user_id}`}
-                      </Text>
+                      </Box>
                       <Text fontSize="sm" color="gray.600" noOfLines={2}>
                         {item.last_message_body || "Start a conversation"}
                       </Text>
