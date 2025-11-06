@@ -20,7 +20,7 @@ export const TIER_LIMITS = {
   },
   [MEMBERSHIP_TIERS.CASUAL]: {
     photos: 6,
-    videos: 3,
+    videos: 1,
     videoMaxDuration: 30, // seconds
     chatMinutes: 15,
     maxMeetings: Infinity,
@@ -30,7 +30,7 @@ export const TIER_LIMITS = {
   },
   [MEMBERSHIP_TIERS.DATING]: {
     photos: 10,
-    videos: 1,
+    videos: 2,
     videoMaxDuration: 60, // seconds
     chatMinutes: 25,
     maxMeetings: Infinity,
@@ -40,7 +40,7 @@ export const TIER_LIMITS = {
   },
   [MEMBERSHIP_TIERS.BUSINESS]: {
     photos: 20,
-    videos: 1,
+    videos: 2,
     videoMaxDuration: 60, // seconds (1 minute)
     chatMinutes: 45,
     maxMeetings: Infinity,
