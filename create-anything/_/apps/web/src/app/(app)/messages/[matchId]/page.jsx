@@ -398,7 +398,7 @@ function ChatContent() {
               <Text>Video Calls Unavailable</Text>
             </Badge>
           )}
-        </Flex>
+        </HStack>
         
         {/* Message Quota Counter */}
         {quotaData && (
