@@ -173,7 +173,6 @@ function MatchesContent() {
               {savedProfiles.map((profile) => (
                 <Card
                   key={profile.id}
-                  cursor="pointer"
                   _hover={{ bg: "white", shadow: "md" }}
                   transition="all 0.2s"
                   bg="purple.50"
@@ -181,7 +180,7 @@ function MatchesContent() {
                   borderColor="purple.200"
                   position="relative"
                 >
-                  <CardBody p={4} onClick={() => navigate(`/profile/${profile.id}`)}>
+                  <CardBody p={4}>
                     <HStack spacing={3}>
                       <Box
                         w="48px"
@@ -190,6 +189,9 @@ function MatchesContent() {
                         overflow="hidden"
                         flexShrink={0}
                         bg="gray.200"
+                        cursor="pointer"
+                        onClick={() => navigate(`/profile/${profile.id}`)}
+                        _hover={{ opacity: 0.8 }}
                       >
                         {profile.photo ? (
                           <Box
@@ -206,7 +208,13 @@ function MatchesContent() {
                           </Flex>
                         )}
                       </Box>
-                      <VStack align="start" spacing={0} flex={1}>
+                      <VStack 
+                        align="start" 
+                        spacing={0} 
+                        flex={1}
+                        cursor="pointer"
+                        onClick={() => navigate(`/profile/${profile.id}`)}
+                      >
                         <Text fontWeight="semibold" color="gray.800">
                           {profile.name || `User ${profile.id}`}
                         </Text>
