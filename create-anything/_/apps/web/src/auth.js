@@ -255,6 +255,10 @@ const pool = new Pool({
 const adapter = Adapter(pool);
 
 export const { auth } = CreateAuth({
+  session: {
+    strategy: "database",
+    maxAge: 12 * 60 * 60, // 12 hours in seconds
+  },
   providers: [Credentials({
   id: 'credentials-signin',
   name: 'Credentials Sign in',
