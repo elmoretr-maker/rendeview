@@ -56,6 +56,10 @@ function ChatContent() {
   // Video call modal state
   const [showVideoCallModal, setShowVideoCallModal] = useState(false);
   const [creatingVideoCall, setCreatingVideoCall] = useState(false);
+  
+  // Cooldown timer state for free tier limit
+  const [videoCooldown, setVideoCooldown] = useState(null);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["messages", conversationId],
@@ -122,6 +126,26 @@ function ChatContent() {
       setNoteContent(noteData.note.note_content || "");
     }
   }, [noteData]);
+  
+  // Countdown timer effect for video cooldown
+  useEffect(() => {
+    if (cooldownSeconds <= 0) {
+      setVideoCooldown(null);
+      return;
+    }
+    
+    const timer = setInterval(() => {
+      setCooldownSeconds(prev => {
+        if (prev <= 1) {
+          setVideoCooldown(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [cooldownSeconds]);
 
   const sendMutation = useMutation({
     mutationFn: async (body) => {
@@ -224,6 +248,19 @@ function ChatContent() {
       
       if (!res.ok) {
         const error = await res.json();
+        
+        if (error.isLimitExceeded && error.secondsUntilAvailable !== undefined) {
+          setVideoCooldown({
+            nextAvailableAt: error.nextAvailableAt,
+            currentMeetings: error.currentMeetings,
+            maxMeetings: error.maxMeetings
+          });
+          setCooldownSeconds(error.secondsUntilAvailable);
+          setShowVideoCallModal(false);
+          toast.error(error.error);
+          return;
+        }
+        
         if (error.upgradeRequired) {
           toast.error(error.error || "Please upgrade to start video calls");
           setShowVideoCallModal(false);
@@ -254,6 +291,20 @@ function ChatContent() {
   const getTierDisplay = (tier) => {
     const tierMap = { free: 'Free', casual: 'Casual', dating: 'Dating', business: 'Business' };
     return tierMap[tier.toLowerCase()] || 'Free';
+  };
+  
+  const formatCooldownTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${secs}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${secs}s`;
+    } else {
+      return `${secs}s`;
+    }
   };
 
   const saveNote = async () => {
@@ -426,7 +477,30 @@ function ChatContent() {
               Click photo to view profile
             </Text>
           </VStack>
-          {otherUser?.video_call_available !== false ? (
+          {videoCooldown ? (
+            <VStack align="end" spacing={0}>
+              <Badge
+                display="flex"
+                alignItems="center"
+                gap={2}
+                px={4}
+                py={2}
+                borderRadius="lg"
+                fontSize="sm"
+                fontWeight="semibold"
+                bg="orange.50"
+                color="orange.700"
+                borderWidth="1px"
+                borderColor="orange.200"
+              >
+                <Clock size={18} />
+                <Text>Next call in: {formatCooldownTime(cooldownSeconds)}</Text>
+              </Badge>
+              <Text fontSize="xs" color="gray.500" mt={1}>
+                {videoCooldown.currentMeetings}/{videoCooldown.maxMeetings} daily video calls used
+              </Text>
+            </VStack>
+          ) : otherUser?.video_call_available !== false ? (
             <Button
               onClick={() => setShowVideoCallModal(true)}
               leftIcon={<Video size={20} />}

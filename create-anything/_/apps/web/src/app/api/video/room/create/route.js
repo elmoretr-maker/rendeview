@@ -55,9 +55,17 @@ export async function POST(request) {
         await sql`UPDATE auth_users SET video_meetings_count = 0, last_video_meeting_at = ${now.toISOString()} WHERE id = ${session.user.id}`;
         meetingCount = 0;
       } else if (meetingCount >= freeMeetingLimit) {
+        const nextAvailableTime = new Date(lastDate.getTime() + 24 * 60 * 60 * 1000);
+        const secondsUntilAvailable = Math.max(0, Math.floor((nextAvailableTime.getTime() - now.getTime()) / 1000));
+        
         return Response.json(
           {
             error: `Free tier allows ${freeMeetingLimit} video meetings per day. Upgrade for unlimited calls!`,
+            isLimitExceeded: true,
+            nextAvailableAt: nextAvailableTime.toISOString(),
+            secondsUntilAvailable,
+            currentMeetings: meetingCount,
+            maxMeetings: freeMeetingLimit
           },
           { status: 403 },
         );
