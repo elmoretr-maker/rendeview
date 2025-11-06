@@ -48,6 +48,12 @@ import {
   Grid,
   GridItem,
   useDisclosure,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
+  Divider,
 } from "@chakra-ui/react";
 
 const INTERESTS_CONFIG = {
@@ -497,505 +503,567 @@ function ProfileContent() {
   return (
     <Box minH="100vh" bg="gray.50">
       <AppHeader />
-      <Container maxW="2xl" px={4} py={8}>
-        <VStack align="stretch" spacing={6} mb={6}>
-          <Flex align="center" justify="space-between">
-            <Heading size="xl" color="gray.800">Profile</Heading>
-            <HStack spacing={3}>
-              <Button
-                as={Link}
-                to="/onboarding/membership"
-                leftIcon={<Crown size={18} />}
-                colorScheme="teal"
-                shadow="md"
-              >
-                {membershipTier?.toUpperCase() || 'FREE'} Tier
-              </Button>
-              <Button
-                onClick={handleSignOut}
-                colorScheme="red"
-                variant="outline"
-                shadow="md"
-              >
-                Logout
-              </Button>
-            </HStack>
-          </Flex>
+      <Container maxW="4xl" px={4} py={6}>
+        <Flex align="center" justify="space-between" mb={6}>
+          <Heading size="xl" color="gray.800">My Profile</Heading>
+          <HStack spacing={3}>
+            <Button
+              as={Link}
+              to="/onboarding/membership"
+              leftIcon={<Crown size={18} />}
+              colorScheme="teal"
+              size="sm"
+              shadow="md"
+            >
+              {membershipTier?.toUpperCase() || 'FREE'}
+            </Button>
+            <Button
+              as={Link}
+              to="/profile/preview"
+              size="sm"
+              variant="outline"
+              colorScheme="purple"
+            >
+              Preview
+            </Button>
+          </HStack>
+        </Flex>
+
+        <Tabs colorScheme="purple" variant="enclosed" isLazy>
+          <TabList borderBottomWidth={2} borderColor="gray.200" flexWrap="wrap">
+            <Tab fontWeight="semibold">Profile</Tab>
+            <Tab fontWeight="semibold">About Me</Tab>
+            <Tab fontWeight="semibold">Media</Tab>
+            <Tab fontWeight="semibold">Availability</Tab>
+            <Tab fontWeight="semibold">Settings</Tab>
+          </TabList>
+
+          <TabPanels>
+            {/* PROFILE TAB */}
+            <TabPanel px={0} py={6}>
+              <VStack align="stretch" spacing={6}>
+                <Card shadow="md" bg="gradient-to-r from-purple.50 to-pink.50">
+                  <CardBody p={6}>
+                    <VStack align="center" spacing={2}>
+                      <Heading size="md" color="gray.800" textAlign="center">
+                        Saved in Top Picks
+                      </Heading>
+                      <Flex
+                        w={20}
+                        h={20}
+                        borderRadius="full"
+                        align="center"
+                        justify="center"
+                        bg="white"
+                        shadow="md"
+                      >
+                        <Text fontSize="4xl" fontWeight="bold" color="purple.600">
+                          {savedByCount}
+                        </Text>
+                      </Flex>
+                      <Text fontSize="sm" color="gray.600" textAlign="center">
+                        {savedByCount === 1 ? 'person has' : 'people have'} saved your profile
+                      </Text>
+                    </VStack>
+                  </CardBody>
+                </Card>
           
-          <Card
-            as={Link}
-            to="/profile/media"
-            shadow="md"
-            _hover={{ shadow: "lg" }}
-            transition="all 0.2s"
-            cursor="pointer"
-          >
-            <CardBody p={4}>
-              <HStack spacing={3}>
-                <Flex
-                  w={12}
-                  h={12}
-                  borderRadius="full"
-                  align="center"
-                  justify="center"
-                  bg="purple.50"
-                >
-                  <ImageIcon size={24} color="#7c3aed" />
-                </Flex>
-                <VStack align="start" flex={1} spacing={0}>
-                  <Heading size="md" color="gray.800">Manage Photos & Videos</Heading>
-                  <Text fontSize="sm" color="gray.600">Upload, record, and organize your media with camera-only recording</Text>
-                </VStack>
-                <Text color="gray.400">→</Text>
-              </HStack>
-            </CardBody>
-          </Card>
+                <Card shadow="md">
+                  <CardBody>
+                    <VStack align="stretch" spacing={4}>
+                      <FormControl>
+                        <FormLabel fontWeight="semibold" color="gray.800">Name</FormLabel>
+                        <Input
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Your name"
+                          borderColor="gray.200"
+                          bg="white"
+                          size="lg"
+                        />
+                      </FormControl>
 
-          <Card shadow="md" bg="gradient-to-r from-purple.50 to-pink.50">
-            <CardBody p={6}>
-              <VStack align="center" spacing={2}>
-                <Heading size="md" color="gray.800" textAlign="center">
-                  Saved in Top Picks
-                </Heading>
-                <Flex
-                  w={20}
-                  h={20}
-                  borderRadius="full"
-                  align="center"
-                  justify="center"
-                  bg="white"
-                  shadow="md"
-                >
-                  <Text fontSize="4xl" fontWeight="bold" color="purple.600">
-                    {savedByCount}
-                  </Text>
-                </Flex>
-                <Text fontSize="sm" color="gray.600" textAlign="center">
-                  {savedByCount === 1 ? 'person has' : 'people have'} saved your profile
-                </Text>
+                      <FormControl>
+                        <FormLabel fontWeight="semibold" color="gray.800">Bio</FormLabel>
+                        <Textarea
+                          value={bio}
+                          onChange={(e) => setBio(e.target.value)}
+                          placeholder="Tell others about yourself... What makes you unique? What are you passionate about?"
+                          rows={6}
+                          maxLength={2000}
+                          borderColor="gray.200"
+                          bg="white"
+                        />
+                        <Text fontSize="xs" color="gray.500" mt={1} textAlign="right">
+                          {bio.length} / 2000 characters
+                        </Text>
+                      </FormControl>
+                    </VStack>
+                  </CardBody>
+                </Card>
+
+                <Button onClick={save} colorScheme="purple" size="lg" shadow="md">
+                  Save Changes
+                </Button>
               </VStack>
-            </CardBody>
-          </Card>
-        </VStack>
+            </TabPanel>
 
+            {/* ABOUT ME TAB */}
+            <TabPanel px={0} py={6}>
+              <VStack align="stretch" spacing={6}>
+                <Card shadow="md">
+                  <CardBody p={6}>
+                    <Flex align="center" justify="space-between" mb={4}>
+                      <Heading size="md" color="gray.800">Interests</Heading>
+                      <Button
+                        onClick={onInterestsOpen}
+                        leftIcon={<Plus size={16} />}
+                        colorScheme="purple"
+                        size="sm"
+                      >
+                        Add Interests
+                      </Button>
+                    </Flex>
+                    
+                    {interests.length > 0 ? (
+                      <Wrap spacing={2}>
+                        {interests.map((interest, idx) => (
+                          <WrapItem key={idx}>
+                            <Tag size="lg" colorScheme="purple" borderRadius="full">
+                              <TagLabel>{interest}</TagLabel>
+                              <TagCloseButton onClick={() => removeInterest(interest)} />
+                            </Tag>
+                          </WrapItem>
+                        ))}
+                      </Wrap>
+                    ) : (
+                      <Text color="gray.500" fontSize="sm">No interests added yet. Click "Add Interests" to get started!</Text>
+                    )}
+                    
+                    <Text fontSize="xs" color="gray.500" mt={2}>
+                      {interests.length} / {INTERESTS_CONFIG.MAX_ALLOWED} interests • Minimum {INTERESTS_CONFIG.MIN_REQUIRED} required
+                    </Text>
+                  </CardBody>
+                </Card>
 
-        <VStack align="stretch" spacing={6} mb={6}>
-          <Box>
-            <Flex align="center" justify="space-between" mb={2}>
-              <Heading size="lg" fontFamily="Playfair Display" color="gray.800">Profile Video</Heading>
-              <ObjectUploader
-                maxNumberOfFiles={1}
-                maxFileSize={52428800}
-                allowedFileTypes={['video/*']}
-                onGetUploadParameters={handleVideoUpload}
-                onComplete={handleVideoComplete}
-                buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
-                buttonStyle={{ backgroundColor: remainingVideos > 0 ? '#7c3aed' : '#9CA3AF' }}
-              >
-                <Upload size={18} />
-                {remainingVideos > 0 ? 'Upload Video' : 'Limit Reached'}
-              </ObjectUploader>
-            </Flex>
-            <Text fontSize="sm" color="gray.600" mb={3}>
-              {videoCount} of {tierLimits.videos} video{tierLimits.videos !== 1 ? 's' : ''} • Max {tierLimits.videoMaxDuration}s each
-            </Text>
-            {videoUrl ? (
-              <Box position="relative" borderRadius="xl" overflow="hidden" bg="black">
-                <Box
-                  as="video"
-                  src={`/api${videoUrl}`}
-                  controls
-                  loop
-                  w="full"
-                  h="220px"
-                  objectFit="cover"
-                />
-                <IconButton
-                  onClick={() => deleteMedia(videoUrl)}
-                  position="absolute"
-                  top={2}
-                  right={2}
-                  icon={<Trash2 size={16} />}
-                  borderRadius="full"
-                  colorScheme="red"
-                  size="sm"
-                  aria-label="Delete video"
-                />
-              </Box>
-            ) : (
-              <Box borderRadius="xl" borderWidth={2} borderStyle="dashed" borderColor="gray.200" p={8} textAlign="center">
-                <Text color="gray.500">No video uploaded yet. Upload a video to help others get to know you!</Text>
-              </Box>
-            )}
-          </Box>
+                <Card shadow="md">
+                  <CardBody p={6}>
+                    <Heading size="md" mb={4} color="gray.800">About You</Heading>
+                    
+                    <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
+                      <FormControl>
+                        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Gender</FormLabel>
+                        <Select value={gender} onChange={(e) => setGender(e.target.value)} borderColor="gray.200" bg="white">
+                          <option value="">Select...</option>
+                          {PREFERENCE_OPTIONS.GENDER.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
 
-          <Box>
-            <Flex align="center" justify="space-between" mb={2}>
-              <Heading size="lg" fontFamily="Playfair Display" color="gray.800">Your Photos</Heading>
-              <ObjectUploader
-                maxNumberOfFiles={remainingPhotos}
-                maxFileSize={10485760}
-                allowedFileTypes={['image/*']}
-                onGetUploadParameters={handlePhotoUpload}
-                onComplete={handlePhotoComplete}
-                buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
-                buttonStyle={{ backgroundColor: remainingPhotos > 0 ? '#7c3aed' : '#9CA3AF' }}
-              >
-                <Upload size={18} />
-                {remainingPhotos > 0 ? `Upload Photo${remainingPhotos > 1 ? 's' : ''}` : 'Limit Reached'}
-              </ObjectUploader>
-            </Flex>
-            <Text fontSize="sm" color="gray.600" mb={3}>
-              {photoCount} of {tierLimits.photos} photos • {remainingPhotos} slot{remainingPhotos !== 1 ? 's' : ''} remaining
-            </Text>
-            {media.filter((m) => m.type === "photo").length > 0 ? (
-              <Flex flexWrap="wrap" gap={3}>
-                {media
-                  .filter((m) => m.type === "photo")
-                  .map((m, idx) => {
-                    const isPrimary = m.url === primaryPhoto;
-                    return (
-                      <Box key={idx} position="relative">
-                        <Button
-                          onClick={() => selectPrimary(m.url)}
-                          variant="unstyled"
-                          display="block"
-                          p={0}
-                        >
-                          <Image
-                            src={`/api${m.url}`}
-                            alt="Profile"
-                            w={32}
-                            h={32}
-                            borderRadius="lg"
-                            objectFit="cover"
-                            borderWidth={3}
-                            borderColor={isPrimary ? "purple.500" : "gray.200"}
-                          />
-                          <Text
-                            fontSize="xs"
-                            textAlign="center"
-                            mt={1}
-                            fontWeight="semibold"
-                            color={isPrimary ? "purple.600" : "gray.600"}
-                          >
-                            {isPrimary ? "★ Primary" : "Set Primary"}
-                          </Text>
-                        </Button>
+                      <FormControl>
+                        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Sexual Orientation</FormLabel>
+                        <Select value={sexualOrientation} onChange={(e) => setSexualOrientation(e.target.value)} borderColor="gray.200" bg="white">
+                          <option value="">Select...</option>
+                          {PREFERENCE_OPTIONS.SEXUAL_ORIENTATION.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Looking For</FormLabel>
+                        <Select value={lookingFor} onChange={(e) => setLookingFor(e.target.value)} borderColor="gray.200" bg="white">
+                          <option value="">Select...</option>
+                          {PREFERENCE_OPTIONS.LOOKING_FOR.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Body Type</FormLabel>
+                        <Select value={bodyType} onChange={(e) => setBodyType(e.target.value)} borderColor="gray.200" bg="white">
+                          <option value="">Select...</option>
+                          {PREFERENCE_OPTIONS.BODY_TYPE.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Height Range</FormLabel>
+                        <Select value={heightRange} onChange={(e) => setHeightRange(e.target.value)} borderColor="gray.200" bg="white">
+                          <option value="">Select...</option>
+                          {PREFERENCE_OPTIONS.HEIGHT_RANGES.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Education</FormLabel>
+                        <Select value={education} onChange={(e) => setEducation(e.target.value)} borderColor="gray.200" bg="white">
+                          <option value="">Select...</option>
+                          {PREFERENCE_OPTIONS.EDUCATION.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Relationship Goals</FormLabel>
+                        <Select value={relationshipGoals} onChange={(e) => setRelationshipGoals(e.target.value)} borderColor="gray.200" bg="white">
+                          <option value="">Select...</option>
+                          {PREFERENCE_OPTIONS.RELATIONSHIP_GOALS.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Drinking</FormLabel>
+                        <Select value={drinking} onChange={(e) => setDrinking(e.target.value)} borderColor="gray.200" bg="white">
+                          <option value="">Select...</option>
+                          {PREFERENCE_OPTIONS.DRINKING.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Smoking</FormLabel>
+                        <Select value={smoking} onChange={(e) => setSmoking(e.target.value)} borderColor="gray.200" bg="white">
+                          <option value="">Select...</option>
+                          {PREFERENCE_OPTIONS.SMOKING.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Exercise</FormLabel>
+                        <Select value={exercise} onChange={(e) => setExercise(e.target.value)} borderColor="gray.200" bg="white">
+                          <option value="">Select...</option>
+                          {PREFERENCE_OPTIONS.EXERCISE.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Religion</FormLabel>
+                        <Select value={religion} onChange={(e) => setReligion(e.target.value)} borderColor="gray.200" bg="white">
+                          <option value="">Select...</option>
+                          {PREFERENCE_OPTIONS.RELIGION.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Children</FormLabel>
+                        <Select value={childrenPreference} onChange={(e) => setChildrenPreference(e.target.value)} borderColor="gray.200" bg="white">
+                          <option value="">Select...</option>
+                          {PREFERENCE_OPTIONS.CHILDREN.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <FormControl>
+                        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Pets</FormLabel>
+                        <Select value={pets} onChange={(e) => setPets(e.target.value)} borderColor="gray.200" bg="white">
+                          <option value="">Select...</option>
+                          {PREFERENCE_OPTIONS.PETS.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  </CardBody>
+                </Card>
+
+                <Button onClick={save} colorScheme="purple" size="lg" shadow="md">
+                  Save Changes
+                </Button>
+              </VStack>
+            </TabPanel>
+
+            {/* MEDIA TAB */}
+            <TabPanel px={0} py={6}>
+              <VStack align="stretch" spacing={6}>
+                <Card shadow="md">
+                  <CardBody p={6}>
+                    <Flex align="center" justify="space-between" mb={4}>
+                      <Heading size="md" color="gray.800">Profile Video</Heading>
+                      <Badge colorScheme="purple" fontSize="sm" px={3} py={1}>
+                        {remainingVideos} / {tierLimits.videos} available
+                      </Badge>
+                    </Flex>
+                    
+                    {videoUrl ? (
+                      <Box position="relative" borderRadius="lg" overflow="hidden" mb={4}>
+                        <video
+                          src={videoUrl}
+                          controls
+                          style={{
+                            width: '100%',
+                            maxHeight: '400px',
+                            borderRadius: '8px',
+                            backgroundColor: '#000'
+                          }}
+                        />
                         <IconButton
-                          onClick={() => deleteMedia(m.url)}
                           position="absolute"
-                          top={1}
-                          right={1}
-                          icon={<Trash2 size={14} />}
-                          size="xs"
-                          borderRadius="full"
+                          top={2}
+                          right={2}
+                          icon={<Trash2 size={18} />}
                           colorScheme="red"
-                          aria-label="Delete photo"
+                          size="sm"
+                          onClick={() => deleteMedia(videoUrl)}
+                          aria-label="Delete video"
                         />
                       </Box>
-                    );
-                  })}
-              </Flex>
-            ) : (
-              <Box borderRadius="xl" borderWidth={2} borderStyle="dashed" borderColor="gray.200" p={8} textAlign="center">
-                <Text color="gray.500">No photos uploaded yet. Add photos to make your profile stand out!</Text>
-              </Box>
-            )}
-          </Box>
-        </VStack>
+                    ) : (
+                      <Text color="gray.500" fontSize="sm" mb={4}>No video uploaded yet</Text>
+                    )}
+                    
+                    <ObjectUploader
+                      accept="video/*"
+                      multiple={false}
+                      onUploadRequest={handleVideoUpload}
+                      onUploadComplete={handleVideoComplete}
+                    >
+                      {({ getRootProps, getInputProps, isDragActive }) => (
+                        <Box
+                          {...getRootProps()}
+                          p={6}
+                          borderWidth={2}
+                          borderStyle="dashed"
+                          borderColor={isDragActive ? "purple.400" : "gray.300"}
+                          borderRadius="lg"
+                          bg={isDragActive ? "purple.50" : "white"}
+                          cursor="pointer"
+                          textAlign="center"
+                          transition="all 0.2s"
+                          _hover={{ borderColor: "purple.400", bg: "purple.50" }}
+                        >
+                          <input {...getInputProps()} />
+                          <VStack spacing={2}>
+                            <VideoIcon size={32} color="#805AD5" />
+                            <Text fontWeight="semibold" color="gray.700">
+                              {isDragActive ? "Drop video here" : "Upload Profile Video"}
+                            </Text>
+                            <Text fontSize="sm" color="gray.500">
+                              Click or drag video file here
+                            </Text>
+                          </VStack>
+                        </Box>
+                      )}
+                    </ObjectUploader>
+                  </CardBody>
+                </Card>
 
-        <VStack spacing={4} align="stretch">
-          <FormControl>
-            <FormLabel fontWeight="semibold" color="gray.800">Name</FormLabel>
-            <Input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-              borderColor="gray.200"
-              bg="white"
-            />
-          </FormControl>
+                <Card shadow="md">
+                  <CardBody p={6}>
+                    <Flex align="center" justify="space-between" mb={4}>
+                      <Heading size="md" color="gray.800">Your Photos</Heading>
+                      <Badge colorScheme="purple" fontSize="sm" px={3} py={1}>
+                        {remainingPhotos} / {tierLimits.photos} available
+                      </Badge>
+                    </Flex>
+                    
+                    {media.filter(m => m.type === 'photo').length > 0 ? (
+                      <Grid templateColumns="repeat(auto-fill, minmax(150px, 1fr))" gap={4} mb={4}>
+                        {media.filter(m => m.type === 'photo').map((item, idx) => (
+                          <Box key={idx} position="relative" borderRadius="lg" overflow="hidden" shadow="sm">
+                            <Image
+                              src={item.url}
+                              alt={`Photo ${idx + 1}`}
+                              w="100%"
+                              h="150px"
+                              objectFit="cover"
+                            />
+                            {item.url === primaryPhoto && (
+                              <Badge
+                                position="absolute"
+                                top={2}
+                                left={2}
+                                colorScheme="purple"
+                              >
+                                Primary
+                              </Badge>
+                            )}
+                            <HStack position="absolute" bottom={2} right={2} spacing={1}>
+                              {item.url !== primaryPhoto && (
+                                <IconButton
+                                  icon={<Crown size={16} />}
+                                  colorScheme="purple"
+                                  size="xs"
+                                  onClick={() => selectPrimary(item.url)}
+                                  aria-label="Set as primary"
+                                />
+                              )}
+                              <IconButton
+                                icon={<Trash2 size={16} />}
+                                colorScheme="red"
+                                size="xs"
+                                onClick={() => deleteMedia(item.url)}
+                                aria-label="Delete photo"
+                              />
+                            </HStack>
+                          </Box>
+                        ))}
+                      </Grid>
+                    ) : (
+                      <Text color="gray.500" fontSize="sm" mb={4}>No photos uploaded yet</Text>
+                    )}
+                    
+                    <ObjectUploader
+                      accept="image/*"
+                      multiple={true}
+                      onUploadRequest={handlePhotoUpload}
+                      onUploadComplete={handlePhotoComplete}
+                    >
+                      {({ getRootProps, getInputProps, isDragActive }) => (
+                        <Box
+                          {...getRootProps()}
+                          p={6}
+                          borderWidth={2}
+                          borderStyle="dashed"
+                          borderColor={isDragActive ? "purple.400" : "gray.300"}
+                          borderRadius="lg"
+                          bg={isDragActive ? "purple.50" : "white"}
+                          cursor="pointer"
+                          textAlign="center"
+                          transition="all 0.2s"
+                          _hover={{ borderColor: "purple.400", bg: "purple.50" }}
+                        >
+                          <input {...getInputProps()} />
+                          <VStack spacing={2}>
+                            <ImageIcon size={32} color="#805AD5" />
+                            <Text fontWeight="semibold" color="gray.700">
+                              {isDragActive ? "Drop photos here" : "Upload Photos"}
+                            </Text>
+                            <Text fontSize="sm" color="gray.500">
+                              Click or drag image files here
+                            </Text>
+                          </VStack>
+                        </Box>
+                      )}
+                    </ObjectUploader>
+                  </CardBody>
+                </Card>
+              </VStack>
+            </TabPanel>
 
-          <FormControl>
-            <FormLabel fontWeight="semibold" color="gray.800">Bio</FormLabel>
-            <Textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder="Tell others about yourself... What makes you unique? What are you passionate about?"
-              rows={5}
-              maxLength={2000}
-              borderColor="gray.200"
-              bg="white"
-            />
-            <Text fontSize="xs" color="gray.500" mt={1} textAlign="right">
-              {bio.length} / 2000 characters
-            </Text>
-          </FormControl>
+            {/* AVAILABILITY TAB */}
+            <TabPanel px={0} py={6}>
+              <VStack align="stretch" spacing={6}>
+                <Card shadow="md">
+                  <CardBody>
+                    <FormControl>
+                      <FormLabel fontWeight="semibold" color="gray.800">Timezone</FormLabel>
+                      <Input
+                        type="text"
+                        value={timezone}
+                        onChange={(e) => setTimezone(e.target.value)}
+                        placeholder="America/New_York"
+                        borderColor="gray.200"
+                        bg="white"
+                      />
+                    </FormControl>
+                  </CardBody>
+                </Card>
 
-          <Card shadow="md">
-            <CardBody p={6}>
-              <Flex align="center" justify="space-between" mb={4}>
-                <Heading size="md" color="gray.800">Interests</Heading>
-                <Button
-                  onClick={onInterestsOpen}
-                  leftIcon={<Plus size={16} />}
-                  colorScheme="purple"
-                  size="sm"
-                >
-                  Add Interests
+                <Card shadow="md">
+                  <CardBody p={6}>
+                    <Heading size="md" mb={4} color="gray.800">Typical Availability</Heading>
+                    <AvailabilityGrid
+                      value={availabilityGrid}
+                      onChange={setAvailabilityGrid}
+                    />
+                  </CardBody>
+                </Card>
+
+                <Card shadow="md">
+                  <CardBody>
+                    <VStack align="stretch" spacing={4}>
+                      <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                        <FormLabel mb={0} fontWeight="semibold" color="gray.800">Immediate Availability</FormLabel>
+                        <Switch
+                          isChecked={immediate}
+                          onChange={() => setImmediate(!immediate)}
+                          colorScheme="purple"
+                        />
+                      </FormControl>
+
+                      <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                        <FormLabel mb={0} fontWeight="semibold" color="gray.800">Appear Offline</FormLabel>
+                        <Switch
+                          isChecked={override}
+                          onChange={() => setOverride(!override)}
+                          colorScheme="purple"
+                        />
+                      </FormControl>
+
+                      <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                        <FormLabel mb={0} fontWeight="semibold" color="gray.800">Accept Video Calls</FormLabel>
+                        <Switch
+                          isChecked={videoCallAvailable}
+                          onChange={() => setVideoCallAvailable(!videoCallAvailable)}
+                          colorScheme="purple"
+                        />
+                      </FormControl>
+                    </VStack>
+                  </CardBody>
+                </Card>
+
+                <Button onClick={save} colorScheme="purple" size="lg" shadow="md">
+                  Save Changes
                 </Button>
-              </Flex>
-              
-              {interests.length > 0 ? (
-                <Wrap spacing={2}>
-                  {interests.map((interest, idx) => (
-                    <WrapItem key={idx}>
-                      <Tag size="lg" colorScheme="purple" borderRadius="full">
-                        <TagLabel>{interest}</TagLabel>
-                        <TagCloseButton onClick={() => removeInterest(interest)} />
-                      </Tag>
-                    </WrapItem>
-                  ))}
-                </Wrap>
-              ) : (
-                <Text color="gray.500" fontSize="sm">No interests added yet. Click "Add Interests" to get started!</Text>
-              )}
-              
-              <Text fontSize="xs" color="gray.500" mt={2}>
-                {interests.length} / {INTERESTS_CONFIG.MAX_ALLOWED} interests • Minimum {INTERESTS_CONFIG.MIN_REQUIRED} required
-              </Text>
-            </CardBody>
-          </Card>
+              </VStack>
+            </TabPanel>
 
-          <Card shadow="md">
-            <CardBody p={6}>
-              <Heading size="md" mb={4} color="gray.800">About You</Heading>
-              
-              <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
-                <FormControl>
-                  <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Gender</FormLabel>
-                  <Select value={gender} onChange={(e) => setGender(e.target.value)} borderColor="gray.200" bg="white">
-                    <option value="">Select...</option>
-                    {PREFERENCE_OPTIONS.GENDER.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </Select>
-                </FormControl>
+            {/* SETTINGS TAB */}
+            <TabPanel px={0} py={6}>
+              <VStack align="stretch" spacing={6}>
+                <LocationSettings
+                  initialLatitude={latitude}
+                  initialLongitude={longitude}
+                  initialMaxDistance={maxDistance}
+                  onSave={handleLocationSave}
+                />
 
-                <FormControl>
-                  <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Sexual Orientation</FormLabel>
-                  <Select value={sexualOrientation} onChange={(e) => setSexualOrientation(e.target.value)} borderColor="gray.200" bg="white">
-                    <option value="">Select...</option>
-                    {PREFERENCE_OPTIONS.SEXUAL_ORIENTATION.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Card shadow="md">
+                  <CardBody>
+                    <VStack align="stretch" spacing={4}>
+                      <Button
+                        onClick={handleSignOut}
+                        size="lg"
+                        colorScheme="red"
+                        leftIcon={<X size={18} />}
+                      >
+                        Sign Out
+                      </Button>
 
-                <FormControl>
-                  <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Looking For</FormLabel>
-                  <Select value={lookingFor} onChange={(e) => setLookingFor(e.target.value)} borderColor="gray.200" bg="white">
-                    <option value="">Select...</option>
-                    {PREFERENCE_OPTIONS.LOOKING_FOR.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Body Type</FormLabel>
-                  <Select value={bodyType} onChange={(e) => setBodyType(e.target.value)} borderColor="gray.200" bg="white">
-                    <option value="">Select...</option>
-                    {PREFERENCE_OPTIONS.BODY_TYPE.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Height Range</FormLabel>
-                  <Select value={heightRange} onChange={(e) => setHeightRange(e.target.value)} borderColor="gray.200" bg="white">
-                    <option value="">Select...</option>
-                    {PREFERENCE_OPTIONS.HEIGHT_RANGES.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Education</FormLabel>
-                  <Select value={education} onChange={(e) => setEducation(e.target.value)} borderColor="gray.200" bg="white">
-                    <option value="">Select...</option>
-                    {PREFERENCE_OPTIONS.EDUCATION.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Relationship Goals</FormLabel>
-                  <Select value={relationshipGoals} onChange={(e) => setRelationshipGoals(e.target.value)} borderColor="gray.200" bg="white">
-                    <option value="">Select...</option>
-                    {PREFERENCE_OPTIONS.RELATIONSHIP_GOALS.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Drinking</FormLabel>
-                  <Select value={drinking} onChange={(e) => setDrinking(e.target.value)} borderColor="gray.200" bg="white">
-                    <option value="">Select...</option>
-                    {PREFERENCE_OPTIONS.DRINKING.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Smoking</FormLabel>
-                  <Select value={smoking} onChange={(e) => setSmoking(e.target.value)} borderColor="gray.200" bg="white">
-                    <option value="">Select...</option>
-                    {PREFERENCE_OPTIONS.SMOKING.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Exercise</FormLabel>
-                  <Select value={exercise} onChange={(e) => setExercise(e.target.value)} borderColor="gray.200" bg="white">
-                    <option value="">Select...</option>
-                    {PREFERENCE_OPTIONS.EXERCISE.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Religion</FormLabel>
-                  <Select value={religion} onChange={(e) => setReligion(e.target.value)} borderColor="gray.200" bg="white">
-                    <option value="">Select...</option>
-                    {PREFERENCE_OPTIONS.RELIGION.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Children</FormLabel>
-                  <Select value={childrenPreference} onChange={(e) => setChildrenPreference(e.target.value)} borderColor="gray.200" bg="white">
-                    <option value="">Select...</option>
-                    {PREFERENCE_OPTIONS.CHILDREN.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Pets</FormLabel>
-                  <Select value={pets} onChange={(e) => setPets(e.target.value)} borderColor="gray.200" bg="white">
-                    <option value="">Select...</option>
-                    {PREFERENCE_OPTIONS.PETS.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            </CardBody>
-          </Card>
-
-          <FormControl>
-            <FormLabel fontWeight="semibold" color="gray.800">Timezone</FormLabel>
-            <Input
-              type="text"
-              value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-              placeholder="America/New_York"
-              borderColor="gray.200"
-              bg="white"
-            />
-          </FormControl>
-
-          <Card shadow="md">
-            <CardBody p={6}>
-              <Heading size="md" mb={4} color="gray.800">Typical Availability</Heading>
-              <AvailabilityGrid
-                value={availabilityGrid}
-                onChange={setAvailabilityGrid}
-              />
-            </CardBody>
-          </Card>
-
-          <LocationSettings
-            initialLatitude={latitude}
-            initialLongitude={longitude}
-            initialMaxDistance={maxDistance}
-            onSave={handleLocationSave}
-          />
-
-          <FormControl display="flex" alignItems="center" justifyContent="space-between" py={2}>
-            <FormLabel mb={0} color="gray.800">Immediate Availability</FormLabel>
-            <Switch
-              isChecked={immediate}
-              onChange={() => setImmediate(!immediate)}
-              colorScheme="purple"
-            />
-          </FormControl>
-
-          <FormControl display="flex" alignItems="center" justifyContent="space-between" py={2}>
-            <FormLabel mb={0} color="gray.800">Appear Offline (Override)</FormLabel>
-            <Switch
-              isChecked={override}
-              onChange={() => setOverride(!override)}
-              colorScheme="purple"
-            />
-          </FormControl>
-
-          <FormControl display="flex" alignItems="center" justifyContent="space-between" py={2}>
-            <FormLabel mb={0} color="gray.800">Accept Video Calls</FormLabel>
-            <Switch
-              isChecked={videoCallAvailable}
-              onChange={() => setVideoCallAvailable(!videoCallAvailable)}
-              colorScheme="purple"
-            />
-          </FormControl>
-
-          {error && error !== "AUTH_401" && (
-            <Text color="red.500">{error}</Text>
-          )}
-
-          <Button onClick={save} colorScheme="purple" size="lg">
-            Save
-          </Button>
-
-          <Button
-            as={Link}
-            to="/profile/preview"
-            size="lg"
-            variant="outline"
-            colorScheme="purple"
-            bg="purple.50"
-          >
-            Preview Profile
-          </Button>
-
-          <Button onClick={deleteAccount} size="lg" variant="outline">
-            Delete Account
-          </Button>
-
-          <Button
-            onClick={handleSignOut}
-            size="lg"
-            colorScheme="red"
-            variant="outline"
-            bg="red.50"
-          >
-            Sign Out
-          </Button>
-        </VStack>
+                      <Button
+                        onClick={deleteAccount}
+                        size="lg"
+                        variant="outline"
+                        colorScheme="red"
+                      >
+                        Delete Account
+                      </Button>
+                    </VStack>
+                  </CardBody>
+                </Card>
+              </VStack>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </Container>
 
       <Modal isOpen={isInterestsOpen} onClose={onInterestsClose} size="xl">
