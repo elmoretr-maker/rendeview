@@ -90,7 +90,7 @@ function ChatContent() {
   const { data: quotaData, refetch: refetchQuota } = useQuery({
     queryKey: ["messageQuota", matchId],
     queryFn: async () => {
-      const res = await fetch(`/api/messages/quota?matchId=${matchId}`);
+      const res = await fetch(`/api/message-quota?matchId=${matchId}`);
       if (!res.ok) return null;
       return res.json();
     },
@@ -342,7 +342,6 @@ function ChatContent() {
         {/* Header with Profile Picture, Name, and Back Button */}
         <HStack spacing={4} mb={4} align="center">
           <Box
-            as="button"
             onClick={() => otherUser?.id && navigate(`/profile/${otherUser.id}`)}
             cursor="pointer"
             _hover={{ opacity: 0.8 }}
