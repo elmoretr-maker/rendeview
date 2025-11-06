@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Video, MapPin } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
+import SessionExpired from "@/components/SessionExpired";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
 import { typicalToAvailabilityGrid } from "@/components/AvailabilityGrid";
 import {
@@ -84,14 +85,7 @@ export default function ProfilePreview() {
   }
 
   if (error?.message === "AUTH_401") {
-    return (
-      <Box minH="100vh" bg="gray.50">
-        <AppHeader />
-        <Container maxW="2xl" px={4} py={8}>
-          <Text color="red.500">Session expired. Please sign in.</Text>
-        </Container>
-      </Box>
-    );
+    return <SessionExpired />;
   }
 
   if (error) {

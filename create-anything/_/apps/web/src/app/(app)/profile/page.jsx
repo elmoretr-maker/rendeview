@@ -4,6 +4,7 @@ import useUser from "@/utils/useUser";
 import useAuth from "@/utils/useAuth";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import SessionExpired from "@/components/SessionExpired";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import AvailabilityGrid, { availabilityGridToTypical, typicalToAvailabilityGrid } from "@/components/AvailabilityGrid";
 import LocationSettings from "@/components/LocationSettings";
@@ -469,6 +470,10 @@ function ProfileContent() {
     );
   }
 
+  if (error === "AUTH_401") {
+    return <SessionExpired />;
+  }
+
   const tierLimits = getTierLimits(membershipTier);
   const photoCount = media.filter(m => m.type === 'photo').length;
   const videoCount = media.filter(m => m.type === 'video').length;
@@ -533,18 +538,6 @@ function ProfileContent() {
           </Card>
         </VStack>
 
-        {error === "AUTH_401" ? (
-          <VStack align="start" spacing={4} mb={6}>
-            <Text color="gray.800">Session expired. Please sign in.</Text>
-            <Button
-              onClick={() => navigate("/account/signin")}
-              colorScheme="purple"
-              shadow="md"
-            >
-              Sign In
-            </Button>
-          </VStack>
-        ) : null}
 
         <VStack align="stretch" spacing={6} mb={6}>
           <Box>

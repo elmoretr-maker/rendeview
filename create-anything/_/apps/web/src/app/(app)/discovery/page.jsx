@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import SessionExpired from "@/components/SessionExpired";
 import MatchCelebration from "@/components/MatchCelebration";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
@@ -417,25 +418,12 @@ function DiscoveryContent() {
   }
 
   if (error) {
+    if (error?.message === "AUTH_401") {
+      return <SessionExpired />;
+    }
     return (
       <Box pt={20} px={4} bg="gray.50" minH="100vh">
-        {error?.message === "AUTH_401" ? (
-          <VStack spacing={3} align="start">
-            <Text color="gray.700">
-              Session expired. Please sign in.
-            </Text>
-            <Button
-              onClick={() => navigate("/account/signin")}
-              colorScheme="purple"
-              size="lg"
-              shadow="lg"
-            >
-              Sign In
-            </Button>
-          </VStack>
-        ) : (
-          <Text color="gray.700">Error loading profiles</Text>
-        )}
+        <Text color="gray.700">Error loading profiles</Text>
       </Box>
     );
   }
