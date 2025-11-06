@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Heart, RotateCcw, Video, ChevronLeft, ChevronRight, Star, AlertTriangle } from "lucide-react";
+import { X, Heart, RotateCcw, Video, ChevronLeft, ChevronRight, Star, AlertTriangle, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
@@ -629,6 +629,53 @@ function DiscoveryContent() {
         <Heading size="lg" fontFamily="Playfair Display" fontWeight="bold" textAlign="center" color="gray.800">
           Discover Your Match
         </Heading>
+        
+        {/* Nudge 1: Get a Match to Video Chat */}
+        <Box
+          as={motion.div}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          w="full"
+          maxW="md"
+          mx="auto"
+          borderRadius="2xl"
+          bgGradient="linear(135deg, purple.600 0%, pink.500 100%)"
+          p={1}
+          shadow="2xl"
+          cursor="pointer"
+          onClick={() => navigate("/matches")}
+          _hover={{ shadow: "dark-lg", transform: "translateY(-2px)" }}
+          transition="all 0.3s"
+        >
+          <Box bg="white" borderRadius="xl" p={5}>
+            <Flex align="center" gap={4}>
+              <Flex
+                w={14}
+                h={14}
+                borderRadius="full"
+                bgGradient="linear(135deg, purple.500, pink.400)"
+                align="center"
+                justify="center"
+                shadow="lg"
+                as={motion.div}
+                animate={{ rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+              >
+                <Video size={28} color="white" strokeWidth={2.5} />
+              </Flex>
+              <VStack align="start" spacing={1} flex={1}>
+                <Text fontSize="lg" fontWeight="bold" bgGradient="linear(to-r, purple.600, pink.500)" bgClip="text">
+                  Want to Video Chat?
+                </Text>
+                <Text fontSize="sm" color="gray.600" lineHeight="short">
+                  Get a MATCH first! Use your chat time to secure a match, then video chat.
+                </Text>
+              </VStack>
+              <Heart size={24} fill="#EC4899" color="#EC4899" />
+            </Flex>
+          </Box>
+        </Box>
+        
       {current ? (
         <VStack w="full" maxW="md" mx="auto" pb={8} spacing={6}>
           {/* Card Carousel Stack */}
@@ -742,6 +789,76 @@ function DiscoveryContent() {
               aria-label="Like"
             />
           </HStack>
+          
+          {/* Nudge 2: Upgrade for More Video Time */}
+          <Box
+            as={motion.div}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            w="full"
+            borderRadius="2xl"
+            overflow="hidden"
+            shadow="2xl"
+            position="relative"
+            cursor="pointer"
+            onClick={() => navigate("/settings/subscription")}
+            _hover={{ shadow: "dark-lg", transform: "scale(1.02)" }}
+            transition="all 0.3s"
+          >
+            <Box
+              position="absolute"
+              top={0}
+              left={0}
+              right={0}
+              bottom={0}
+              bgGradient="linear(135deg, #6366F1 0%, #EC4899 50%, #F59E0B 100%)"
+              as={motion.div}
+              animate={{ 
+                backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+              }}
+              transition={{ 
+                duration: 5,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+              style={{
+                backgroundSize: "200% 200%"
+              }}
+            />
+            <Box position="relative" p={6}>
+              <Flex align="center" gap={4}>
+                <Flex
+                  w={16}
+                  h={16}
+                  borderRadius="full"
+                  bg="white"
+                  align="center"
+                  justify="center"
+                  shadow="xl"
+                  as={motion.div}
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Sparkles size={32} color="#6366F1" strokeWidth={2.5} />
+                </Flex>
+                <VStack align="start" spacing={1} flex={1}>
+                  <Text fontSize="xl" fontWeight="black" color="white" letterSpacing="tight">
+                    Want More Video Chat Time?
+                  </Text>
+                  <Text fontSize="sm" color="whiteAlpha.900" lineHeight="short" fontWeight="medium">
+                    Buy a Time Extension or upgrade to the next tier for unlimited possibilities!
+                  </Text>
+                </VStack>
+                <Box
+                  as={motion.div}
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  <ChevronRight size={32} color="white" strokeWidth={3} />
+                </Box>
+              </Flex>
+            </Box>
+          </Box>
         </VStack>
       ) : (
         <VStack minH="60vh" justify="center" align="center" spacing={4} px={6}>
