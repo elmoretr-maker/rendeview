@@ -534,81 +534,98 @@ function ProfileContent() {
           variant="soft-rounded" 
           isLazy
         >
-          <TabList 
+          <Box 
             bg="white" 
-            p={2} 
+            p={4} 
             borderRadius="xl" 
             shadow="sm"
             mb={6}
-            gap={2}
-            flexWrap="wrap"
           >
-            <Tab 
-              fontWeight="semibold" 
-              _selected={{ 
-                color: "white", 
-                bg: "purple.500",
-                shadow: "md"
-              }}
-              borderRadius="lg"
-              px={4}
-              py={2}
-            >
-              Profile
-            </Tab>
-            <Tab 
-              fontWeight="semibold" 
-              _selected={{ 
-                color: "white", 
-                bg: "purple.500",
-                shadow: "md"
-              }}
-              borderRadius="lg"
-              px={4}
-              py={2}
-            >
-              About Me
-            </Tab>
-            <Tab 
-              fontWeight="semibold" 
-              _selected={{ 
-                color: "white", 
-                bg: "purple.500",
-                shadow: "md"
-              }}
-              borderRadius="lg"
-              px={4}
-              py={2}
-            >
-              Media
-            </Tab>
-            <Tab 
-              fontWeight="semibold" 
-              _selected={{ 
-                color: "white", 
-                bg: "purple.500",
-                shadow: "md"
-              }}
-              borderRadius="lg"
-              px={4}
-              py={2}
-            >
-              Availability
-            </Tab>
-            <Tab 
-              fontWeight="semibold" 
-              _selected={{ 
-                color: "white", 
-                bg: "purple.500",
-                shadow: "md"
-              }}
-              borderRadius="lg"
-              px={4}
-              py={2}
-            >
-              Settings
-            </Tab>
-          </TabList>
+            <VStack spacing={3}>
+              {/* Top Row - 3 tabs */}
+              <Flex gap={3} justify="center" w="full" flexWrap="wrap">
+                <Tab 
+                  fontWeight="semibold" 
+                  _selected={{ 
+                    color: "white", 
+                    bg: "purple.500",
+                    shadow: "md"
+                  }}
+                  borderRadius="lg"
+                  px={6}
+                  py={2.5}
+                  flex={{ base: "1 1 auto", md: "0 1 auto" }}
+                  minW={{ base: "100px", md: "140px" }}
+                >
+                  Profile
+                </Tab>
+                <Tab 
+                  fontWeight="semibold" 
+                  _selected={{ 
+                    color: "white", 
+                    bg: "purple.500",
+                    shadow: "md"
+                  }}
+                  borderRadius="lg"
+                  px={6}
+                  py={2.5}
+                  flex={{ base: "1 1 auto", md: "0 1 auto" }}
+                  minW={{ base: "100px", md: "140px" }}
+                >
+                  About Me
+                </Tab>
+                <Tab 
+                  fontWeight="semibold" 
+                  _selected={{ 
+                    color: "white", 
+                    bg: "purple.500",
+                    shadow: "md"
+                  }}
+                  borderRadius="lg"
+                  px={6}
+                  py={2.5}
+                  flex={{ base: "1 1 auto", md: "0 1 auto" }}
+                  minW={{ base: "100px", md: "140px" }}
+                >
+                  Availability
+                </Tab>
+              </Flex>
+
+              {/* Bottom Row - 2 tabs centered */}
+              <Flex gap={3} justify="center" w="full" flexWrap="wrap">
+                <Tab 
+                  fontWeight="semibold" 
+                  _selected={{ 
+                    color: "white", 
+                    bg: "purple.500",
+                    shadow: "md"
+                  }}
+                  borderRadius="lg"
+                  px={6}
+                  py={2.5}
+                  flex={{ base: "1 1 auto", md: "0 1 auto" }}
+                  minW={{ base: "100px", md: "140px" }}
+                >
+                  Settings
+                </Tab>
+                <Tab 
+                  fontWeight="semibold" 
+                  _selected={{ 
+                    color: "white", 
+                    bg: "purple.500",
+                    shadow: "md"
+                  }}
+                  borderRadius="lg"
+                  px={6}
+                  py={2.5}
+                  flex={{ base: "1 1 auto", md: "0 1 auto" }}
+                  minW={{ base: "100px", md: "140px" }}
+                >
+                  Media
+                </Tab>
+              </Flex>
+            </VStack>
+          </Box>
 
           <TabPanels>
             {/* PROFILE TAB */}
@@ -863,6 +880,110 @@ function ProfileContent() {
               </VStack>
             </TabPanel>
 
+            {/* AVAILABILITY TAB */}
+            <TabPanel px={0} py={6}>
+              <VStack align="stretch" spacing={6}>
+                <Card shadow="md">
+                  <CardBody>
+                    <FormControl>
+                      <FormLabel fontWeight="semibold" color="gray.800">Timezone</FormLabel>
+                      <Input
+                        type="text"
+                        value={timezone}
+                        onChange={(e) => setTimezone(e.target.value)}
+                        placeholder="America/New_York"
+                        borderColor="gray.200"
+                        bg="white"
+                      />
+                    </FormControl>
+                  </CardBody>
+                </Card>
+
+                <Card shadow="md">
+                  <CardBody p={6}>
+                    <Heading size="md" mb={4} color="gray.800">Typical Availability</Heading>
+                    <AvailabilityGrid
+                      value={availabilityGrid}
+                      onChange={setAvailabilityGrid}
+                    />
+                  </CardBody>
+                </Card>
+
+                <Card shadow="md">
+                  <CardBody>
+                    <VStack align="stretch" spacing={4}>
+                      <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                        <FormLabel mb={0} fontWeight="semibold" color="gray.800">Immediate Availability</FormLabel>
+                        <Switch
+                          isChecked={immediate}
+                          onChange={() => setImmediate(!immediate)}
+                          colorScheme="purple"
+                        />
+                      </FormControl>
+
+                      <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                        <FormLabel mb={0} fontWeight="semibold" color="gray.800">Appear Offline</FormLabel>
+                        <Switch
+                          isChecked={override}
+                          onChange={() => setOverride(!override)}
+                          colorScheme="purple"
+                        />
+                      </FormControl>
+
+                      <FormControl display="flex" alignItems="center" justifyContent="space-between">
+                        <FormLabel mb={0} fontWeight="semibold" color="gray.800">Accept Video Calls</FormLabel>
+                        <Switch
+                          isChecked={videoCallAvailable}
+                          onChange={() => setVideoCallAvailable(!videoCallAvailable)}
+                          colorScheme="purple"
+                        />
+                      </FormControl>
+                    </VStack>
+                  </CardBody>
+                </Card>
+
+                <Button onClick={save} colorScheme="purple" size="lg" shadow="md">
+                  Save Changes
+                </Button>
+              </VStack>
+            </TabPanel>
+
+            {/* SETTINGS TAB */}
+            <TabPanel px={0} py={6}>
+              <VStack align="stretch" spacing={6}>
+                <LocationSettings
+                  initialLatitude={latitude}
+                  initialLongitude={longitude}
+                  initialMaxDistance={maxDistance}
+                  onSave={handleLocationSave}
+                />
+
+                <Card shadow="md">
+                  <CardBody>
+                    <VStack align="stretch" spacing={4}>
+                      <Button
+                        onClick={handleSignOut}
+                        size="lg"
+                        colorScheme="red"
+                        leftIcon={<X size={18} />}
+                      >
+                        Sign Out
+                      </Button>
+
+                      <Button
+                        onClick={deleteAccount}
+                        size="lg"
+                        variant="outline"
+                        colorScheme="red"
+                      >
+                        Delete Account
+                      </Button>
+                    </VStack>
+                  </CardBody>
+                </Card>
+              </VStack>
+            </TabPanel>
+
             {/* MEDIA TAB */}
             <TabPanel px={0} py={6}>
               <VStack align="stretch" spacing={6}>
@@ -1026,110 +1147,6 @@ function ProfileContent() {
                         </Box>
                       )}
                     </ObjectUploader>
-                  </CardBody>
-                </Card>
-              </VStack>
-            </TabPanel>
-
-            {/* AVAILABILITY TAB */}
-            <TabPanel px={0} py={6}>
-              <VStack align="stretch" spacing={6}>
-                <Card shadow="md">
-                  <CardBody>
-                    <FormControl>
-                      <FormLabel fontWeight="semibold" color="gray.800">Timezone</FormLabel>
-                      <Input
-                        type="text"
-                        value={timezone}
-                        onChange={(e) => setTimezone(e.target.value)}
-                        placeholder="America/New_York"
-                        borderColor="gray.200"
-                        bg="white"
-                      />
-                    </FormControl>
-                  </CardBody>
-                </Card>
-
-                <Card shadow="md">
-                  <CardBody p={6}>
-                    <Heading size="md" mb={4} color="gray.800">Typical Availability</Heading>
-                    <AvailabilityGrid
-                      value={availabilityGrid}
-                      onChange={setAvailabilityGrid}
-                    />
-                  </CardBody>
-                </Card>
-
-                <Card shadow="md">
-                  <CardBody>
-                    <VStack align="stretch" spacing={4}>
-                      <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                        <FormLabel mb={0} fontWeight="semibold" color="gray.800">Immediate Availability</FormLabel>
-                        <Switch
-                          isChecked={immediate}
-                          onChange={() => setImmediate(!immediate)}
-                          colorScheme="purple"
-                        />
-                      </FormControl>
-
-                      <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                        <FormLabel mb={0} fontWeight="semibold" color="gray.800">Appear Offline</FormLabel>
-                        <Switch
-                          isChecked={override}
-                          onChange={() => setOverride(!override)}
-                          colorScheme="purple"
-                        />
-                      </FormControl>
-
-                      <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                        <FormLabel mb={0} fontWeight="semibold" color="gray.800">Accept Video Calls</FormLabel>
-                        <Switch
-                          isChecked={videoCallAvailable}
-                          onChange={() => setVideoCallAvailable(!videoCallAvailable)}
-                          colorScheme="purple"
-                        />
-                      </FormControl>
-                    </VStack>
-                  </CardBody>
-                </Card>
-
-                <Button onClick={save} colorScheme="purple" size="lg" shadow="md">
-                  Save Changes
-                </Button>
-              </VStack>
-            </TabPanel>
-
-            {/* SETTINGS TAB */}
-            <TabPanel px={0} py={6}>
-              <VStack align="stretch" spacing={6}>
-                <LocationSettings
-                  initialLatitude={latitude}
-                  initialLongitude={longitude}
-                  initialMaxDistance={maxDistance}
-                  onSave={handleLocationSave}
-                />
-
-                <Card shadow="md">
-                  <CardBody>
-                    <VStack align="stretch" spacing={4}>
-                      <Button
-                        onClick={handleSignOut}
-                        size="lg"
-                        colorScheme="red"
-                        leftIcon={<X size={18} />}
-                      >
-                        Sign Out
-                      </Button>
-
-                      <Button
-                        onClick={deleteAccount}
-                        size="lg"
-                        variant="outline"
-                        colorScheme="red"
-                      >
-                        Delete Account
-                      </Button>
-                    </VStack>
                   </CardBody>
                 </Card>
               </VStack>
