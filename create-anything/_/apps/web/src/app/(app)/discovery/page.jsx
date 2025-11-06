@@ -668,8 +668,8 @@ function DiscoveryContent() {
           {/* Action buttons */}
           <HStack spacing={6} justify="center">
             <IconButton
-              onClick={handleSkip}
-              isDisabled={isLastProfile}
+              onClick={() => blockMutation.mutate(current.id)}
+              isDisabled={blockMutation.isPending}
               icon={<X color="#E74C3C" size={32} strokeWidth={2.5} />}
               w={20}
               h={20}
@@ -678,7 +678,7 @@ function DiscoveryContent() {
               shadow="lg"
               _hover={{ shadow: "xl", transform: "scale(1.1)" }}
               transition="all 0.2s"
-              aria-label="Skip to next profile"
+              aria-label="Not interested (permanently dismiss)"
             />
             <IconButton
               onClick={() => likeMutation.mutate(current.id)}
@@ -696,15 +696,37 @@ function DiscoveryContent() {
           </HStack>
         </VStack>
       ) : (
-        <VStack minH="60vh" justify="center" align="center" spacing={3}>
-          <Text color="gray.600">No more profiles.</Text>
-          <Button
-            onClick={() => refetch()}
-            colorScheme="purple"
-            shadow="lg"
-          >
-            Refresh
-          </Button>
+        <VStack minH="60vh" justify="center" align="center" spacing={4} px={6}>
+          <Box textAlign="center">
+            <Text fontSize="2xl" fontWeight="bold" color="gray.700" mb={2}>
+              You've reached the end!
+            </Text>
+            <Text color="gray.600" mb={4}>
+              {visibleProfiles.length > 0 
+                ? "Use the 'Previous' button above to browse back through profiles, or refresh to check for new matches."
+                : "No profiles to show right now. Check back later for new matches!"}
+            </Text>
+          </Box>
+          <VStack spacing={2}>
+            <Button
+              onClick={() => refetch()}
+              colorScheme="purple"
+              shadow="lg"
+              size="lg"
+            >
+              Check for New Matches
+            </Button>
+            {visibleProfiles.length > 0 && (
+              <Button
+                onClick={() => setCurrentIndex(0)}
+                variant="outline"
+                colorScheme="purple"
+                size="md"
+              >
+                Start Over from Beginning
+              </Button>
+            )}
+          </VStack>
         </VStack>
       )}
       </VStack>
