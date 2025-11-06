@@ -435,7 +435,7 @@ export const PREFERENCE_WEIGHTS = {
  * @param {string} endpoint - The endpoint path
  * @returns {object|null} Rate limit config or null if not found
  */
-export function getRateLimitConfig(endpoint) {
+export function getRateLimitConfig(endpoint: string) {
   const configs = Object.values(RATE_LIMITS);
   return configs.find(config => config.endpoint === endpoint) || null;
 }
@@ -445,8 +445,8 @@ export function getRateLimitConfig(endpoint) {
  * @param {string} tier - Membership tier (free, casual, dating, business)
  * @returns {object} Media limits for the tier
  */
-export function getMediaLimitsForTier(tier) {
-  const normalizedTier = tier?.toUpperCase() || 'FREE';
+export function getMediaLimitsForTier(tier: string) {
+  const normalizedTier = (tier?.toUpperCase() || 'FREE') as keyof typeof MEDIA_LIMITS.PHOTOS;
   return {
     photos: MEDIA_LIMITS.PHOTOS[normalizedTier] || MEDIA_LIMITS.PHOTOS.FREE,
     videos: MEDIA_LIMITS.VIDEOS[normalizedTier] || MEDIA_LIMITS.VIDEOS.FREE,
@@ -459,8 +459,8 @@ export function getMediaLimitsForTier(tier) {
  * @param {string} tier - Membership tier (free, casual, dating, business)
  * @returns {number} Call duration in minutes
  */
-export function getCallDurationForTier(tier) {
-  const normalizedTier = tier?.toUpperCase() || 'FREE';
+export function getCallDurationForTier(tier: string) {
+  const normalizedTier = (tier?.toUpperCase() || 'FREE') as keyof typeof VIDEO_CALL.DURATIONS;
   return VIDEO_CALL.DURATIONS[normalizedTier] || VIDEO_CALL.DURATIONS.FREE;
 }
 
@@ -469,7 +469,7 @@ export function getCallDurationForTier(tier) {
  * @param {string} tier - Membership tier (free, casual, dating, business)
  * @returns {boolean}
  */
-export function hasUnlimitedMeetings(tier) {
-  const normalizedTier = tier?.toUpperCase() || 'FREE';
+export function hasUnlimitedMeetings(tier: string) {
+  const normalizedTier = (tier?.toUpperCase() || 'FREE') as keyof typeof DAILY_LIMITS.MEETINGS;
   return DAILY_LIMITS.MEETINGS[normalizedTier] === Infinity;
 }
