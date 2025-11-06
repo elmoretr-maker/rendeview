@@ -13,7 +13,10 @@ export async function GET(request, { params }) {
     }
     const rows = await sql`
       SELECT id, name, image, immediate_available, availability_override, timezone, typical_availability,
-             membership_tier, primary_photo_url
+             membership_tier, primary_photo_url, bio, interests,
+             gender, sexual_orientation, looking_for, body_type, height_range,
+             education, relationship_goals, drinking, smoking, exercise,
+             religion, children_preference, pets, location
       FROM auth_users WHERE id = ${userId} LIMIT 1`;
     if (!rows?.[0]) {
       return Response.json({ error: "Not found" }, { status: 404 });

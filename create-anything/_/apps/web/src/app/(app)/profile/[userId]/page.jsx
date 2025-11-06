@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Heart, X, Video, ArrowLeft } from "lucide-react";
+import { Heart, X, Video, ArrowLeft, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import SessionExpired from "@/components/SessionExpired";
@@ -22,6 +22,7 @@ import {
   CardBody,
   SimpleGrid,
   Image,
+  Wrap,
 } from "@chakra-ui/react";
 
 export default function RemoteProfile() {
@@ -53,6 +54,7 @@ export default function RemoteProfile() {
   const video = media.find((m) => m.type === "video");
   const typical = user?.typical_availability?.typical || [];
   const timezone = user?.typical_availability?.timezone || user?.timezone;
+  const interests = Array.isArray(user?.interests) ? user.interests : [];
 
   const likeMutation = useMutation({
     mutationFn: async () => {
@@ -145,6 +147,14 @@ export default function RemoteProfile() {
               {user.membership_tier.charAt(0).toUpperCase() + user.membership_tier.slice(1)} Member
             </Badge>
           )}
+          {user?.location && (
+            <HStack spacing={1} mt={1}>
+              <MapPin size={16} color="#7c3aed" />
+              <Text color="gray.600" fontSize="sm">
+                {user.location}
+              </Text>
+            </HStack>
+          )}
         </VStack>
 
         {/* Primary photo */}
@@ -210,6 +220,122 @@ export default function RemoteProfile() {
                 ))}
             </SimpleGrid>
           </Box>
+        )}
+
+        {/* Interests */}
+        {interests.length > 0 && (
+          <Card mb={6} shadow="md">
+            <CardBody p={6}>
+              <Heading size="lg" mb={3} color="gray.800">Interests</Heading>
+              <Wrap spacing={2}>
+                {interests.map((interest, idx) => (
+                  <Badge key={idx} colorScheme="purple" fontSize="sm" px={3} py={1}>
+                    {interest}
+                  </Badge>
+                ))}
+              </Wrap>
+            </CardBody>
+          </Card>
+        )}
+
+        {/* Personal Details */}
+        {(user?.gender || user?.sexual_orientation || user?.looking_for || user?.relationship_goals || user?.height_range || user?.body_type || user?.education) && (
+          <Card mb={6} shadow="md">
+            <CardBody p={6}>
+              <Heading size="lg" mb={4} color="gray.800">Personal Details</Heading>
+              <SimpleGrid columns={2} spacing={4}>
+                {user?.gender && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>Gender</Text>
+                    <Text color="gray.800" fontWeight="medium">{user.gender}</Text>
+                  </Box>
+                )}
+                {user?.sexual_orientation && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>Orientation</Text>
+                    <Text color="gray.800" fontWeight="medium">{user.sexual_orientation}</Text>
+                  </Box>
+                )}
+                {user?.looking_for && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>Looking For</Text>
+                    <Text color="gray.800" fontWeight="medium">{user.looking_for}</Text>
+                  </Box>
+                )}
+                {user?.relationship_goals && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>Relationship Goals</Text>
+                    <Text color="gray.800" fontWeight="medium">{user.relationship_goals}</Text>
+                  </Box>
+                )}
+                {user?.height_range && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>Height</Text>
+                    <Text color="gray.800" fontWeight="medium">{user.height_range}</Text>
+                  </Box>
+                )}
+                {user?.body_type && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>Body Type</Text>
+                    <Text color="gray.800" fontWeight="medium">{user.body_type}</Text>
+                  </Box>
+                )}
+                {user?.education && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>Education</Text>
+                    <Text color="gray.800" fontWeight="medium">{user.education}</Text>
+                  </Box>
+                )}
+              </SimpleGrid>
+            </CardBody>
+          </Card>
+        )}
+
+        {/* Lifestyle */}
+        {(user?.drinking || user?.smoking || user?.exercise || user?.religion || user?.children_preference || user?.pets) && (
+          <Card mb={6} shadow="md">
+            <CardBody p={6}>
+              <Heading size="lg" mb={4} color="gray.800">Lifestyle</Heading>
+              <SimpleGrid columns={2} spacing={4}>
+                {user?.drinking && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>Drinking</Text>
+                    <Text color="gray.800" fontWeight="medium">{user.drinking}</Text>
+                  </Box>
+                )}
+                {user?.smoking && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>Smoking</Text>
+                    <Text color="gray.800" fontWeight="medium">{user.smoking}</Text>
+                  </Box>
+                )}
+                {user?.exercise && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>Exercise</Text>
+                    <Text color="gray.800" fontWeight="medium">{user.exercise}</Text>
+                  </Box>
+                )}
+                {user?.religion && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>Religion</Text>
+                    <Text color="gray.800" fontWeight="medium">{user.religion}</Text>
+                  </Box>
+                )}
+                {user?.children_preference && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>Children</Text>
+                    <Text color="gray.800" fontWeight="medium">{user.children_preference}</Text>
+                  </Box>
+                )}
+                {user?.pets && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>Pets</Text>
+                    <Text color="gray.800" fontWeight="medium">{user.pets}</Text>
+                  </Box>
+                )}
+              </SimpleGrid>
+            </CardBody>
+          </Card>
         )}
 
         {/* Availability */}
