@@ -147,8 +147,7 @@ function MatchesContent() {
         <Flex justify="space-between" align="center" mb={6}>
           <Heading size="xl" color="gray.800">Matches</Heading>
           <Button
-            as={Link}
-            to="/matches/likers"
+            onClick={() => navigate("/matches/likers")}
             colorScheme="purple"
             variant="outline"
             bg="purple.50"
