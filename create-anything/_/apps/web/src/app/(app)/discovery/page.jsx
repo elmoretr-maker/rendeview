@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Heart, RotateCcw, Video, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { X, Heart, RotateCcw, Video, ChevronLeft, ChevronRight, Star, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
@@ -329,6 +329,7 @@ function DiscoveryContent() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [matchedUser, setMatchedUser] = useState(null);
   const [savedProfileIds, setSavedProfileIds] = useState(new Set());
+  const [confirmDismiss, setConfirmDismiss] = useState(false);
 
   // Load saved profiles
   const { data: savedData } = useQuery({
@@ -358,6 +359,11 @@ function DiscoveryContent() {
       setCurrentIndex(maxIndex);
     }
   }, [visibleProfiles.length, currentIndex]);
+
+  // Reset confirmDismiss when profile changes
+  useEffect(() => {
+    setConfirmDismiss(false);
+  }, [current?.id]);
 
   const likeMutation = useMutation({
     mutationFn: async (likedId) => {
@@ -414,6 +420,7 @@ function DiscoveryContent() {
 
   // Skip to next profile without blocking (swipe left)
   const handleSkip = () => {
+    setConfirmDismiss(false);
     setCurrentIndex((i) => {
       const maxIndex = Math.max(0, visibleProfiles.length - 1);
       return Math.min(i + 1, maxIndex);
@@ -422,6 +429,7 @@ function DiscoveryContent() {
 
   // Go back to previous profile
   const handlePrevious = () => {
+    setConfirmDismiss(false);
     setCurrentIndex((i) => Math.max(0, i - 1));
   };
 
@@ -472,6 +480,19 @@ function DiscoveryContent() {
       toast.error(error.message || "Could not update Top Picks");
     },
   });
+
+  // Handle dismiss with two-tap confirmation
+  const handleDismiss = (profileId) => {
+    if (!confirmDismiss) {
+      setConfirmDismiss(true);
+      toast.warning("Tap X again to permanently dismiss this profile", {
+        duration: 3000,
+      });
+    } else {
+      setConfirmDismiss(false);
+      blockMutation.mutate(profileId);
+    }
+  };
 
   // Permanent block (separate explicit action)
   const blockMutation = useMutation({
@@ -666,20 +687,47 @@ function DiscoveryContent() {
           </HStack>
 
           {/* Action buttons */}
-          <HStack spacing={6} justify="center">
-            <IconButton
-              onClick={() => blockMutation.mutate(current.id)}
-              isDisabled={blockMutation.isPending}
-              icon={<X color="#E74C3C" size={32} strokeWidth={2.5} />}
-              w={20}
-              h={20}
-              borderRadius="full"
-              bg="white"
+          <HStack spacing={6} justify="center" align="center">
+            <VStack 
+              spacing={1}
+              p={3}
+              borderWidth={3}
+              borderColor={confirmDismiss ? "red.500" : "red.300"}
+              borderRadius="2xl"
+              bg={confirmDismiss ? "red.50" : "white"}
               shadow="lg"
-              _hover={{ shadow: "xl", transform: "scale(1.1)" }}
-              transition="all 0.2s"
-              aria-label="Not interested (permanently dismiss)"
-            />
+              transition="all 0.3s"
+            >
+              {confirmDismiss && (
+                <HStack spacing={1} mb={1}>
+                  <AlertTriangle color="#E74C3C" size={16} />
+                  <Text fontSize="xs" fontWeight="bold" color="red.600">
+                    Are you sure?
+                  </Text>
+                </HStack>
+              )}
+              <IconButton
+                onClick={() => handleDismiss(current.id)}
+                isDisabled={blockMutation.isPending}
+                icon={<X color="#E74C3C" size={32} strokeWidth={2.5} />}
+                w={20}
+                h={20}
+                borderRadius="full"
+                bg="white"
+                shadow="md"
+                _hover={{ shadow: "xl", transform: "scale(1.05)", bg: "red.50" }}
+                transition="all 0.2s"
+                aria-label={confirmDismiss ? "Confirm dismiss" : "Not interested (tap twice to dismiss)"}
+              />
+              {!confirmDismiss && (
+                <HStack spacing={1} mt={1}>
+                  <AlertTriangle color="#E74C3C" size={12} />
+                  <Text fontSize="2xs" fontWeight="medium" color="red.500">
+                    Permanent
+                  </Text>
+                </HStack>
+              )}
+            </VStack>
             <IconButton
               onClick={() => likeMutation.mutate(current.id)}
               isDisabled={likeMutation.isPending}
