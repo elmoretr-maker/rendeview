@@ -175,6 +175,23 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
             
             {/* Special indicators */}
             <Flex flexWrap="wrap" gap={2} mb={2}>
+              {profile.compatibility_score != null && (
+                <Badge 
+                  bg="gradient-to-r from-pink.500 to-purple.500"
+                  color="white"
+                  display="inline-flex"
+                  alignItems="center"
+                  gap={1}
+                  px={3}
+                  py={1}
+                  borderRadius="full"
+                  fontSize="sm"
+                  fontWeight="bold"
+                  shadow="md"
+                >
+                  {Math.round(profile.compatibility_score * 100)}% Match
+                </Badge>
+              )}
               {profile.liked_you && (
                 <Badge 
                   colorScheme="teal"
