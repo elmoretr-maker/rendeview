@@ -529,13 +529,85 @@ function ProfileContent() {
           </HStack>
         </Flex>
 
-        <Tabs colorScheme="purple" variant="enclosed" isLazy>
-          <TabList borderBottomWidth={2} borderColor="gray.200" flexWrap="wrap">
-            <Tab fontWeight="semibold">Profile</Tab>
-            <Tab fontWeight="semibold">About Me</Tab>
-            <Tab fontWeight="semibold">Media</Tab>
-            <Tab fontWeight="semibold">Availability</Tab>
-            <Tab fontWeight="semibold">Settings</Tab>
+        <Tabs 
+          colorScheme="purple" 
+          variant="soft-rounded" 
+          isLazy
+        >
+          <TabList 
+            bg="white" 
+            p={2} 
+            borderRadius="xl" 
+            shadow="sm"
+            mb={6}
+            gap={2}
+            flexWrap="wrap"
+          >
+            <Tab 
+              fontWeight="semibold" 
+              _selected={{ 
+                color: "white", 
+                bg: "purple.500",
+                shadow: "md"
+              }}
+              borderRadius="lg"
+              px={4}
+              py={2}
+            >
+              Profile
+            </Tab>
+            <Tab 
+              fontWeight="semibold" 
+              _selected={{ 
+                color: "white", 
+                bg: "purple.500",
+                shadow: "md"
+              }}
+              borderRadius="lg"
+              px={4}
+              py={2}
+            >
+              About Me
+            </Tab>
+            <Tab 
+              fontWeight="semibold" 
+              _selected={{ 
+                color: "white", 
+                bg: "purple.500",
+                shadow: "md"
+              }}
+              borderRadius="lg"
+              px={4}
+              py={2}
+            >
+              Media
+            </Tab>
+            <Tab 
+              fontWeight="semibold" 
+              _selected={{ 
+                color: "white", 
+                bg: "purple.500",
+                shadow: "md"
+              }}
+              borderRadius="lg"
+              px={4}
+              py={2}
+            >
+              Availability
+            </Tab>
+            <Tab 
+              fontWeight="semibold" 
+              _selected={{ 
+                color: "white", 
+                bg: "purple.500",
+                shadow: "md"
+              }}
+              borderRadius="lg"
+              px={4}
+              py={2}
+            >
+              Settings
+            </Tab>
           </TabList>
 
           <TabPanels>
