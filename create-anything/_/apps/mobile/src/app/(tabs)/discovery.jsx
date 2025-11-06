@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Heart, Sparkles, Eye } from "lucide-react-native";
+import { X, Heart, Sparkles, Eye, Video, ChevronRight } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "@/utils/auth/useAuth";
 import { apiFetch, getAbsoluteUrl } from "@/utils/api/apiFetch";
@@ -343,15 +343,168 @@ export default function Discovery() {
         </TouchableOpacity>
       </View>
 
+      {/* Nudge 1: Get a Match to Video Chat */}
+      <TouchableOpacity
+        onPress={() => router.push("/matches")}
+        activeOpacity={0.8}
+        style={{
+          marginBottom: 16,
+          borderRadius: 16,
+          overflow: "hidden",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+          elevation: 6,
+        }}
+      >
+        <View
+          style={{
+            padding: 3,
+            backgroundColor: "#A855F7",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#FFFFFF",
+              borderRadius: 13,
+              padding: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 12,
+            }}
+          >
+            <View
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                backgroundColor: "#A855F7",
+                alignItems: "center",
+                justifyContent: "center",
+                shadowColor: "#A855F7",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 4,
+              }}
+            >
+              <Video size={28} color="#FFFFFF" strokeWidth={2.5} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "700",
+                  color: "#A855F7",
+                  marginBottom: 4,
+                  fontFamily: "Inter_700Bold",
+                }}
+              >
+                Want to Video Chat?
+              </Text>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: "#6B7280",
+                  lineHeight: 18,
+                  fontFamily: "Inter_400Regular",
+                }}
+              >
+                Get a MATCH first! Use your chat time to secure a match, then video chat.
+              </Text>
+            </View>
+            <Heart size={24} color="#EC4899" fill="#EC4899" />
+          </View>
+        </View>
+      </TouchableOpacity>
+
       {current ? (
-        <SwipeableCard
-          profile={current}
-          onSwipeLeft={() => setIndex((i) => i + 1)}
-          onSwipeRight={() => likeMutation.mutateAsync(current.id)}
-          onTap={() => router.push(`/profile/${current.id}`)}
-          onDismiss={() => handleDismiss(current.id, discardMutation, setConfirmDismiss, confirmDismiss)}
-          confirmDismiss={confirmDismiss}
-        />
+        <View>
+          <SwipeableCard
+            profile={current}
+            onSwipeLeft={() => setIndex((i) => i + 1)}
+            onSwipeRight={() => likeMutation.mutateAsync(current.id)}
+            onTap={() => router.push(`/profile/${current.id}`)}
+            onDismiss={() => handleDismiss(current.id, discardMutation, setConfirmDismiss, confirmDismiss)}
+            confirmDismiss={confirmDismiss}
+          />
+          
+          {/* Nudge 2: Upgrade for More Video Time */}
+          <TouchableOpacity
+            onPress={() => router.push("/settings/subscription")}
+            activeOpacity={0.8}
+            style={{
+              marginTop: 16,
+              borderRadius: 16,
+              overflow: "hidden",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.2,
+              shadowRadius: 10,
+              elevation: 8,
+            }}
+          >
+            <View
+              style={{
+                padding: 20,
+                backgroundColor: "#6366F1",
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                <View
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 32,
+                    backgroundColor: "#FFFFFF",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    shadowColor: "#FFFFFF",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 6,
+                    elevation: 6,
+                  }}
+                >
+                  <Sparkles size={32} color="#6366F1" strokeWidth={2.5} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={{
+                      fontSize: 18,
+                      fontWeight: "800",
+                      color: "#FFFFFF",
+                      marginBottom: 6,
+                      fontFamily: "Inter_700Bold",
+                      letterSpacing: -0.5,
+                    }}
+                  >
+                    Want More Video Chat Time?
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      color: "#FFFFFF",
+                      opacity: 0.95,
+                      lineHeight: 18,
+                      fontFamily: "Inter_600SemiBold",
+                    }}
+                  >
+                    Buy a Time Extension or upgrade to the next tier!
+                  </Text>
+                </View>
+                <ChevronRight size={28} color="#FFFFFF" strokeWidth={3} />
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
       ) : (
         <View
           style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
