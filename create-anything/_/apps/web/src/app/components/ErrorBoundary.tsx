@@ -85,22 +85,38 @@ export class ErrorBoundary extends Component<Props, State> {
             Something went wrong
           </h3>
           <p style={{ color: '#6B7280', marginBottom: '1.5rem' }}>
-            {this.props.componentName || 'This section'} encountered an error. Please try refreshing the page.
+            {this.props.componentName || 'This section'} encountered an error.
           </p>
-          <button
-            onClick={() => window.location.reload()}
-            style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: COLORS.primary,
-              color: 'white',
-              borderRadius: '8px',
-              fontWeight: '600',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            Refresh Page
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+            <button
+              onClick={() => window.location.href = '/account/signin?callbackUrl=/discovery'}
+              style={{
+                padding: '0.75rem 1.5rem',
+                backgroundColor: COLORS.primary,
+                color: 'white',
+                borderRadius: '8px',
+                fontWeight: '600',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                padding: '0.75rem 1.5rem',
+                backgroundColor: 'white',
+                color: COLORS.primary,
+                borderRadius: '8px',
+                fontWeight: '600',
+                border: `2px solid ${COLORS.primary}`,
+                cursor: 'pointer',
+              }}
+            >
+              Refresh Page
+            </button>
+          </div>
         </div>
       );
     }
