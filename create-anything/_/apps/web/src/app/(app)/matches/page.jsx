@@ -266,25 +266,37 @@ function MatchesContent() {
             {matches.map((item) => {
               const userNote = notesData?.[item.user.id];
               
+              const handleStartChat = async () => {
+                try {
+                  const res = await fetch(`/api/conversations/with/${item.user.id}`);
+                  if (!res.ok) throw new Error("Failed to get conversation");
+                  const data = await res.json();
+                  navigate(`/messages/${data.conversation_id}`);
+                } catch (error) {
+                  console.error("Error starting chat:", error);
+                  toast.error("Could not start chat. Please try again.");
+                }
+              };
+              
               return (
                 <Card
                   key={item.match_id}
-                  onClick={() => navigate(`/messages/${item.match_id}`)}
-                  cursor="pointer"
-                  _hover={{ bg: "white", shadow: "md" }}
-                  transition="all 0.2s"
-                  bg="gray.100"
+                  bg="white"
                   variant="outline"
+                  shadow="sm"
                 >
                   <CardBody p={4}>
-                    <HStack spacing={3}>
+                    <HStack spacing={3} align="center">
                       <Box
-                        w="48px"
-                        h="48px"
+                        w="56px"
+                        h="56px"
                         borderRadius="full"
                         overflow="hidden"
                         flexShrink={0}
                         bg="gray.200"
+                        cursor="pointer"
+                        onClick={() => navigate(`/profile/${item.user.id}`)}
+                        _hover={{ opacity: 0.8 }}
                       >
                         {item.user.photo ? (
                           <Box
@@ -302,7 +314,13 @@ function MatchesContent() {
                         )}
                       </Box>
                       <VStack align="start" spacing={0} flex={1}>
-                        <Text fontWeight="semibold" color="gray.800">
+                        <Text 
+                          fontWeight="semibold" 
+                          color="gray.800"
+                          cursor="pointer"
+                          onClick={() => navigate(`/profile/${item.user.id}`)}
+                          _hover={{ color: "purple.600" }}
+                        >
                           {item.user.name || `User ${item.user.id}`}
                         </Text>
                         {userNote ? (
@@ -311,10 +329,17 @@ function MatchesContent() {
                           </Text>
                         ) : (
                           <Text fontSize="sm" color="gray.500">
-                            {item.last_chat_at ? "Active chat" : "New match"}
+                            Matched on {new Date(item.created_at).toLocaleDateString()}
                           </Text>
                         )}
                       </VStack>
+                      <Button
+                        colorScheme="purple"
+                        size="sm"
+                        onClick={handleStartChat}
+                      >
+                        Start Chat
+                      </Button>
                     </HStack>
                   </CardBody>
                 </Card>

@@ -25,15 +25,15 @@ export default function Messages() {
   const { user, isLoading: userLoading } = useUser();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["matches"],
+    queryKey: ["conversations"],
     queryFn: async () => {
-      const res = await fetch("/api/matches-list");
+      const res = await fetch("/api/conversations");
       if (res.status === 401) {
         const err = new Error("AUTH_401");
         err.code = 401;
         throw err;
       }
-      if (!res.ok) throw new Error("Failed to load matches");
+      if (!res.ok) throw new Error("Failed to load conversations");
       return res.json();
     },
     retry: (count, err) => {
@@ -42,7 +42,7 @@ export default function Messages() {
     },
   });
 
-  const matches = data?.matches || [];
+  const conversations = data?.conversations || [];
 
   React.useEffect(() => {
     if (error?.message === "AUTH_401") {
@@ -84,7 +84,7 @@ export default function Messages() {
       <Container maxW="2xl" px={4} py={8}>
         <Heading size="xl" mb={6} color="gray.800">Messages</Heading>
 
-        {matches.length === 0 ? (
+        {conversations.length === 0 ? (
           <VStack spacing={4} py={12}>
             <Text color="gray.700" fontSize="lg" textAlign="center">
               No conversations yet. Visit the Discovery page to start matching and chatting!
@@ -100,11 +100,10 @@ export default function Messages() {
           </VStack>
         ) : (
           <VStack spacing={3} align="stretch">
-            {matches.map((item) => (
+            {conversations.map((item) => (
               <Card
-                key={item.match_id}
-                as="button"
-                onClick={() => navigate(`/messages/${item.match_id}`)}
+                key={item.conversation_id}
+                onClick={() => navigate(`/messages/${item.conversation_id}`)}
                 cursor="pointer"
                 _hover={{ bg: "white", shadow: "md" }}
                 transition="all 0.2s"
@@ -115,18 +114,35 @@ export default function Messages() {
                   <HStack spacing={3}>
                     <Avatar
                       size="md"
-                      src={item.user.photo ? getAbsoluteUrl(item.user.photo) : undefined}
-                      name={item.user.name || `User ${item.user.id}`}
+                      src={item.other_user_photo ? getAbsoluteUrl(item.other_user_photo) : undefined}
+                      name={item.other_user_name || `User ${item.other_user_id}`}
                       bg="gray.200"
                     />
                     <VStack align="start" spacing={0} flex={1}>
                       <Text fontWeight="semibold" color="gray.800">
-                        {item.user.name || `User ${item.user.id}`}
+                        {item.other_user_name || `User ${item.other_user_id}`}
                       </Text>
-                      <Text fontSize="sm" color="gray.500">
-                        Tap to chat
+                      <Text fontSize="sm" color="gray.500" noOfLines={1}>
+                        {item.last_message_body || "Start a conversation"}
                       </Text>
                     </VStack>
+                    {item.unread_count > 0 && (
+                      <Box
+                        bg="purple.500"
+                        color="white"
+                        borderRadius="full"
+                        minW="24px"
+                        h="24px"
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        fontSize="xs"
+                        fontWeight="bold"
+                        px={2}
+                      >
+                        {item.unread_count}
+                      </Box>
+                    )}
                   </HStack>
                 </CardBody>
               </Card>
