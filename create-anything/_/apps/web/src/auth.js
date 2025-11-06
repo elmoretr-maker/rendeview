@@ -260,6 +260,22 @@ export const { auth } = CreateAuth({
     strategy: "database",
     maxAge: 12 * 60 * 60, // 12 hours in seconds
   },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user?._sessionToken) {
+        token.sessionToken = user._sessionToken;
+        token.sessionExpires = user._sessionExpires;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token.sessionToken) {
+        session.sessionToken = token.sessionToken;
+        session.expires = token.sessionExpires;
+      }
+      return session;
+    },
+  },
   providers: [Credentials({
   id: 'credentials-signin',
   name: 'Credentials Sign in',
@@ -298,6 +314,22 @@ export const { auth } = CreateAuth({
     const isValid = await verify(accountPassword, password);
     if (!isValid) {
       return null;
+    }
+
+    try {
+      const sessionToken = crypto.randomUUID();
+      const expires = new Date(Date.now() + 12 * 60 * 60 * 1000);
+      
+      await adapter.createSession({
+        sessionToken,
+        userId: user.id,
+        expires,
+      });
+      
+      user._sessionToken = sessionToken;
+      user._sessionExpires = expires;
+    } catch (error) {
+      console.error('Session creation error:', error);
     }
 
     // return user object with the their profile data
@@ -354,6 +386,23 @@ export const { auth } = CreateAuth({
         providerAccountId: newUser.id,
         provider: 'credentials',
       });
+      
+      try {
+        const sessionToken = crypto.randomUUID();
+        const expires = new Date(Date.now() + 12 * 60 * 60 * 1000);
+        
+        await adapter.createSession({
+          sessionToken,
+          userId: newUser.id,
+          expires,
+        });
+        
+        newUser._sessionToken = sessionToken;
+        newUser._sessionExpires = expires;
+      } catch (error) {
+        console.error('Session creation error:', error);
+      }
+      
       return newUser;
     }
     return null;
