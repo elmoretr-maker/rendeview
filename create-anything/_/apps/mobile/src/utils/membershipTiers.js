@@ -15,13 +15,14 @@ export const TIER_LIMITS = {
     videoMaxDuration: 15,
     chatMinutes: 5,
     maxMeetings: 3,
+    videoTrialDays: 14, // 2-week free trial for video features from first call
     dailyMessages: 15,
     perMatchDailyMessages: null,
     firstEncounterMessages: 10
   },
   [MEMBERSHIP_TIERS.CASUAL]: {
     photos: 6,
-    videos: 3,
+    videos: 1,
     videoMaxDuration: 30,
     chatMinutes: 15,
     maxMeetings: Infinity,
@@ -31,7 +32,7 @@ export const TIER_LIMITS = {
   },
   [MEMBERSHIP_TIERS.DATING]: {
     photos: 10,
-    videos: 1,
+    videos: 2,
     videoMaxDuration: 60,
     chatMinutes: 25,
     maxMeetings: Infinity,
@@ -41,7 +42,7 @@ export const TIER_LIMITS = {
   },
   [MEMBERSHIP_TIERS.BUSINESS]: {
     photos: 20,
-    videos: 1,
+    videos: 2,
     videoMaxDuration: 60,
     chatMinutes: 45,
     maxMeetings: Infinity,
@@ -88,7 +89,7 @@ export function buildDynamicTiers(dbPricing) {
 
   const buildDesc = (tier, photos, videos, chatMinutes) => {
     if (tier === 'free') {
-      return `Browse, see & send likes (${photos} photos, ${videos} video)`;
+      return `2-week video trial, then upgrade to continue`;
     }
     return `${photos} photos, ${videos} video${videos !== 1 ? 's' : ''}, ${chatMinutes}min calls`;
   };
@@ -145,6 +146,7 @@ export function buildDynamicTiers(dbPricing) {
       videoDuration: TIER_LIMITS.free.videoMaxDuration,
       chatMinutes: TIER_LIMITS.free.chatMinutes,
       maxMeetings: TIER_LIMITS.free.maxMeetings,
+      videoTrialDays: TIER_LIMITS.free.videoTrialDays,
       dailyMessages: TIER_LIMITS.free.dailyMessages,
       desc: buildDesc('free', TIER_LIMITS.free.photos, TIER_LIMITS.free.videos, TIER_LIMITS.free.chatMinutes),
       highlight: false,

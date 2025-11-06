@@ -36,15 +36,38 @@ export async function POST(request) {
 
     // Check membership tier and meeting limits
     const [meRow] =
-      await sql`SELECT membership_tier, video_meetings_count, last_video_meeting_at FROM auth_users WHERE id = ${session.user.id}`;
+      await sql`SELECT membership_tier, video_meetings_count, last_video_meeting_at, first_video_call_at FROM auth_users WHERE id = ${session.user.id}`;
     const myTier = (meRow?.membership_tier || "free").toLowerCase();
     let meetingCount = meRow?.video_meetings_count || 0;
     const lastMeetingDate = meRow?.last_video_meeting_at;
+    const firstEverCallDate = meRow?.first_video_call_at;
 
-    // Free tier: meeting cap from central config with 24-hour rolling window
+    // Free tier: 2-week trial and daily meeting limits
     if (myTier === "free") {
-      const freeMeetingLimit = DAILY_LIMITS.MEETINGS.FREE;
       const now = new Date();
+      
+      // Check 2-week trial expiration (14 days from first ever video call)
+      if (firstEverCallDate) {
+        const trialStartDate = new Date(firstEverCallDate);
+        const twoWeeksInMs = 14 * 24 * 60 * 60 * 1000;
+        const trialEndDate = new Date(trialStartDate.getTime() + twoWeeksInMs);
+        
+        if (now > trialEndDate) {
+          return Response.json(
+            {
+              error: "Your 2-week free video trial has expired. Upgrade to continue video dating!",
+              isTrialExpired: true,
+              trialStartedAt: trialStartDate.toISOString(),
+              trialEndedAt: trialEndDate.toISOString(),
+              requiresUpgrade: true
+            },
+            { status: 403 },
+          );
+        }
+      }
+      
+      // Daily meeting cap with 24-hour rolling window
+      const freeMeetingLimit = DAILY_LIMITS.MEETINGS.FREE;
       const firstCallDate = lastMeetingDate ? new Date(lastMeetingDate) : null;
       
       // Check if 24 hours have passed since first call of the window
@@ -53,7 +76,19 @@ export async function POST(request) {
       
       if (cooldownExpired) {
         // Reset counter - this is the first call of a new 24-hour window
-        await sql`UPDATE auth_users SET video_meetings_count = 0, last_video_meeting_at = ${now.toISOString()} WHERE id = ${session.user.id}`;
+        // Also set first_video_call_at if this is their very first call ever
+        if (!firstEverCallDate) {
+          await sql`UPDATE auth_users SET 
+            video_meetings_count = 0, 
+            last_video_meeting_at = ${now.toISOString()},
+            first_video_call_at = ${now.toISOString()}
+          WHERE id = ${session.user.id}`;
+        } else {
+          await sql`UPDATE auth_users SET 
+            video_meetings_count = 0, 
+            last_video_meeting_at = ${now.toISOString()} 
+          WHERE id = ${session.user.id}`;
+        }
         meetingCount = 0;
       } else if (meetingCount >= freeMeetingLimit) {
         // User has hit limit - calculate when they can call again (24h from first call)
@@ -180,12 +215,23 @@ export async function POST(request) {
       vidSessionId,
     ]);
 
-    // Increment meeting count for free tier users
+    // Track first video call and increment meeting count for free tier users
     let isFinalFreeMeeting = false;
     if (myTier === "free") {
+      const now = new Date();
+      
+      // Set first_video_call_at if this is their very first video call ever
+      if (!firstEverCallDate) {
+        await sql`UPDATE auth_users SET 
+          video_meetings_count = video_meetings_count + 1,
+          first_video_call_at = ${now.toISOString()}
+        WHERE id = ${session.user.id}`;
+      } else {
+        await sql`UPDATE auth_users SET video_meetings_count = video_meetings_count + 1 WHERE id = ${session.user.id}`;
+      }
+      
       // This will be their 3rd meeting after increment
       isFinalFreeMeeting = (meetingCount + 1) === 3;
-      await sql`UPDATE auth_users SET video_meetings_count = video_meetings_count + 1 WHERE id = ${session.user.id}`;
     }
 
     return Response.json(

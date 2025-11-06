@@ -14,6 +14,7 @@ export const TIER_LIMITS = {
     videoMaxDuration: 15, // seconds
     chatMinutes: 5,
     maxMeetings: 3,
+    videoTrialDays: 14, // 2-week free trial for video features from first call
     dailyMessages: 15,
     perMatchDailyMessages: null,
     firstEncounterMessages: 10
@@ -257,8 +258,9 @@ export function buildDynamicTiers(dbPricing) {
       videoDuration: TIER_LIMITS.free.videoMaxDuration,
       chatMinutes: TIER_LIMITS.free.chatMinutes,
       maxMeetings: TIER_LIMITS.free.maxMeetings,
+      videoTrialDays: TIER_LIMITS.free.videoTrialDays,
       dailyMessages: TIER_LIMITS.free.dailyMessages,
-      desc: "Get started with basic features",
+      desc: "2-week video trial, then upgrade to continue",
       highlight: false,
     },
     {
