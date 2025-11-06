@@ -142,11 +142,6 @@ export default function ProfilePreview() {
                 <Badge colorScheme="purple">
                   {tierDisplay}
                 </Badge>
-                {user.location && (
-                  <Text color="gray.600" fontSize="sm">
-                    📍 {user.location}
-                  </Text>
-                )}
               </VStack>
             </HStack>
 
