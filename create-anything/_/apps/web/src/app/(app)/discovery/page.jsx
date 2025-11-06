@@ -632,9 +632,6 @@ function DiscoveryContent() {
         
         {/* Nudge 1: Get a Match to Video Chat */}
         <Box
-          as={motion.div}
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
           w="full"
           maxW="md"
           mx="auto"
@@ -657,9 +654,6 @@ function DiscoveryContent() {
                 align="center"
                 justify="center"
                 shadow="lg"
-                as={motion.div}
-                animate={{ rotate: [0, 5, -5, 0] }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
               >
                 <Video size={28} color="white" strokeWidth={2.5} />
               </Flex>
@@ -792,9 +786,6 @@ function DiscoveryContent() {
           
           {/* Nudge 2: Upgrade for More Video Time */}
           <Box
-            as={motion.div}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
             w="full"
             borderRadius="2xl"
             overflow="hidden"
@@ -804,28 +795,9 @@ function DiscoveryContent() {
             onClick={() => navigate("/settings/subscription")}
             _hover={{ shadow: "dark-lg", transform: "scale(1.02)" }}
             transition="all 0.3s"
+            bgGradient="linear(135deg, #6366F1 0%, #EC4899 50%, #F59E0B 100%)"
           >
-            <Box
-              position="absolute"
-              top={0}
-              left={0}
-              right={0}
-              bottom={0}
-              bgGradient="linear(135deg, #6366F1 0%, #EC4899 50%, #F59E0B 100%)"
-              as={motion.div}
-              animate={{ 
-                backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-              }}
-              transition={{ 
-                duration: 5,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-              style={{
-                backgroundSize: "200% 200%"
-              }}
-            />
-            <Box position="relative" p={6}>
+            <Box p={6}>
               <Flex align="center" gap={4}>
                 <Flex
                   w={16}
@@ -835,9 +807,6 @@ function DiscoveryContent() {
                   align="center"
                   justify="center"
                   shadow="xl"
-                  as={motion.div}
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
                 >
                   <Sparkles size={32} color="#6366F1" strokeWidth={2.5} />
                 </Flex>
@@ -849,13 +818,7 @@ function DiscoveryContent() {
                     Buy a Time Extension or upgrade to the next tier for unlimited possibilities!
                   </Text>
                 </VStack>
-                <Box
-                  as={motion.div}
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  <ChevronRight size={32} color="white" strokeWidth={3} />
-                </Box>
+                <ChevronRight size={32} color="white" strokeWidth={3} />
               </Flex>
             </Box>
           </Box>
