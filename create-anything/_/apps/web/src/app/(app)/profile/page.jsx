@@ -97,6 +97,7 @@ function ProfileContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
   const [timezone, setTimezone] = useState("");
   const [availabilityGrid, setAvailabilityGrid] = useState({});
   const [immediate, setImmediate] = useState(false);
@@ -109,6 +110,25 @@ function ProfileContent() {
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [maxDistance, setMaxDistance] = useState(100);
+  
+  // Interests
+  const [interests, setInterests] = useState([]);
+  const { isOpen: isInterestsOpen, onOpen: onInterestsOpen, onClose: onInterestsClose } = useDisclosure();
+  
+  // Preferences
+  const [gender, setGender] = useState("");
+  const [sexualOrientation, setSexualOrientation] = useState("");
+  const [lookingFor, setLookingFor] = useState("");
+  const [bodyType, setBodyType] = useState("");
+  const [heightRange, setHeightRange] = useState("");
+  const [education, setEducation] = useState("");
+  const [relationshipGoals, setRelationshipGoals] = useState("");
+  const [drinking, setDrinking] = useState("");
+  const [smoking, setSmoking] = useState("");
+  const [exercise, setExercise] = useState("");
+  const [religion, setReligion] = useState("");
+  const [childrenPreference, setChildrenPreference] = useState("");
+  const [pets, setPets] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -122,6 +142,7 @@ function ProfileContent() {
         const data = await res.json();
         const u = data.user || {};
         setName(u.name || "");
+        setBio(u.bio || "");
         setImmediate(!!u.immediate_available);
         setOverride(!!u.availability_override);
         setVideoCallAvailable(u.video_call_available !== false);
@@ -141,6 +162,24 @@ function ProfileContent() {
         setLatitude(u.latitude ?? null);
         setLongitude(u.longitude ?? null);
         setMaxDistance(u.max_distance ?? 100);
+        
+        // Load interests
+        if (u.interests && Array.isArray(u.interests)) setInterests(u.interests);
+        
+        // Load preferences
+        setGender(u.gender || "");
+        setSexualOrientation(u.sexual_orientation || "");
+        setLookingFor(u.looking_for || "");
+        setBodyType(u.body_type || "");
+        setHeightRange(u.height_range || "");
+        setEducation(u.education || "");
+        setRelationshipGoals(u.relationship_goals || "");
+        setDrinking(u.drinking || "");
+        setSmoking(u.smoking || "");
+        setExercise(u.exercise || "");
+        setReligion(u.religion || "");
+        setChildrenPreference(u.children_preference || "");
+        setPets(u.pets || "");
       } catch (e) {
         console.error(e);
         setError("Failed to fetch profile");
