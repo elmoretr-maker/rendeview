@@ -1,0 +1,109 @@
+status of 403 (Forbidden)
+/api/message-quota?conversationId=20:1   Failed to load resource: the server responded with a status of 400 (Bad Request)
+[NEW] Explain Console errors by using Copilot in Edge: click
+         
+         to explain an error. 
+        Learn more
+        Don't show again
+fetch.ts:77   GET https://f0121a5d-5e80-4c70-b963-40a63b270b5b-00-oioc9jggg354.spock.replit.dev/api/conversations/20/messages 403 (Forbidden)
+fetchWithHeaders2 @ fetch.ts:77
+queryFn @ page.jsx:57
+fetchFn @ query.ts:475
+run @ retryer.ts:155
+start @ retryer.ts:221
+fetch @ query.ts:547
+executeFetch_fn @ queryObserver.ts:343
+(anonymous) @ queryObserver.ts:406
+fetch.ts:77   GET https://f0121a5d-5e80-4c70-b963-40a63b270b5b-00-oioc9jggg354.spock.replit.dev/api/conversations/20/messages 403 (Forbidden)
+fetchWithHeaders2 @ fetch.ts:77
+queryFn @ page.jsx:57
+fetchFn @ query.ts:475
+run @ retryer.ts:155
+(anonymous) @ retryer.ts:201
+Promise.then
+(anonymous) @ retryer.ts:197
+Promise.catch
+run @ retryer.ts:162
+start @ retryer.ts:221
+fetch @ query.ts:547
+executeFetch_fn @ queryObserver.ts:343
+(anonymous) @ queryObserver.ts:406
+fetch.ts:77   GET https://f0121a5d-5e80-4c70-b963-40a63b270b5b-00-oioc9jggg354.spock.replit.dev/api/conversations/20/messages 403 (Forbidden)
+fetchWithHeaders2 @ fetch.ts:77
+queryFn @ page.jsx:57
+fetchFn @ query.ts:475
+run @ retryer.ts:155
+(anonymous) @ retryer.ts:201
+Promise.then
+(anonymous) @ retryer.ts:197
+Promise.catch
+run @ retryer.ts:162
+(anonymous) @ retryer.ts:201
+Promise.then
+(anonymous) @ retryer.ts:197
+Promise.catch
+run @ retryer.ts:162
+start @ retryer.ts:221
+fetch @ query.ts:547
+executeFetch_fn @ queryObserver.ts:343
+(anonymous) @ queryObserver.ts:406
+fetch.ts:77   GET https://f0121a5d-5e80-4c70-b963-40a63b270b5b-00-oioc9jggg354.spock.replit.dev/api/message-quota?conversationId=20 400 (Bad Request)
+fetchWithHeaders2 @ fetch.ts:77
+queryFn @ page.jsx:96
+fetchFn @ query.ts:475
+run @ retryer.ts:155
+start @ retryer.ts:221
+fetch @ query.ts:547
+executeFetch_fn @ queryObserver.ts:343
+(anonymous) @ queryObserver.ts:406
+fetch.ts:77   GET https://f0121a5d-5e80-4c70-b963-40a63b270b5b-00-oioc9jggg354.spock.replit.dev/api/conversations/20/messages 403 (Forbidden)
+fetchWithHeaders2 @ fetch.ts:77
+queryFn @ page.jsx:57
+fetchFn @ query.ts:475
+run @ retryer.ts:155
+start @ retryer.ts:221
+fetch @ query.ts:547
+executeFetch_fn @ queryObserver.ts:343
+(anonymous) @ queryObserver.ts:406
+setInterval
+setInterval @ timeoutManager.ts:47
+setInterval @ timeoutManager.ts:116
+updateRefetchInterval_fn @ queryObserver.ts:401
+updateTimers_fn @ queryObserver.ts:413
+onQueryUpdate @ queryObserver.ts:727
+(anonymous) @ query.ts:684
+(anonymous) @ query.ts:683
+batch @ notifyManager.ts:56
+dispatch_fn @ query.ts:682
+fetch @ query.ts:585
+await in fetch
+executeFetch_fn @ queryObserver.ts:343
+(anonymous) @ queryObserver.ts:406
+fetch.ts:77   GET https://f0121a5d-5e80-4c70-b963-40a63b270b5b-00-oioc9jggg354.spock.replit.dev/api/conversations/20/messages 403 (Forbidden)
+fetchWithHeaders2 @ fetch.ts:77
+queryFn @ page.jsx:57
+fetchFn @ query.ts:475
+run @ retryer.ts:155
+(anonymous) @ retryer.ts:201
+Promise.then
+(anonymous) @ retryer.ts:197
+Promise.catch
+run @ retryer.ts:162
+start @ retryer.ts:221
+fetch @ query.ts:547
+executeFetch_fn @ queryObserver.ts:343
+(anonymous) @ queryObserver.ts:406
+setInterval
+setInterval @ timeoutManager.ts:47
+setInterval @ timeoutManager.ts:116
+updateRefetchInterval_fn @ queryObserver.ts:401
+updateTimers_fn @ queryObserver.ts:413
+onQueryUpdate @ queryObserver.ts:727
+(anonymous) @ query.ts:684
+(anonymous) @ query.ts:683
+batch @ notifyManager.ts:56
+dispatch_fn @ query.ts:682
+fetch @ query.ts:585
+await in fetch
+executeFetch_fn @ queryObserver.ts:343
+(anonymous) @ queryObserver.ts:406
