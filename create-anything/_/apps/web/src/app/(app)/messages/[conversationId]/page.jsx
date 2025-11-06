@@ -66,12 +66,23 @@ function ChatContent() {
         err.code = 401;
         throw err;
       }
+      if (res.status === 403) {
+        const err = new Error("BLOCKED");
+        err.code = 403;
+        throw err;
+      }
       if (!res.ok) throw new Error("Failed to load messages");
       return res.json();
     },
-    refetchInterval: 5000,
+    refetchInterval: (data, query) => {
+      // Don't refetch if there's a 403 error (blocked conversation)
+      if (query?.state?.error?.code === 403) return false;
+      return 5000;
+    },
     retry: (count, err) => {
+      // Don't retry on 401 or 403 errors
       if (err?.code === 401 || err?.message === "AUTH_401") return false;
+      if (err?.code === 403 || err?.message === "BLOCKED") return false;
       return count < 2;
     },
   });
@@ -93,11 +104,16 @@ function ChatContent() {
     queryKey: ["messageQuota", conversationId],
     queryFn: async () => {
       const res = await fetch(`/api/message-quota?conversationId=${conversationId}`);
+      if (res.status === 403) {
+        // Conversation blocked, return null
+        return null;
+      }
       if (!res.ok) return null;
       return res.json();
     },
     enabled: !!conversationId,
     refetchInterval: 10000,
+    retry: false, // Don't retry quota fetches
   });
 
   // Update note content when noteData changes
@@ -326,6 +342,33 @@ function ChatContent() {
 
   if (error?.message === "AUTH_401") {
     return <SessionExpired />;
+  }
+
+  if (error?.code === 403 || error?.message === "BLOCKED") {
+    return (
+      <Box minH="100vh" bg="gray.50">
+        <AppHeader />
+        <Container maxW="2xl" px={4} py={8}>
+          <VStack spacing={6} py={12}>
+            <Box fontSize="6xl">🚫</Box>
+            <Heading size="lg" color="gray.800" textAlign="center">
+              Conversation Unavailable
+            </Heading>
+            <Text color="gray.600" textAlign="center" maxW="md">
+              This conversation is no longer accessible. This may happen if you or the other person has blocked each other.
+            </Text>
+            <Button
+              onClick={() => navigate('/messages')}
+              colorScheme="purple"
+              size="lg"
+              mt={4}
+            >
+              Back to Messages
+            </Button>
+          </VStack>
+        </Container>
+      </Box>
+    );
   }
 
   if (error) {
