@@ -103,46 +103,61 @@ export default function Messages() {
             {conversations.map((item) => (
               <Card
                 key={item.conversation_id}
-                onClick={() => navigate(`/messages/${item.conversation_id}`)}
-                cursor="pointer"
-                _hover={{ bg: "white", shadow: "md" }}
                 transition="all 0.2s"
-                bg="gray.100"
+                bg="white"
                 variant="outline"
+                shadow="sm"
+                _hover={{ shadow: "md" }}
               >
                 <CardBody p={4}>
-                  <HStack spacing={3}>
+                  <HStack spacing={4} align="center">
                     <Avatar
-                      size="md"
+                      size="lg"
                       src={item.other_user_photo ? getAbsoluteUrl(item.other_user_photo) : undefined}
                       name={item.other_user_name || `User ${item.other_user_id}`}
-                      bg="gray.200"
+                      bg="purple.100"
+                      color="purple.600"
+                      cursor="pointer"
+                      onClick={() => navigate(`/profile/${item.other_user_id}`)}
+                      _hover={{ opacity: 0.8 }}
                     />
-                    <VStack align="start" spacing={0} flex={1}>
-                      <Text fontWeight="semibold" color="gray.800">
+                    <VStack align="start" spacing={1} flex={1}>
+                      <Text 
+                        fontWeight="bold" 
+                        color="gray.800"
+                        fontSize="lg"
+                        cursor="pointer"
+                        onClick={() => navigate(`/profile/${item.other_user_id}`)}
+                        _hover={{ color: "purple.600" }}
+                      >
                         {item.other_user_name || `User ${item.other_user_id}`}
                       </Text>
-                      <Text fontSize="sm" color="gray.500" noOfLines={1}>
+                      <Text fontSize="sm" color="gray.600" noOfLines={2}>
                         {item.last_message_body || "Start a conversation"}
                       </Text>
                     </VStack>
-                    {item.unread_count > 0 && (
-                      <Box
-                        bg="purple.500"
-                        color="white"
-                        borderRadius="full"
-                        minW="24px"
-                        h="24px"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                        fontSize="xs"
-                        fontWeight="bold"
-                        px={2}
+                    <VStack spacing={2} align="end">
+                      <Button
+                        onClick={() => navigate(`/messages/${item.conversation_id}`)}
+                        colorScheme="purple"
+                        size="md"
+                        px={6}
+                        fontWeight="semibold"
                       >
-                        {item.unread_count}
-                      </Box>
-                    )}
+                        Open Chat
+                      </Button>
+                      {item.unread_count > 0 && (
+                        <Badge
+                          colorScheme="purple"
+                          borderRadius="full"
+                          px={2}
+                          py={1}
+                          fontSize="xs"
+                        >
+                          {item.unread_count} new
+                        </Badge>
+                      )}
+                    </VStack>
                   </HStack>
                 </CardBody>
               </Card>

@@ -50,6 +50,11 @@ export async function GET(request) {
         ORDER BY created_at DESC
         LIMIT 1
       ) m ON true
+      LEFT JOIN blockers block_by_me 
+        ON block_by_me.blocker_id = ${currentUserId} AND block_by_me.blocked_id = other_user.id
+      LEFT JOIN blockers block_by_them 
+        ON block_by_them.blocker_id = other_user.id AND block_by_them.blocked_id = ${currentUserId}
+      WHERE block_by_me.id IS NULL AND block_by_them.id IS NULL
       ORDER BY c.id, COALESCE(c.last_message_at, c.created_at) DESC
     `;
 
