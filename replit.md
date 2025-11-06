@@ -35,3 +35,40 @@ Key features include:
 - **Backend Framework**: Hono (Node.js)
 - **Mobile UI Components**: @react-native-community/slider, @expo-google-fonts/inter, react-native-maps, expo-location
 - **Geocoding**: OpenStreetMap Nominatim API
+
+## 🚨 CRITICAL ISSUES TO FIX
+
+### Authentication Session Persistence Problem (HIGH PRIORITY)
+**Status:** UNRESOLVED - Marked for later fix (Nov 6, 2025)
+
+**Problem:**
+- User sessions do NOT persist and expire immediately despite 12-hour maxAge configuration
+- `@auth/create` package (Replit internal) ignores the `adapter` parameter and database session strategy
+- Database table `auth_sessions` exists but remains empty (0 sessions) even after successful login
+- Users must re-authenticate frequently, breaking the expected 12-hour session duration
+
+**Root Cause:**
+- The `@auth/create` package in `create-anything/_/apps/web/src/auth.js` is a Replit proprietary package that does NOT respect standard Auth.js configuration
+- File warning states: "Do not attempt to edit it. Modifying it will have no effect"
+- Configuration specifies `strategy: "database"` and `maxAge: 12 * 60 * 60` but sessions are NOT stored in database
+- Adding `adapter: adapter` parameter had no effect
+- Likely using JWT cookie-based sessions instead of database-backed sessions
+
+**Impact:**
+- Users experience frequent "Session Expired" errors
+- Poor user experience - constant re-authentication required
+- Defeats purpose of 12-hour session duration
+
+**Solution Options (Not Yet Implemented):**
+1. **Replace with standard Auth.js v5** - Migrate from `@auth/create` to proper Auth.js/NextAuth with database adapter for true persistent sessions
+2. **Migrate to Passport.js** - Use Replit's official Auth blueprint (OpenID Connect) with PostgreSQL-backed sessions
+3. **Debug @auth/create** - Attempt to find undocumented configuration (low probability of success)
+
+**Recommendation:** Option 1 or 2 - Replace proprietary auth system with standard, well-documented solution.
+
+**Files Affected:**
+- `create-anything/_/apps/web/src/auth.js` (current broken auth config)
+- `create-anything/_/apps/web/src/app/api/utils/auth.js` (session utilities)
+- Database: `auth_sessions` table (unused), `auth_users` table (working)
+
+**TODO:** Schedule time to implement proper authentication system with persistent database sessions.
