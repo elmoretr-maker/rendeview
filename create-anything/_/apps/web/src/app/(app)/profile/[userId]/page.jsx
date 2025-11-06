@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Heart, X, Video, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import SessionExpired from "@/components/SessionExpired";
 import AvailabilityDisplay from "@/components/AvailabilityDisplay";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
 import {
@@ -109,19 +110,7 @@ export default function RemoteProfile() {
   }
 
   if (error?.message === "AUTH_401") {
-    return (
-      <Box minH="100vh" bg="gray.50">
-        <AppHeader />
-        <Container maxW="2xl" px={4} py={8}>
-          <VStack align="start" spacing={4}>
-            <Text>Session expired. Please sign in.</Text>
-            <Button onClick={() => navigate("/account/signin")} colorScheme="purple">
-              Sign In
-            </Button>
-          </VStack>
-        </Container>
-      </Box>
-    );
+    return <SessionExpired />;
   }
 
   if (error) {

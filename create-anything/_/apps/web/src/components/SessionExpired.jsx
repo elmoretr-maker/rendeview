@@ -1,12 +1,14 @@
 import React from "react";
+import { useNavigate } from "react-router";
 import { Box, Container, Text, Button, VStack, Card, CardBody, Heading } from "@chakra-ui/react";
 import { LogIn } from "lucide-react";
-import { signIn } from "@auth/create/react";
 import AppHeader from "@/components/AppHeader";
 
 export default function SessionExpired() {
+  const navigate = useNavigate();
+  
   const handleSignIn = () => {
-    signIn("credentials-signin", { callbackUrl: "/discovery" });
+    navigate("/account/signin?callbackUrl=/discovery");
   };
 
   return (

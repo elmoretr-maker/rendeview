@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
+import SessionExpired from "@/components/SessionExpired";
 import { Heart, Sparkles, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
@@ -87,24 +88,7 @@ export default function NewMatches() {
   }
 
   if (error?.message === "AUTH_401") {
-    return (
-      <Box minH="100vh" bg="gray.50">
-        <AppHeader />
-        <Container maxW="2xl" px={4} py={8}>
-          <Heading size="xl" mb={4} color="gray.800">New Matches</Heading>
-          <VStack align="start" spacing={4}>
-            <Text color="gray.700">Session expired. Please sign in.</Text>
-            <Button
-              onClick={() => navigate("/account/signin")}
-              colorScheme="purple"
-              shadow="md"
-            >
-              Sign In
-            </Button>
-          </VStack>
-        </Container>
-      </Box>
-    );
+    return <SessionExpired />;
   }
 
   if (error) {
