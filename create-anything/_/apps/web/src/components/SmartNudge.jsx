@@ -12,7 +12,7 @@ export function SmartNudge({ matchId, otherUserName, daysSinceFirstMessage, onDi
   const navigate = useNavigate();
   const [dismissed, setDismiss] = useState(false);
 
-  if (dismissed || daysSinceFirstMessage < 2) {
+  if (dismissed || daysSinceFirstMessage < 1) {
     return null;
   }
 
@@ -36,8 +36,8 @@ export function SmartNudge({ matchId, otherUserName, daysSinceFirstMessage, onDi
             Ready to take it to video?
           </h3>
           <p className="text-sm mb-3 opacity-80" style={{ color: COLORS.text }}>
-            You and {otherUserName} have been chatting for {daysSinceFirstMessage} days. 
-            Why not schedule a video date? It's the best way to really get to know each other!
+            You and {otherUserName} have been chatting for {daysSinceFirstMessage} day{daysSinceFirstMessage > 1 ? 's' : ''}. 
+            Why not schedule a video date? Real connections happen face-to-face, not through endless texting. Let's meet for real! 🎥
           </p>
           <div className="flex gap-2">
             <button

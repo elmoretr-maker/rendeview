@@ -409,6 +409,23 @@ function ChatContent() {
           )}
         </HStack>
         
+        {/* Chat Purpose Reminder */}
+        <Card mb={4} shadow="sm" bg="purple.50" borderColor="purple.200" borderWidth="1px">
+          <CardBody p={3}>
+            <HStack spacing={3} align="start">
+              <Box fontSize="2xl">📹</Box>
+              <VStack align="start" spacing={1} flex={1}>
+                <Text fontSize="sm" fontWeight="bold" color="purple.900">
+                  💬 Chat Smart, Meet Real
+                </Text>
+                <Text fontSize="xs" color="purple.800" lineHeight="1.5">
+                  Keep messages brief and focused on scheduling your video date! Chat has a 280-character limit to encourage authentic video connections and prevent endless texting. Real chemistry happens face-to-face! 🎥
+                </Text>
+              </VStack>
+            </HStack>
+          </CardBody>
+        </Card>
+        
         {/* Message Quota Counter */}
         {quotaData && (
           <Card mb={4} shadow="sm" bg="white">
@@ -609,9 +626,18 @@ function ChatContent() {
               Send
             </Button>
           </HStack>
-          <Text fontSize="xs" color={text.length > 280 ? "red.500" : "gray.500"} textAlign="right">
-            {text.length}/280 characters
-          </Text>
+          <HStack justify="space-between" align="center">
+            <Text fontSize="xs" color="purple.600" fontWeight="medium">
+              💡 Tip: Keep it brief, then schedule a video date!
+            </Text>
+            <Text 
+              fontSize="xs" 
+              color={text.length > 240 ? "orange.500" : text.length > 280 ? "red.500" : "gray.500"} 
+              fontWeight={text.length > 240 ? "bold" : "normal"}
+            >
+              {text.length}/280
+            </Text>
+          </HStack>
         </VStack>
       </Container>
       
