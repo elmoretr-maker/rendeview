@@ -269,7 +269,6 @@ function MatchesContent() {
               return (
                 <Card
                   key={item.match_id}
-                  as="button"
                   onClick={() => navigate(`/messages/${item.match_id}`)}
                   cursor="pointer"
                   _hover={{ bg: "white", shadow: "md" }}
