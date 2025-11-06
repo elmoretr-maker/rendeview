@@ -307,7 +307,7 @@ function DiscoveryContent() {
     }
   }, [user]);
 
-  const [index, setIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [removedCards, setRemovedCards] = useState([]);
   const [showCelebration, setShowCelebration] = useState(false);
   const [matchedUser, setMatchedUser] = useState(null);
@@ -327,9 +327,20 @@ function DiscoveryContent() {
   });
   
   useEffect(() => {
-    setIndex(0);
+    setCurrentIndex(0);
     setRemovedCards([]);
   }, [data]);
+
+  const profiles = data?.profiles || [];
+  const visibleProfiles = profiles.filter((_, i) => !removedCards.includes(i));
+
+  // Clamp currentIndex when visible profiles change (after like/block)
+  useEffect(() => {
+    const maxIndex = Math.max(0, visibleProfiles.length - 1);
+    if (currentIndex > maxIndex) {
+      setCurrentIndex(maxIndex);
+    }
+  }, [visibleProfiles.length, currentIndex]);
 
   const likeMutation = useMutation({
     mutationFn: async (likedId) => {
@@ -349,7 +360,6 @@ function DiscoveryContent() {
     onMutate: async (likedId) => {
       const profileIndex = profiles.findIndex(p => p.id === likedId);
       setRemovedCards(prev => [...prev, profileIndex]);
-      setIndex((i) => i + 1);
       
       return { profileIndex };
     },
@@ -372,7 +382,6 @@ function DiscoveryContent() {
     onError: (e, likedId, context) => {
       if (context?.profileIndex !== undefined) {
         setRemovedCards(prev => prev.filter(idx => idx !== context.profileIndex));
-        setIndex((i) => Math.max(0, i - 1));
       }
       
       if (e?.code === 401 || e?.message === "AUTH_401") {
@@ -388,12 +397,15 @@ function DiscoveryContent() {
 
   // Skip to next profile without blocking (swipe left)
   const handleSkip = () => {
-    setIndex((i) => Math.min(i + 1, profiles.length - 1));
+    setCurrentIndex((i) => {
+      const maxIndex = Math.max(0, visibleProfiles.length - 1);
+      return Math.min(i + 1, maxIndex);
+    });
   };
 
   // Go back to previous profile
   const handlePrevious = () => {
-    setIndex((i) => Math.max(0, i - 1));
+    setCurrentIndex((i) => Math.max(0, i - 1));
   };
 
   // Save/unsave profile mutation
@@ -463,7 +475,6 @@ function DiscoveryContent() {
     onMutate: async (blockedId) => {
       const profileIndex = profiles.findIndex(p => p.id === blockedId);
       setRemovedCards(prev => [...prev, profileIndex]);
-      setIndex((i) => i + 1);
       
       return { profileIndex };
     },
@@ -478,7 +489,6 @@ function DiscoveryContent() {
     onError: (e, blockedId, context) => {
       if (context?.profileIndex !== undefined) {
         setRemovedCards(prev => prev.filter(idx => idx !== context.profileIndex));
-        setIndex((i) => Math.max(0, i - 1));
       }
       
       if (e?.code === 401 || e?.message === "AUTH_401") {
@@ -492,11 +502,10 @@ function DiscoveryContent() {
     },
   });
 
-  const profiles = data?.profiles || [];
-  const visibleProfiles = profiles.filter((_, i) => !removedCards.includes(i));
-  const current = profiles[index];
-  const isFirstProfile = index === 0;
-  const isLastProfile = index === profiles.length - 1;
+  const safeCurrentIndex = Math.min(Math.max(0, currentIndex), Math.max(0, visibleProfiles.length - 1));
+  const current = visibleProfiles[safeCurrentIndex];
+  const isFirstProfile = safeCurrentIndex === 0;
+  const isLastProfile = safeCurrentIndex >= visibleProfiles.length - 1;
 
   if (userLoading || isLoading) {
     return (
@@ -587,12 +596,12 @@ function DiscoveryContent() {
           {/* Card Carousel Stack */}
           <Box position="relative" w="full" h="580px">
             <AnimatePresence>
-              {visibleProfiles.slice(0, 3).map((profile, idx) => (
+              {visibleProfiles.slice(safeCurrentIndex, safeCurrentIndex + 3).map((profile, idx) => (
                 <SwipeableCard
                   key={profile.id}
                   profile={profile}
                   index={idx}
-                  totalCards={Math.min(3, visibleProfiles.length)}
+                  totalCards={Math.min(3, visibleProfiles.length - safeCurrentIndex)}
                   isLocked={idx === 0 && likeMutation.isPending}
                   userInterests={user?.interests || []}
                   onSwipeLeft={handleSkip}
@@ -623,7 +632,7 @@ function DiscoveryContent() {
               aria-label="Previous profile"
             />
             <Text fontSize="sm" fontWeight="medium" color="gray.700" minW="80px" textAlign="center">
-              {index + 1} of {profiles.length}
+              {safeCurrentIndex + 1} of {visibleProfiles.length}
             </Text>
             <IconButton
               onClick={handleSkip}
