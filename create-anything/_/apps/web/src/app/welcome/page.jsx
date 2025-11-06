@@ -180,6 +180,25 @@ export default function Welcome() {
               .
             </Text>
           </Box>
+
+          <Box pt={8}>
+            <Text 
+              fontSize="10px" 
+              textAlign="center" 
+              color="gray.400"
+              opacity={0.6}
+            >
+              <Text 
+                as="a" 
+                href="/account/logout"
+                color="gray.400"
+                textDecoration="none"
+                _hover={{ color: "gray.500", textDecoration: "underline" }}
+              >
+                Clear session
+              </Text>
+            </Text>
+          </Box>
         </VStack>
       </Container>
     </Box>
