@@ -695,6 +695,21 @@ function ProfileContent() {
                 <Button onClick={save} colorScheme="purple" size="lg" shadow="md">
                   Save Changes
                 </Button>
+
+                <Card shadow="md" mt={4}>
+                  <CardBody>
+                    <Button
+                      onClick={handleSignOut}
+                      size="lg"
+                      colorScheme="red"
+                      variant="outline"
+                      w="full"
+                      leftIcon={<X size={18} />}
+                    >
+                      Sign Out
+                    </Button>
+                  </CardBody>
+                </Card>
               </VStack>
             </TabPanel>
 
