@@ -18,6 +18,7 @@ import {
   Spinner,
   Card,
   CardBody,
+  Badge,
 } from "@chakra-ui/react";
 
 export default function Messages() {
