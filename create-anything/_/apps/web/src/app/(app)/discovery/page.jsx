@@ -360,10 +360,10 @@ function DiscoveryContent() {
     }
   }, [visibleProfiles.length, currentIndex]);
 
-  // Reset confirmDismiss when profile changes
+  // Reset confirmDismiss when profile changes (using index and visible profiles)
   useEffect(() => {
     setConfirmDismiss(false);
-  }, [current?.id]);
+  }, [currentIndex, visibleProfiles.length]);
 
   const likeMutation = useMutation({
     mutationFn: async (likedId) => {
