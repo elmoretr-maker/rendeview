@@ -262,16 +262,20 @@ export const { auth } = CreateAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
+      console.log('[AUTH] JWT callback - user:', user?.email, 'has sessionToken:', !!user?._sessionToken);
       if (user?._sessionToken) {
         token.sessionToken = user._sessionToken;
         token.sessionExpires = user._sessionExpires;
+        console.log('[AUTH] JWT callback - sessionToken embedded in JWT');
       }
       return token;
     },
     async session({ session, token }) {
+      console.log('[AUTH] Session callback - token has sessionToken:', !!token.sessionToken);
       if (token.sessionToken) {
         session.sessionToken = token.sessionToken;
         session.expires = token.sessionExpires;
+        console.log('[AUTH] Session callback - sessionToken added to session');
       }
       return session;
     },
@@ -313,26 +317,36 @@ export const { auth } = CreateAuth({
 
     const isValid = await verify(accountPassword, password);
     if (!isValid) {
+      console.log('[AUTH] Invalid password for user:', email);
       return null;
     }
+
+    console.log('[AUTH] Password verified for user:', email, 'userId:', user.id);
 
     try {
       const sessionToken = crypto.randomUUID();
       const expires = new Date(Date.now() + 12 * 60 * 60 * 1000);
       
-      await adapter.createSession({
+      console.log('[AUTH] Creating session - token:', sessionToken, 'userId:', user.id, 'expires:', expires);
+      
+      const createdSession = await adapter.createSession({
         sessionToken,
         userId: user.id,
         expires,
       });
       
+      console.log('[AUTH] Session created successfully:', createdSession);
+      
       user._sessionToken = sessionToken;
       user._sessionExpires = expires;
+      
+      console.log('[AUTH] Session token attached to user object');
     } catch (error) {
-      console.error('Session creation error during signin:', error);
+      console.error('[AUTH] Session creation error during signin:', error);
       return null;
     }
 
+    console.log('[AUTH] Returning user from authorize');
     // return user object with the their profile data
     return user;
   },
@@ -388,23 +402,32 @@ export const { auth } = CreateAuth({
         provider: 'credentials',
       });
       
+      console.log('[AUTH] Account linked for new user:', email, 'userId:', newUser.id);
+      
       try {
         const sessionToken = crypto.randomUUID();
         const expires = new Date(Date.now() + 12 * 60 * 60 * 1000);
         
-        await adapter.createSession({
+        console.log('[AUTH] Creating session for new user - token:', sessionToken, 'userId:', newUser.id);
+        
+        const createdSession = await adapter.createSession({
           sessionToken,
           userId: newUser.id,
           expires,
         });
         
+        console.log('[AUTH] Session created for new user:', createdSession);
+        
         newUser._sessionToken = sessionToken;
         newUser._sessionExpires = expires;
+        
+        console.log('[AUTH] Session token attached to new user object');
       } catch (error) {
-        console.error('Session creation error during signup:', error);
+        console.error('[AUTH] Session creation error during signup:', error);
         return null;
       }
       
+      console.log('[AUTH] Returning new user from authorize');
       return newUser;
     }
     return null;
