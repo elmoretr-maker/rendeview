@@ -21,6 +21,27 @@ export async function GET(request, { params }) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    const otherParticipantId = await sql`
+      SELECT user_id FROM conversation_participants 
+      WHERE conversation_id = ${conversationId} AND user_id != ${uid}
+      LIMIT 1
+    `;
+    
+    if (otherParticipantId?.length) {
+      const otherId = otherParticipantId[0].user_id;
+      
+      const blockCheck = await sql`
+        SELECT id FROM blockers 
+        WHERE (blocker_id = ${uid} AND blocked_id = ${otherId})
+           OR (blocker_id = ${otherId} AND blocked_id = ${uid})
+        LIMIT 1
+      `;
+      
+      if (blockCheck?.length) {
+        return Response.json({ error: "This conversation is no longer available" }, { status: 403 });
+      }
+    }
+
     const rows = await sql`
       SELECT id, sender_id, body, created_at
       FROM messages
@@ -110,6 +131,27 @@ export async function POST(request, { params }) {
     
     if (!participantCheck?.length) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const otherParticipantId = await sql`
+      SELECT user_id FROM conversation_participants 
+      WHERE conversation_id = ${conversationId} AND user_id != ${uid}
+      LIMIT 1
+    `;
+    
+    if (otherParticipantId?.length) {
+      const otherId = otherParticipantId[0].user_id;
+      
+      const blockCheck = await sql`
+        SELECT id FROM blockers 
+        WHERE (blocker_id = ${uid} AND blocked_id = ${otherId})
+           OR (blocker_id = ${otherId} AND blocked_id = ${uid})
+        LIMIT 1
+      `;
+      
+      if (blockCheck?.length) {
+        return Response.json({ error: "Cannot send messages to this user" }, { status: 403 });
+      }
     }
 
     const userRows = await sql`SELECT membership_tier FROM auth_users WHERE id = ${uid}`;
