@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Video, MapPin } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
+import { typicalToAvailabilityGrid } from "@/components/AvailabilityGrid";
 import {
   Box,
   Button,
@@ -21,6 +22,8 @@ import {
   Badge,
   Flex,
   Wrap,
+  Grid,
+  GridItem,
 } from "@chakra-ui/react";
 
 const TIER_DISPLAY_NAMES = {
@@ -29,6 +32,13 @@ const TIER_DISPLAY_NAMES = {
   dating: "Dating",
   business: "Business",
 };
+
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const TIME_SLOTS = [
+  { label: "Morning", value: "morning", time: "9am-12pm" },
+  { label: "Afternoon", value: "afternoon", time: "12pm-5pm" },
+  { label: "Evening", value: "evening", time: "5pm-9pm" },
+];
 
 export default function ProfilePreview() {
   const navigate = useNavigate();
@@ -56,6 +66,11 @@ export default function ProfilePreview() {
   const photos = media.filter((m) => m.type === "photo");
   const video = media.find((m) => m.type === "video");
   const interests = Array.isArray(user?.interests) ? user.interests : [];
+  
+  const availabilityGrid = user?.typical_availability?.typical 
+    ? typicalToAvailabilityGrid(user.typical_availability.typical)
+    : {};
+  const hasAvailability = Object.values(availabilityGrid).some(Boolean);
 
   if (isLoading) {
     return (
@@ -313,6 +328,76 @@ export default function ProfilePreview() {
                     </Box>
                   )}
                 </SimpleGrid>
+              </Box>
+            )}
+
+            {hasAvailability && (
+              <Box>
+                <Heading size="sm" mb={3} color="gray.800">
+                  Typical Availability
+                </Heading>
+                <Text fontSize="sm" color="gray.600" mb={3}>
+                  Times when they're typically available for video chats
+                </Text>
+                <Box overflowX="auto">
+                  <Grid
+                    templateColumns={`120px repeat(${TIME_SLOTS.length}, 1fr)`}
+                    gap={2}
+                    minW="500px"
+                  >
+                    <GridItem />
+                    {TIME_SLOTS.map((slot) => (
+                      <GridItem key={slot.value} textAlign="center">
+                        <VStack spacing={0}>
+                          <Text fontWeight="semibold" fontSize="xs" color="gray.800">
+                            {slot.label}
+                          </Text>
+                          <Text fontSize="xs" color="gray.500">
+                            {slot.time}
+                          </Text>
+                        </VStack>
+                      </GridItem>
+                    ))}
+
+                    {DAYS.map((day) => {
+                      const hasAnySlot = TIME_SLOTS.some(
+                        (slot) => availabilityGrid[`${day}-${slot.value}`] === true
+                      );
+                      if (!hasAnySlot) return null;
+                      
+                      return (
+                        <React.Fragment key={day}>
+                          <GridItem display="flex" alignItems="center">
+                            <Text fontWeight="medium" fontSize="sm" color="gray.700">
+                              {day}
+                            </Text>
+                          </GridItem>
+                          {TIME_SLOTS.map((slot) => {
+                            const isAvailable = availabilityGrid[`${day}-${slot.value}`];
+                            return (
+                              <GridItem key={`${day}-${slot.value}`}>
+                                <Box
+                                  w="full"
+                                  h="10"
+                                  display="flex"
+                                  alignItems="center"
+                                  justifyContent="center"
+                                  borderRadius="md"
+                                  bg={isAvailable ? "purple.500" : "gray.100"}
+                                  color={isAvailable ? "white" : "gray.300"}
+                                  fontWeight="bold"
+                                  fontSize="lg"
+                                >
+                                  {isAvailable ? "✓" : ""}
+                                </Box>
+                              </GridItem>
+                            );
+                          })}
+                        </React.Fragment>
+                      );
+                    })}
+                  </Grid>
+                </Box>
               </Box>
             )}
           </CardBody>
