@@ -63,22 +63,31 @@ export default function CreateAuth(config = {}) {
                 }
                 
                 if (token) {
-                        console.log('[CREATE-AUTH] JWT-only fallback - creating database session for user:', token.sub);
+                        console.log('[CREATE-AUTH] JWT-only fallback for user:', token.sub);
                         
-                        if (adapter && adapter.createSession) {
+                        if (adapter) {
                                 try {
-                                        const sessionToken = crypto.randomUUID();
-                                        const expires = new Date(Date.now() + 12 * 60 * 60 * 1000);
+                                        const result = await pool.query(
+                                                'SELECT "sessionToken", expires FROM auth_sessions WHERE "userId" = $1 AND expires > NOW() ORDER BY expires DESC LIMIT 1',
+                                                [token.sub]
+                                        );
                                         
-                                        await adapter.createSession({
-                                                sessionToken,
-                                                userId: token.sub,
-                                                expires,
-                                        });
-                                        
-                                        console.log('[CREATE-AUTH] Database session created successfully for user:', token.sub);
+                                        if (result.rows.length === 0) {
+                                                const sessionToken = crypto.randomUUID();
+                                                const expires = new Date(Date.now() + 12 * 60 * 60 * 1000);
+                                                
+                                                await adapter.createSession({
+                                                        sessionToken,
+                                                        userId: token.sub,
+                                                        expires,
+                                                });
+                                                
+                                                console.log('[CREATE-AUTH] Created new database session for user:', token.sub);
+                                        } else {
+                                                console.log('[CREATE-AUTH] Found existing valid session for user:', token.sub);
+                                        }
                                 } catch (error) {
-                                        console.error('[CREATE-AUTH] Failed to create database session:', error);
+                                        console.error('[CREATE-AUTH] Session check/creation error:', error);
                                 }
                         }
                         
