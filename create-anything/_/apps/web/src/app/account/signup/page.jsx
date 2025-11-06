@@ -63,7 +63,7 @@ export default function SignUpPage() {
         className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl relative"
       >
         <a
-          href="/onboarding/welcome"
+          href="/welcome"
           className="absolute top-6 left-6 flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors group"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 group-hover:-translate-x-1 transition-transform">
