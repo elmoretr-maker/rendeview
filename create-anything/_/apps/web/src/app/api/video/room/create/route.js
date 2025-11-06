@@ -41,21 +41,23 @@ export async function POST(request) {
     let meetingCount = meRow?.video_meetings_count || 0;
     const lastMeetingDate = meRow?.last_video_meeting_at;
 
-    // Free tier: meeting cap from central config
+    // Free tier: meeting cap from central config with 24-hour rolling window
     if (myTier === "free") {
       const freeMeetingLimit = DAILY_LIMITS.MEETINGS.FREE;
       const now = new Date();
-      const lastDate = lastMeetingDate ? new Date(lastMeetingDate) : null;
-      const isSameDay = lastDate && 
-        lastDate.getFullYear() === now.getFullYear() &&
-        lastDate.getMonth() === now.getMonth() &&
-        lastDate.getDate() === now.getDate();
+      const firstCallDate = lastMeetingDate ? new Date(lastMeetingDate) : null;
       
-      if (!isSameDay) {
+      // Check if 24 hours have passed since first call of the window
+      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const cooldownExpired = !firstCallDate || firstCallDate <= twentyFourHoursAgo;
+      
+      if (cooldownExpired) {
+        // Reset counter - this is the first call of a new 24-hour window
         await sql`UPDATE auth_users SET video_meetings_count = 0, last_video_meeting_at = ${now.toISOString()} WHERE id = ${session.user.id}`;
         meetingCount = 0;
       } else if (meetingCount >= freeMeetingLimit) {
-        const nextAvailableTime = new Date(lastDate.getTime() + 24 * 60 * 60 * 1000);
+        // User has hit limit - calculate when they can call again (24h from first call)
+        const nextAvailableTime = new Date(firstCallDate.getTime() + 24 * 60 * 60 * 1000);
         const secondsUntilAvailable = Math.max(0, Math.floor((nextAvailableTime.getTime() - now.getTime()) / 1000));
         
         return Response.json(
