@@ -325,20 +325,26 @@ export const { auth } = CreateAuth({
     }
 
     // Fetch complete user data from application users table
-    const appUserResult = await pool.query(
-      'SELECT role, membership_tier, consent_accepted, name FROM users WHERE id = $1',
-      [user.id]
-    );
-    const appUser = appUserResult.rows[0];
+    try {
+      const appUserResult = await pool.query(
+        'SELECT role, membership_tier, consent_accepted, name FROM users WHERE id = $1',
+        [user.id]
+      );
+      const appUser = appUserResult.rows[0];
 
-    // Merge auth_users data with application users data
-    return {
-      ...user,
-      role: appUser?.role,
-      membership_tier: appUser?.membership_tier,
-      consent_accepted: appUser?.consent_accepted,
-      name: appUser?.name || user.name, // Prefer app name over auth name
-    };
+      // Merge auth_users data with application users data
+      return {
+        ...user,
+        role: appUser?.role,
+        membership_tier: appUser?.membership_tier,
+        consent_accepted: appUser?.consent_accepted,
+        name: appUser?.name || user.name, // Prefer app name over auth name
+      };
+    } catch (error) {
+      console.error('[AUTH] Failed to fetch user from users table:', error);
+      // Fallback to basic auth_users data if query fails
+      return user;
+    }
   },
 }),
   Credentials({
@@ -393,20 +399,26 @@ export const { auth } = CreateAuth({
       });
       
       // Fetch complete user data from application users table
-      const appUserResult = await pool.query(
-        'SELECT role, membership_tier, consent_accepted, name FROM users WHERE id = $1',
-        [newUser.id]
-      );
-      const appUser = appUserResult.rows[0];
+      try {
+        const appUserResult = await pool.query(
+          'SELECT role, membership_tier, consent_accepted, name FROM users WHERE id = $1',
+          [newUser.id]
+        );
+        const appUser = appUserResult.rows[0];
 
-      // Merge auth_users data with application users data
-      return {
-        ...newUser,
-        role: appUser?.role,
-        membership_tier: appUser?.membership_tier,
-        consent_accepted: appUser?.consent_accepted,
-        name: appUser?.name || newUser.name, // Prefer app name over auth name
-      };
+        // Merge auth_users data with application users data
+        return {
+          ...newUser,
+          role: appUser?.role,
+          membership_tier: appUser?.membership_tier,
+          consent_accepted: appUser?.consent_accepted,
+          name: appUser?.name || newUser.name, // Prefer app name over auth name
+        };
+      } catch (error) {
+        console.error('[AUTH] Failed to fetch user from users table:', error);
+        // Fallback to basic auth_users data if query fails
+        return newUser;
+      }
     }
     return null;
   },
