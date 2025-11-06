@@ -70,6 +70,11 @@ export async function GET(request) {
           ORDER BY sort_order ASC LIMIT 1`;
         photo = media?.[0]?.url || null;
       }
+      
+      // Transform photo URL: /objects/... -> /api/objects/...
+      if (photo && photo.startsWith('/objects/')) {
+        photo = `/api${photo}`;
+      }
 
       result.push({
         user: {

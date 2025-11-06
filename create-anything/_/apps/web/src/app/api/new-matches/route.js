@@ -26,14 +26,24 @@ export async function GET(request) {
     const matchesWithUsers = await Promise.all(
       rows.map(async (row) => {
         const [u] = await sql`
-          SELECT id, name, primary_photo_url as photo
+          SELECT id, name, primary_photo_url
           FROM auth_users
           WHERE id = ${row.other_id}`;
         
+        // Use primary_photo_url first, then fallback to profile_media
+        let photoUrl = u?.primary_photo_url || null;
+        if (!photoUrl) {
+          const [pm] = await sql`
+            SELECT url FROM profile_media 
+            WHERE user_id = ${row.other_id} AND type = 'photo' 
+            ORDER BY sort_order ASC LIMIT 1`;
+          photoUrl = pm?.url || null;
+        }
+        
         // Transform photo URL: /objects/... -> /api/objects/...
-        const photoUrl = u?.photo 
-          ? (u.photo.startsWith('/objects/') ? `/api${u.photo}` : u.photo)
-          : null;
+        if (photoUrl && photoUrl.startsWith('/objects/')) {
+          photoUrl = `/api${photoUrl}`;
+        }
         
         return {
           match_id: row.match_id,

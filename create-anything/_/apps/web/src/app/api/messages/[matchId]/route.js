@@ -112,10 +112,30 @@ export async function GET(request, { params: { matchId } }) {
       SELECT id, name, primary_photo_url, membership_tier, video_call_available
       FROM auth_users WHERE id = ${otherId}
     `;
+    
+    // Get other user with photo fallback
+    let otherUser = otherUserRows[0] || null;
+    if (otherUser) {
+      let photo = otherUser.primary_photo_url || null;
+      if (!photo) {
+        const media = await sql`
+          SELECT url FROM profile_media 
+          WHERE user_id = ${otherId} AND type = 'photo' 
+          ORDER BY sort_order ASC LIMIT 1`;
+        photo = media?.[0]?.url || null;
+      }
+      
+      // Transform photo URL: /objects/... -> /api/objects/...
+      if (photo && photo.startsWith('/objects/')) {
+        photo = `/api${photo}`;
+      }
+      
+      otherUser = { ...otherUser, photo };
+    }
 
     return Response.json({ 
       messages: rows,
-      otherUser: otherUserRows[0] || null
+      otherUser
     });
   } catch (err) {
     console.error("GET /api/messages/[matchId] error", err);
