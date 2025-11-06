@@ -34,55 +34,38 @@ export default function CreateAuth(config = {}) {
                 
                 const sessionToken = token.sessionToken;
                 
-                if (adapter && adapter.getSessionAndUser && sessionToken) {
-                        try {
-                                const result = await adapter.getSessionAndUser(sessionToken);
-                                if (result) {
-                                        const { session, user } = result;
-                                        const now = new Date();
-                                        
-                                        if (new Date(session.expires) < now) {
-                                                await adapter.deleteSession(sessionToken);
-                                                return null;
-                                        }
-                                        
-                                        const timeSinceCreation = now - new Date(session.expires).getTime() + (12 * 60 * 60 * 1000);
-                                        if (timeSinceCreation > 60 * 60 * 1000) {
-                                                const newExpires = new Date(now.getTime() + (12 * 60 * 60 * 1000));
-                                                await adapter.updateSession({
-                                                        sessionToken,
-                                                        expires: newExpires,
-                                                });
-                                        }
-                                        
-                                        return {
-                                                user: {
-                                                        id: user.id.toString(),
-                                                        email: user.email,
-                                                        name: user.name,
-                                                        image: user.image,
-                                                },
-                                                expires: session.expires,
-                                        };
-                                }
-                        } catch (error) {
-                                console.error('Session lookup error:', error);
-                        }
+                if (!adapter || !adapter.getSessionAndUser || !sessionToken) {
+                        return null;
                 }
                 
-                if (token) {
+                try {
+                        const result = await adapter.getSessionAndUser(sessionToken);
+                        if (!result) {
+                                return null;
+                        }
+                        
+                        const { session, user } = result;
+                        const now = new Date();
+                        const sessionExpiry = new Date(session.expires);
+                        
+                        if (sessionExpiry < now) {
+                                await adapter.deleteSession(sessionToken);
+                                return null;
+                        }
+                        
                         return {
                                 user: {
-                                        id: token.sub,
-                                        email: token.email,
-                                        name: token.name,
-                                        image: token.picture,
+                                        id: user.id.toString(),
+                                        email: user.email,
+                                        name: user.name,
+                                        image: user.image,
                                 },
-                                expires: token.exp ? new Date(token.exp * 1000).toISOString() : null,
+                                expires: session.expires,
                         };
+                } catch (error) {
+                        console.error('Session lookup error:', error);
+                        return null;
                 }
-                
-                return null;
         };
         
         return {

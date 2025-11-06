@@ -329,7 +329,8 @@ export const { auth } = CreateAuth({
       user._sessionToken = sessionToken;
       user._sessionExpires = expires;
     } catch (error) {
-      console.error('Session creation error:', error);
+      console.error('Session creation error during signin:', error);
+      return null;
     }
 
     // return user object with the their profile data
@@ -400,7 +401,8 @@ export const { auth } = CreateAuth({
         newUser._sessionToken = sessionToken;
         newUser._sessionExpires = expires;
       } catch (error) {
-        console.error('Session creation error:', error);
+        console.error('Session creation error during signup:', error);
+        return null;
       }
       
       return newUser;
