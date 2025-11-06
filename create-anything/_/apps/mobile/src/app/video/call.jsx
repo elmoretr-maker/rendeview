@@ -169,9 +169,9 @@ export default function VideoCall() {
       setError(e.message);
     } finally {
       setLoadingBlock(false);
-      router.replace("/(tabs)/profile");
+      router.replace(`/(tabs)/messages/${matchId}`);
     }
-  }, [otherId, loadingBlock, router]);
+  }, [otherId, loadingBlock, router, matchId]);
 
   const paySecondDate = useCallback(async () => {
     try {
@@ -625,7 +625,7 @@ export default function VideoCall() {
             </View>
 
             <TouchableOpacity
-              onPress={() => router.replace("/(tabs)/profile")}
+              onPress={() => router.replace(`/(tabs)/messages/${matchId}`)}
               style={{ padding: 12 }}
             >
               <Text

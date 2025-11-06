@@ -249,7 +249,7 @@ export default function VideoCall() {
               setOtherUserId(otherUser);
               setShowPostCallNoteModal(true);
             } else if (noteModalShown.current) {
-              navigate("/profile");
+              navigate(`/messages/${matchId}`);
             }
             return 0;
           }
@@ -338,7 +338,7 @@ export default function VideoCall() {
     }
     queryClient.invalidateQueries({ queryKey: ["video-sessions"] });
     toast.success("Call ended");
-    navigate("/profile");
+    navigate(`/messages/${matchId}`);
   };
 
   const handleReport = async () => {
@@ -355,7 +355,7 @@ export default function VideoCall() {
 
   const handleSaveNote = async () => {
     if (!otherUserId) {
-      navigate("/profile");
+      navigate(`/messages/${matchId}`);
       return;
     }
 
@@ -377,7 +377,7 @@ export default function VideoCall() {
 
       toast.success("Note saved!");
       setShowPostCallNoteModal(false);
-      navigate("/profile");
+      navigate(`/messages/${matchId}`);
     } catch (err) {
       console.error("Failed to save note:", err);
       toast.error(err.message || "Failed to save note");
@@ -388,7 +388,7 @@ export default function VideoCall() {
 
   const handleSkipNote = () => {
     setShowPostCallNoteModal(false);
-    navigate("/profile");
+    navigate(`/messages/${matchId}`);
   };
 
   const handleInitiateExtension = async () => {
@@ -511,12 +511,12 @@ export default function VideoCall() {
           <Heading size="xl" color="gray.800">Video Call Error</Heading>
           <Text color="gray.600">{error}</Text>
           <Button
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate(`/messages/${matchId}`)}
             colorScheme="purple"
             shadow="lg"
             mt={4}
           >
-            Back to Profile
+            Back to Chat
           </Button>
         </VStack>
       </Flex>

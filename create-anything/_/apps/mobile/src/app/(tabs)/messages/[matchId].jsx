@@ -32,6 +32,7 @@ const COLORS = {
 
 export default function Chat() {
   const { matchId } = useLocalSearchParams();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [text, setText] = useState("");
@@ -113,6 +114,7 @@ export default function Chat() {
   }, [text, sendMutation]);
 
   const msgs = data?.messages || [];
+  const otherUser = data?.otherUser;
 
   if (!loaded && !errorFont) {
     return (
@@ -139,17 +141,66 @@ export default function Chat() {
           paddingHorizontal: 16,
         }}
       >
-        <Text
-          style={{
-            fontSize: 20,
-            fontWeight: "700",
-            marginBottom: 8,
-            color: COLORS.text,
-            fontFamily: "Inter_600SemiBold",
-          }}
-        >
-          Chat
-        </Text>
+        {/* Chat Header with Profile Picture and Back Button */}
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12, gap: 12 }}>
+          <TouchableOpacity
+            onPress={() => otherUser?.id && router.push(`/profile/${otherUser.id}`)}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              flex: 1,
+              gap: 12,
+            }}
+          >
+            {otherUser?.photo ? (
+              <AuthenticatedImage
+                source={{ uri: otherUser.photo }}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: "#EEE",
+                }}
+              />
+            ) : (
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: "#EEE",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ color: COLORS.text, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>
+                  {otherUser?.name ? otherUser.name.charAt(0).toUpperCase() : "?"}
+                </Text>
+              </View>
+            )}
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "700",
+                  color: COLORS.text,
+                  fontFamily: "Inter_600SemiBold",
+                }}
+              >
+                {otherUser?.name || "Chat"}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: COLORS.gray600,
+                  fontFamily: "Inter_400Regular",
+                }}
+              >
+                Tap to view profile
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
         {isLoading ? (
           <View
             style={{ flex: 1, justifyContent: "center", alignItems: "center" }}

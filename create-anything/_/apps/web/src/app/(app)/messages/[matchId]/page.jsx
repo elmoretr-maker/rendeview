@@ -339,11 +339,37 @@ function ChatContent() {
     <Box minH="100vh" display="flex" flexDirection="column" bg="gray.50">
       <AppHeader />
       <Container maxW="2xl" w="full" flex="1" display="flex" flexDirection="column" px={4} py={8}>
-        {/* Header with Video Call Button */}
-        <Flex align="center" justify="space-between" mb={4}>
-          <Heading size="xl" color="gray.800">
-            Chat with {otherUser?.name || 'User'}
-          </Heading>
+        {/* Header with Profile Picture, Name, and Back Button */}
+        <HStack spacing={4} mb={4} align="center">
+          <Box
+            as="button"
+            onClick={() => otherUser?.id && navigate(`/profile/${otherUser.id}`)}
+            cursor="pointer"
+            _hover={{ opacity: 0.8 }}
+          >
+            {otherUser?.photo ? (
+              <Avatar
+                src={getAbsoluteUrl(otherUser.photo)}
+                name={otherUser.name || 'User'}
+                size="md"
+              />
+            ) : (
+              <Avatar
+                name={otherUser?.name || 'User'}
+                size="md"
+                bg="purple.100"
+                color="purple.600"
+              />
+            )}
+          </Box>
+          <VStack align="start" spacing={0} flex={1}>
+            <Heading size="lg" color="gray.800">
+              {otherUser?.name || 'User'}
+            </Heading>
+            <Text fontSize="sm" color="gray.500">
+              Click photo to view profile
+            </Text>
+          </VStack>
           {otherUser?.video_call_available !== false ? (
             <Button
               onClick={() => setShowVideoCallModal(true)}
