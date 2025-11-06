@@ -96,18 +96,22 @@ function ProfileContent() {
   const { signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // Basic info
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [timezone, setTimezone] = useState("");
+  const [availabilityGrid, setAvailabilityGrid] = useState({});
+  const [immediate, setImmediate] = useState(false);
+  const [override, setOverride] = useState(false);
+  const [videoCallAvailable, setVideoCallAvailable] = useState(true);
+  const [media, setMedia] = useState([]);
+  const [primaryPhoto, setPrimaryPhoto] = useState(null);
+  const [videoUrl, setVideoUrl] = useState(null);
+  const [membershipTier, setMembershipTier] = useState(MEMBERSHIP_TIERS.FREE);
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
+  const [maxDistance, setMaxDistance] = useState(100);
   
-  // Interests
   const [interests, setInterests] = useState([]);
-  const [newInterest, setNewInterest] = useState("");
-  const { isOpen: isInterestsOpen, onOpen: onInterestsOpen, onClose: onInterestsClose } = useDisclosure();
-  
-  // Preferences
   const [gender, setGender] = useState("");
   const [sexualOrientation, setSexualOrientation] = useState("");
   const [lookingFor, setLookingFor] = useState("");
@@ -122,20 +126,7 @@ function ProfileContent() {
   const [childrenPreference, setChildrenPreference] = useState("");
   const [pets, setPets] = useState("");
   
-  // Availability & Location
-  const [availabilityGrid, setAvailabilityGrid] = useState({});
-  const [immediate, setImmediate] = useState(false);
-  const [override, setOverride] = useState(false);
-  const [videoCallAvailable, setVideoCallAvailable] = useState(true);
-  const [latitude, setLatitude] = useState(null);
-  const [longitude, setLongitude] = useState(null);
-  const [maxDistance, setMaxDistance] = useState(100);
-  
-  // Media
-  const [media, setMedia] = useState([]);
-  const [primaryPhoto, setPrimaryPhoto] = useState(null);
-  const [videoUrl, setVideoUrl] = useState(null);
-  const [membershipTier, setMembershipTier] = useState(MEMBERSHIP_TIERS.FREE);
+  const { isOpen: isInterestsOpen, onOpen: onInterestsOpen, onClose: onInterestsClose } = useDisclosure();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -148,16 +139,29 @@ function ProfileContent() {
         if (!res.ok) throw new Error("Failed to load profile");
         const data = await res.json();
         const u = data.user || {};
-        
-        // Basic info
         setName(u.name || "");
         setBio(u.bio || "");
-        setTimezone(u.timezone || "");
+        setImmediate(!!u.immediate_available);
+        setOverride(!!u.availability_override);
+        setVideoCallAvailable(u.video_call_available !== false);
+        setPrimaryPhoto(u.primary_photo_url || null);
+        setMembershipTier(u.membership_tier || MEMBERSHIP_TIERS.FREE);
+        if (u.typical_availability?.timezone) {
+          setTimezone(u.typical_availability.timezone);
+        }
+        const typical = u.typical_availability?.typical;
+        if (typical) {
+          setAvailabilityGrid(typicalToAvailabilityGrid(typical));
+        }
+        const m = Array.isArray(data.media) ? data.media : [];
+        setMedia(m);
+        const vid = m.find((x) => x.type === "video");
+        setVideoUrl(vid?.url || null);
+        setLatitude(u.latitude ?? null);
+        setLongitude(u.longitude ?? null);
+        setMaxDistance(u.max_distance ?? 100);
         
-        // Interests
         if (u.interests && Array.isArray(u.interests)) setInterests(u.interests);
-        
-        // Preferences
         setGender(u.gender || "");
         setSexualOrientation(u.sexual_orientation || "");
         setLookingFor(u.looking_for || "");
@@ -171,31 +175,6 @@ function ProfileContent() {
         setReligion(u.religion || "");
         setChildrenPreference(u.children_preference || "");
         setPets(u.pets || "");
-        
-        // Availability & Location
-        setImmediate(!!u.immediate_available);
-        setOverride(!!u.availability_override);
-        setVideoCallAvailable(u.video_call_available !== false);
-        setPrimaryPhoto(u.primary_photo_url || null);
-        setMembershipTier(u.membership_tier || MEMBERSHIP_TIERS.FREE);
-        if (u.typical_availability?.timezone) {
-          setTimezone(u.typical_availability.timezone);
-        }
-        const typical = u.typical_availability?.typical;
-        if (typical) {
-          setAvailabilityGrid(typicalToAvailabilityGrid(typical));
-        }
-        
-        // Media
-        const m = Array.isArray(data.media) ? data.media : [];
-        setMedia(m);
-        const vid = m.find((x) => x.type === "video");
-        setVideoUrl(vid?.url || null);
-        
-        // Location
-        setLatitude(u.latitude ?? null);
-        setLongitude(u.longitude ?? null);
-        setMaxDistance(u.max_distance ?? 100);
       } catch (e) {
         console.error(e);
         setError("Failed to fetch profile");
@@ -210,13 +189,11 @@ function ProfileContent() {
     try {
       setError(null);
       
-      // Validate bio for external contact info
       if (bio && containsExternalContact(bio)) {
         toast.error(PHONE_NUMBER_SECURITY_MESSAGE);
         return;
       }
       
-      // Validate interests
       if (interests.length < INTERESTS_CONFIG.MIN_REQUIRED) {
         toast.error(`Please select at least ${INTERESTS_CONFIG.MIN_REQUIRED} interests`);
         return;
@@ -256,7 +233,7 @@ function ProfileContent() {
         return;
       }
       if (!res.ok) throw new Error("Failed to save");
-      toast.success("Profile updated successfully!");
+      toast.success("Profile updated");
     } catch (e) {
       console.error(e);
       setError("Could not save");
@@ -323,7 +300,6 @@ function ProfileContent() {
       setLatitude(locationData.latitude);
       setLongitude(locationData.longitude);
       setMaxDistance(locationData.max_distance);
-      toast.success("Location updated!");
     } catch (e) {
       console.error(e);
       throw e;
@@ -352,6 +328,7 @@ function ProfileContent() {
   }, []);
 
   const handlePhotoUpload = useCallback(async () => {
+    // Check tier limits before upload
     const photoCount = media.filter(m => m.type === 'photo').length;
     const limits = getTierLimits(membershipTier);
     const remaining = getRemainingPhotoSlots(membershipTier, photoCount);
@@ -400,6 +377,7 @@ function ProfileContent() {
   }, []);
 
   const handleVideoUpload = useCallback(async () => {
+    // Check tier limits before upload
     const videoCount = media.filter(m => m.type === 'video').length;
     const limits = getTierLimits(membershipTier);
     const remaining = getRemainingVideoSlots(membershipTier, videoCount);
@@ -474,7 +452,6 @@ function ProfileContent() {
       return;
     }
     setInterests([...interests, interest]);
-    setNewInterest("");
   }, [interests]);
 
   const removeInterest = useCallback((interest) => {
@@ -504,7 +481,7 @@ function ProfileContent() {
       <Container maxW="2xl" px={4} py={8}>
         <VStack align="stretch" spacing={6} mb={6}>
           <Flex align="center" justify="space-between">
-            <Heading size="xl" color="gray.800">Edit Profile</Heading>
+            <Heading size="xl" color="gray.800">Profile</Heading>
             <HStack spacing={3}>
               <Button
                 as={Link}
@@ -570,44 +547,160 @@ function ProfileContent() {
         ) : null}
 
         <VStack align="stretch" spacing={6} mb={6}>
-          {/* Basic Information */}
-          <Card shadow="md">
-            <CardBody p={6}>
-              <Heading size="md" mb={4} color="gray.800">Basic Information</Heading>
-              
-              <VStack spacing={4} align="stretch">
-                <FormControl>
-                  <FormLabel fontWeight="semibold" color="gray.800">Name</FormLabel>
-                  <Input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Your name"
-                    borderColor="gray.200"
-                    bg="white"
-                  />
-                </FormControl>
+          <Box>
+            <Flex align="center" justify="space-between" mb={2}>
+              <Heading size="lg" fontFamily="Playfair Display" color="gray.800">Profile Video</Heading>
+              <ObjectUploader
+                maxNumberOfFiles={1}
+                maxFileSize={52428800}
+                allowedFileTypes={['video/*']}
+                onGetUploadParameters={handleVideoUpload}
+                onComplete={handleVideoComplete}
+                buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
+                buttonStyle={{ backgroundColor: remainingVideos > 0 ? '#7c3aed' : '#9CA3AF' }}
+              >
+                <Upload size={18} />
+                {remainingVideos > 0 ? 'Upload Video' : 'Limit Reached'}
+              </ObjectUploader>
+            </Flex>
+            <Text fontSize="sm" color="gray.600" mb={3}>
+              {videoCount} of {tierLimits.videos} video{tierLimits.videos !== 1 ? 's' : ''} • Max {tierLimits.videoMaxDuration}s each
+            </Text>
+            {videoUrl ? (
+              <Box position="relative" borderRadius="xl" overflow="hidden" bg="black">
+                <Box
+                  as="video"
+                  src={`/api${videoUrl}`}
+                  controls
+                  loop
+                  w="full"
+                  h="220px"
+                  objectFit="cover"
+                />
+                <IconButton
+                  onClick={() => deleteMedia(videoUrl)}
+                  position="absolute"
+                  top={2}
+                  right={2}
+                  icon={<Trash2 size={16} />}
+                  borderRadius="full"
+                  colorScheme="red"
+                  size="sm"
+                  aria-label="Delete video"
+                />
+              </Box>
+            ) : (
+              <Box borderRadius="xl" borderWidth={2} borderStyle="dashed" borderColor="gray.200" p={8} textAlign="center">
+                <Text color="gray.500">No video uploaded yet. Upload a video to help others get to know you!</Text>
+              </Box>
+            )}
+          </Box>
 
-                <FormControl>
-                  <FormLabel fontWeight="semibold" color="gray.800">Bio</FormLabel>
-                  <Textarea
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    placeholder="Tell others about yourself... What makes you unique? What are you passionate about?"
-                    rows={5}
-                    maxLength={2000}
-                    borderColor="gray.200"
-                    bg="white"
-                  />
-                  <Text fontSize="xs" color="gray.500" mt={1} textAlign="right">
-                    {bio.length} / 2000 characters
-                  </Text>
-                </FormControl>
-              </VStack>
-            </CardBody>
-          </Card>
+          <Box>
+            <Flex align="center" justify="space-between" mb={2}>
+              <Heading size="lg" fontFamily="Playfair Display" color="gray.800">Your Photos</Heading>
+              <ObjectUploader
+                maxNumberOfFiles={remainingPhotos}
+                maxFileSize={10485760}
+                allowedFileTypes={['image/*']}
+                onGetUploadParameters={handlePhotoUpload}
+                onComplete={handlePhotoComplete}
+                buttonClassName="px-4 py-2 rounded-lg text-white font-semibold shadow-md flex items-center gap-2"
+                buttonStyle={{ backgroundColor: remainingPhotos > 0 ? '#7c3aed' : '#9CA3AF' }}
+              >
+                <Upload size={18} />
+                {remainingPhotos > 0 ? `Upload Photo${remainingPhotos > 1 ? 's' : ''}` : 'Limit Reached'}
+              </ObjectUploader>
+            </Flex>
+            <Text fontSize="sm" color="gray.600" mb={3}>
+              {photoCount} of {tierLimits.photos} photos • {remainingPhotos} slot{remainingPhotos !== 1 ? 's' : ''} remaining
+            </Text>
+            {media.filter((m) => m.type === "photo").length > 0 ? (
+              <Flex flexWrap="wrap" gap={3}>
+                {media
+                  .filter((m) => m.type === "photo")
+                  .map((m, idx) => {
+                    const isPrimary = m.url === primaryPhoto;
+                    return (
+                      <Box key={idx} position="relative">
+                        <Button
+                          onClick={() => selectPrimary(m.url)}
+                          variant="unstyled"
+                          display="block"
+                          p={0}
+                        >
+                          <Image
+                            src={`/api${m.url}`}
+                            alt="Profile"
+                            w={32}
+                            h={32}
+                            borderRadius="lg"
+                            objectFit="cover"
+                            borderWidth={3}
+                            borderColor={isPrimary ? "purple.500" : "gray.200"}
+                          />
+                          <Text
+                            fontSize="xs"
+                            textAlign="center"
+                            mt={1}
+                            fontWeight="semibold"
+                            color={isPrimary ? "purple.600" : "gray.600"}
+                          >
+                            {isPrimary ? "★ Primary" : "Set Primary"}
+                          </Text>
+                        </Button>
+                        <IconButton
+                          onClick={() => deleteMedia(m.url)}
+                          position="absolute"
+                          top={1}
+                          right={1}
+                          icon={<Trash2 size={14} />}
+                          size="xs"
+                          borderRadius="full"
+                          colorScheme="red"
+                          aria-label="Delete photo"
+                        />
+                      </Box>
+                    );
+                  })}
+              </Flex>
+            ) : (
+              <Box borderRadius="xl" borderWidth={2} borderStyle="dashed" borderColor="gray.200" p={8} textAlign="center">
+                <Text color="gray.500">No photos uploaded yet. Add photos to make your profile stand out!</Text>
+              </Box>
+            )}
+          </Box>
+        </VStack>
 
-          {/* Interests */}
+        <VStack spacing={4} align="stretch">
+          <FormControl>
+            <FormLabel fontWeight="semibold" color="gray.800">Name</FormLabel>
+            <Input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+              borderColor="gray.200"
+              bg="white"
+            />
+          </FormControl>
+
+          <FormControl>
+            <FormLabel fontWeight="semibold" color="gray.800">Bio</FormLabel>
+            <Textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="Tell others about yourself... What makes you unique? What are you passionate about?"
+              rows={5}
+              maxLength={2000}
+              borderColor="gray.200"
+              bg="white"
+            />
+            <Text fontSize="xs" color="gray.500" mt={1} textAlign="right">
+              {bio.length} / 2000 characters
+            </Text>
+          </FormControl>
+
           <Card shadow="md">
             <CardBody p={6}>
               <Flex align="center" justify="space-between" mb={4}>
@@ -643,7 +736,6 @@ function ProfileContent() {
             </CardBody>
           </Card>
 
-          {/* Preferences */}
           <Card shadow="md">
             <CardBody p={6}>
               <Heading size="md" mb={4} color="gray.800">About You</Heading>
@@ -651,12 +743,7 @@ function ProfileContent() {
               <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={4}>
                 <FormControl>
                   <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Gender</FormLabel>
-                  <Select
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value)}
-                    borderColor="gray.200"
-                    bg="white"
-                  >
+                  <Select value={gender} onChange={(e) => setGender(e.target.value)} borderColor="gray.200" bg="white">
                     <option value="">Select...</option>
                     {PREFERENCE_OPTIONS.GENDER.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -666,12 +753,7 @@ function ProfileContent() {
 
                 <FormControl>
                   <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Sexual Orientation</FormLabel>
-                  <Select
-                    value={sexualOrientation}
-                    onChange={(e) => setSexualOrientation(e.target.value)}
-                    borderColor="gray.200"
-                    bg="white"
-                  >
+                  <Select value={sexualOrientation} onChange={(e) => setSexualOrientation(e.target.value)} borderColor="gray.200" bg="white">
                     <option value="">Select...</option>
                     {PREFERENCE_OPTIONS.SEXUAL_ORIENTATION.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -681,12 +763,7 @@ function ProfileContent() {
 
                 <FormControl>
                   <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Looking For</FormLabel>
-                  <Select
-                    value={lookingFor}
-                    onChange={(e) => setLookingFor(e.target.value)}
-                    borderColor="gray.200"
-                    bg="white"
-                  >
+                  <Select value={lookingFor} onChange={(e) => setLookingFor(e.target.value)} borderColor="gray.200" bg="white">
                     <option value="">Select...</option>
                     {PREFERENCE_OPTIONS.LOOKING_FOR.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -696,12 +773,7 @@ function ProfileContent() {
 
                 <FormControl>
                   <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Body Type</FormLabel>
-                  <Select
-                    value={bodyType}
-                    onChange={(e) => setBodyType(e.target.value)}
-                    borderColor="gray.200"
-                    bg="white"
-                  >
+                  <Select value={bodyType} onChange={(e) => setBodyType(e.target.value)} borderColor="gray.200" bg="white">
                     <option value="">Select...</option>
                     {PREFERENCE_OPTIONS.BODY_TYPE.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -711,12 +783,7 @@ function ProfileContent() {
 
                 <FormControl>
                   <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Height Range</FormLabel>
-                  <Select
-                    value={heightRange}
-                    onChange={(e) => setHeightRange(e.target.value)}
-                    borderColor="gray.200"
-                    bg="white"
-                  >
+                  <Select value={heightRange} onChange={(e) => setHeightRange(e.target.value)} borderColor="gray.200" bg="white">
                     <option value="">Select...</option>
                     {PREFERENCE_OPTIONS.HEIGHT_RANGES.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -726,12 +793,7 @@ function ProfileContent() {
 
                 <FormControl>
                   <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Education</FormLabel>
-                  <Select
-                    value={education}
-                    onChange={(e) => setEducation(e.target.value)}
-                    borderColor="gray.200"
-                    bg="white"
-                  >
+                  <Select value={education} onChange={(e) => setEducation(e.target.value)} borderColor="gray.200" bg="white">
                     <option value="">Select...</option>
                     {PREFERENCE_OPTIONS.EDUCATION.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -741,12 +803,7 @@ function ProfileContent() {
 
                 <FormControl>
                   <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Relationship Goals</FormLabel>
-                  <Select
-                    value={relationshipGoals}
-                    onChange={(e) => setRelationshipGoals(e.target.value)}
-                    borderColor="gray.200"
-                    bg="white"
-                  >
+                  <Select value={relationshipGoals} onChange={(e) => setRelationshipGoals(e.target.value)} borderColor="gray.200" bg="white">
                     <option value="">Select...</option>
                     {PREFERENCE_OPTIONS.RELATIONSHIP_GOALS.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -756,12 +813,7 @@ function ProfileContent() {
 
                 <FormControl>
                   <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Drinking</FormLabel>
-                  <Select
-                    value={drinking}
-                    onChange={(e) => setDrinking(e.target.value)}
-                    borderColor="gray.200"
-                    bg="white"
-                  >
+                  <Select value={drinking} onChange={(e) => setDrinking(e.target.value)} borderColor="gray.200" bg="white">
                     <option value="">Select...</option>
                     {PREFERENCE_OPTIONS.DRINKING.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -771,12 +823,7 @@ function ProfileContent() {
 
                 <FormControl>
                   <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Smoking</FormLabel>
-                  <Select
-                    value={smoking}
-                    onChange={(e) => setSmoking(e.target.value)}
-                    borderColor="gray.200"
-                    bg="white"
-                  >
+                  <Select value={smoking} onChange={(e) => setSmoking(e.target.value)} borderColor="gray.200" bg="white">
                     <option value="">Select...</option>
                     {PREFERENCE_OPTIONS.SMOKING.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -786,12 +833,7 @@ function ProfileContent() {
 
                 <FormControl>
                   <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Exercise</FormLabel>
-                  <Select
-                    value={exercise}
-                    onChange={(e) => setExercise(e.target.value)}
-                    borderColor="gray.200"
-                    bg="white"
-                  >
+                  <Select value={exercise} onChange={(e) => setExercise(e.target.value)} borderColor="gray.200" bg="white">
                     <option value="">Select...</option>
                     {PREFERENCE_OPTIONS.EXERCISE.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -801,12 +843,7 @@ function ProfileContent() {
 
                 <FormControl>
                   <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Religion</FormLabel>
-                  <Select
-                    value={religion}
-                    onChange={(e) => setReligion(e.target.value)}
-                    borderColor="gray.200"
-                    bg="white"
-                  >
+                  <Select value={religion} onChange={(e) => setReligion(e.target.value)} borderColor="gray.200" bg="white">
                     <option value="">Select...</option>
                     {PREFERENCE_OPTIONS.RELIGION.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -816,12 +853,7 @@ function ProfileContent() {
 
                 <FormControl>
                   <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Children</FormLabel>
-                  <Select
-                    value={childrenPreference}
-                    onChange={(e) => setChildrenPreference(e.target.value)}
-                    borderColor="gray.200"
-                    bg="white"
-                  >
+                  <Select value={childrenPreference} onChange={(e) => setChildrenPreference(e.target.value)} borderColor="gray.200" bg="white">
                     <option value="">Select...</option>
                     {PREFERENCE_OPTIONS.CHILDREN.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -831,12 +863,7 @@ function ProfileContent() {
 
                 <FormControl>
                   <FormLabel fontSize="sm" fontWeight="semibold" color="gray.800">Pets</FormLabel>
-                  <Select
-                    value={pets}
-                    onChange={(e) => setPets(e.target.value)}
-                    borderColor="gray.200"
-                    bg="white"
-                  >
+                  <Select value={pets} onChange={(e) => setPets(e.target.value)} borderColor="gray.200" bg="white">
                     <option value="">Select...</option>
                     {PREFERENCE_OPTIONS.PETS.map((opt) => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -847,23 +874,21 @@ function ProfileContent() {
             </CardBody>
           </Card>
 
-          {/* Availability */}
+          <FormControl>
+            <FormLabel fontWeight="semibold" color="gray.800">Timezone</FormLabel>
+            <Input
+              type="text"
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              placeholder="America/New_York"
+              borderColor="gray.200"
+              bg="white"
+            />
+          </FormControl>
+
           <Card shadow="md">
             <CardBody p={6}>
-              <Heading size="md" mb={4} color="gray.800">Availability</Heading>
-              
-              <FormControl mb={4}>
-                <FormLabel fontWeight="semibold" color="gray.800">Timezone</FormLabel>
-                <Input
-                  type="text"
-                  value={timezone}
-                  onChange={(e) => setTimezone(e.target.value)}
-                  placeholder="America/New_York"
-                  borderColor="gray.200"
-                  bg="white"
-                />
-              </FormControl>
-              
+              <Heading size="md" mb={4} color="gray.800">Typical Availability</Heading>
               <AvailabilityGrid
                 value={availabilityGrid}
                 onChange={setAvailabilityGrid}
@@ -871,7 +896,6 @@ function ProfileContent() {
             </CardBody>
           </Card>
 
-          {/* Location Settings */}
           <LocationSettings
             initialLatitude={latitude}
             initialLongitude={longitude}
@@ -879,50 +903,39 @@ function ProfileContent() {
             onSave={handleLocationSave}
           />
 
-          {/* Quick Settings */}
-          <Card shadow="md">
-            <CardBody p={6}>
-              <Heading size="md" mb={4} color="gray.800">Quick Settings</Heading>
-              
-              <VStack spacing={4} align="stretch">
-                <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                  <FormLabel mb={0} color="gray.800">Immediate Availability</FormLabel>
-                  <Switch
-                    isChecked={immediate}
-                    onChange={() => setImmediate(!immediate)}
-                    colorScheme="purple"
-                  />
-                </FormControl>
+          <FormControl display="flex" alignItems="center" justifyContent="space-between" py={2}>
+            <FormLabel mb={0} color="gray.800">Immediate Availability</FormLabel>
+            <Switch
+              isChecked={immediate}
+              onChange={() => setImmediate(!immediate)}
+              colorScheme="purple"
+            />
+          </FormControl>
 
-                <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                  <FormLabel mb={0} color="gray.800">Appear Offline (Override)</FormLabel>
-                  <Switch
-                    isChecked={override}
-                    onChange={() => setOverride(!override)}
-                    colorScheme="purple"
-                  />
-                </FormControl>
+          <FormControl display="flex" alignItems="center" justifyContent="space-between" py={2}>
+            <FormLabel mb={0} color="gray.800">Appear Offline (Override)</FormLabel>
+            <Switch
+              isChecked={override}
+              onChange={() => setOverride(!override)}
+              colorScheme="purple"
+            />
+          </FormControl>
 
-                <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                  <FormLabel mb={0} color="gray.800">Accept Video Calls</FormLabel>
-                  <Switch
-                    isChecked={videoCallAvailable}
-                    onChange={() => setVideoCallAvailable(!videoCallAvailable)}
-                    colorScheme="purple"
-                  />
-                </FormControl>
-              </VStack>
-            </CardBody>
-          </Card>
-        </VStack>
+          <FormControl display="flex" alignItems="center" justifyContent="space-between" py={2}>
+            <FormLabel mb={0} color="gray.800">Accept Video Calls</FormLabel>
+            <Switch
+              isChecked={videoCallAvailable}
+              onChange={() => setVideoCallAvailable(!videoCallAvailable)}
+              colorScheme="purple"
+            />
+          </FormControl>
 
-        {error && error !== "AUTH_401" && (
-          <Text color="red.500" mb={4}>{error}</Text>
-        )}
+          {error && error !== "AUTH_401" && (
+            <Text color="red.500">{error}</Text>
+          )}
 
-        <VStack spacing={4} align="stretch" mb={8}>
           <Button onClick={save} colorScheme="purple" size="lg">
-            Save Changes
+            Save
           </Button>
 
           <Button
@@ -952,7 +965,6 @@ function ProfileContent() {
         </VStack>
       </Container>
 
-      {/* Interests Modal */}
       <Modal isOpen={isInterestsOpen} onClose={onInterestsClose} size="xl">
         <ModalOverlay />
         <ModalContent>
