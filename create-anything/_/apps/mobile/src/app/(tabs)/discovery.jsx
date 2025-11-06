@@ -45,11 +45,27 @@ const COLORS = {
   cardBg: "#F3F4F6",
 };
 
+// Handle dismiss with two-tap confirmation
+const handleDismiss = (profileId, discardMutation, setConfirmDismiss, confirmDismiss) => {
+  if (!confirmDismiss) {
+    setConfirmDismiss(true);
+    Alert.alert(
+      "Are you sure?",
+      "Tap X again to permanently dismiss this profile",
+      [{ text: "Cancel", onPress: () => setConfirmDismiss(false), style: "cancel" }],
+      { cancelable: true, onDismiss: () => setConfirmDismiss(false) }
+    );
+  } else {
+    setConfirmDismiss(false);
+    discardMutation.mutate(profileId);
+  }
+};
+
 export default function Discovery() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { signIn, isReady } = useAuth();
+  const { signIn, isReady} = useAuth();
   const [loaded, errorFont] = useFonts({
     Inter_400Regular,
     Inter_600SemiBold,
@@ -77,9 +93,17 @@ export default function Discovery() {
   });
 
   const [index, setIndex] = useState(0);
+  const [confirmDismiss, setConfirmDismiss] = useState(false);
+  
   useEffect(() => {
     setIndex(0);
+    setConfirmDismiss(false);
   }, [data]);
+  
+  // Reset confirmation when profile changes
+  useEffect(() => {
+    setConfirmDismiss(false);
+  }, [index]);
 
   const likeMutation = useMutation({
     mutationFn: async (likedId) => {
@@ -322,9 +346,11 @@ export default function Discovery() {
       {current ? (
         <SwipeableCard
           profile={current}
-          onSwipeLeft={() => discardMutation.mutateAsync(current.id)}
+          onSwipeLeft={() => setIndex((i) => i + 1)}
           onSwipeRight={() => likeMutation.mutateAsync(current.id)}
           onTap={() => router.push(`/profile/${current.id}`)}
+          onDismiss={() => handleDismiss(current.id, discardMutation, setConfirmDismiss, confirmDismiss)}
+          confirmDismiss={confirmDismiss}
         />
       ) : (
         <View
@@ -371,7 +397,7 @@ export default function Discovery() {
 }
 
 // Swipeable Card Component
-function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap }) {
+function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, onDismiss, confirmDismiss }) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const router = useRouter();
@@ -776,21 +802,23 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap }) {
         }}
       >
         <TouchableOpacity
-          onPress={onSwipeLeft}
+          onPress={onDismiss}
           style={{
             width: 64,
             height: 64,
             borderRadius: 32,
-            backgroundColor: COLORS.cardBg,
+            backgroundColor: confirmDismiss ? "#FEE2E2" : COLORS.cardBg,
             alignItems: "center",
             justifyContent: "center",
+            borderWidth: confirmDismiss ? 3 : 0,
+            borderColor: confirmDismiss ? COLORS.error : "transparent",
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.1,
             shadowRadius: 4,
             elevation: 3,
           }}
         >
-          <X color={COLORS.error} size={28} />
+          <X color={COLORS.error} size={28} strokeWidth={confirmDismiss ? 3 : 2} />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={onSwipeRight}

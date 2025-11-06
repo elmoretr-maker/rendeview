@@ -1154,6 +1154,36 @@ export default function Profile() {
           </Text>
         </TouchableOpacity>
 
+        {/* Sign Out button */}
+        <TouchableOpacity
+          onPress={async () => {
+            if (isReady) {
+              await signOut();
+              router.replace("/welcome");
+            }
+          }}
+          style={{
+            backgroundColor: COLORS.white,
+            borderWidth: 2,
+            borderColor: COLORS.error,
+            paddingVertical: 14,
+            borderRadius: 12,
+            alignItems: "center",
+            marginTop: 12,
+          }}
+        >
+          <Text
+            style={{
+              color: COLORS.error,
+              fontSize: 16,
+              fontWeight: "700",
+              fontFamily: "Inter_700Bold",
+            }}
+          >
+            Sign Out
+          </Text>
+        </TouchableOpacity>
+
         {/* Preview Profile button */}
         <TouchableOpacity
           onPress={() => router.push("/profile-preview")}
