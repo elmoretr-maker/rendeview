@@ -158,26 +158,85 @@ export async function POST(request, { params }) {
     const userTier = userRows?.[0]?.membership_tier || 'free';
     const today = new Date().toISOString().split('T')[0];
 
-    const dailyLimit = getDailyMessageLimit(userTier);
-    const dailyCountRows = await sql`
-      SELECT messages_sent FROM user_daily_message_counts 
-      WHERE user_id = ${uid} AND date = ${today}
+    // PROGRESSIVE VIDEO UNLOCK ENFORCEMENT
+    // Get or create conversation metadata
+    let [metadata] = await sql`
+      SELECT started_at, first_video_call_at, last_video_call_at, video_call_count
+      FROM conversation_metadata
+      WHERE conversation_id = ${conversationId}
     `;
-    let dailyMessagesUsed = dailyCountRows?.[0]?.messages_sent || 0;
 
-    if (dailyMessagesUsed >= dailyLimit) {
+    if (!metadata) {
+      await sql`
+        INSERT INTO conversation_metadata (conversation_id, started_at)
+        VALUES (${conversationId}, NOW())
+        ON CONFLICT (conversation_id) DO NOTHING
+      `;
+      [metadata] = await sql`
+        SELECT started_at, first_video_call_at, last_video_call_at, video_call_count
+        FROM conversation_metadata
+        WHERE conversation_id = ${conversationId}
+      `;
+    }
+
+    const hasCompletedVideo = metadata?.video_call_count > 0;
+    const daysSinceStart = metadata 
+      ? (Date.now() - new Date(metadata.started_at).getTime()) / (1000 * 60 * 60 * 24)
+      : 0;
+    const isDecay = !hasCompletedVideo && daysSinceStart >= 3;
+
+    // Get today's conversation-specific messages
+    const [dailyConvMessages] = await sql`
+      SELECT messages_sent FROM conversation_daily_messages
+      WHERE conversation_id = ${conversationId} AND user_id = ${uid} AND date = ${today}
+    `;
+    let conversationMessagesToday = dailyConvMessages?.messages_sent || 0;
+
+    // Determine allowed messages based on state
+    let messagesAllowed;
+    if (isDecay) {
+      messagesAllowed = 2; // Decay mode: 2 messages/day
+    } else if (hasCompletedVideo) {
+      // Post-video: 10 + tier bonus (Free:0, Casual:+25, Dating:+50, Business:+100)
+      const tierLimits = { free: 0, casual: 25, dating: 50, business: 100 };
+      const bonus = tierLimits[userTier.toLowerCase()] || 0;
+      messagesAllowed = 10 + bonus;
+    } else {
+      messagesAllowed = 10; // Pre-video: 10 messages/day
+    }
+
+    // Check if conversation quota exceeded
+    if (conversationMessagesToday >= messagesAllowed) {
+      // Try to use purchased credits
       const creditRows = await sql`SELECT credits_remaining FROM user_message_credits WHERE user_id = ${uid}`;
       let creditsRemaining = creditRows?.[0]?.credits_remaining || 0;
 
       if (creditsRemaining <= 0) {
+        let errorMessage, reason;
+        if (isDecay) {
+          errorMessage = "You've reached the 2 messages/day limit with this person. Schedule a video call to unlock more messages!";
+          reason = 'decay_limit';
+        } else if (hasCompletedVideo) {
+          errorMessage = "Daily message limit reached with this person. Purchase credits or wait until tomorrow!";
+          reason = 'daily_limit';
+        } else {
+          errorMessage = "You've sent 10 messages to this person today. Complete a video call to unlock more messages!";
+          reason = 'pre_video_limit';
+        }
+
         return Response.json({ 
-          error: "Daily message limit reached. Purchase credits or upgrade your membership!", 
+          error: errorMessage,
           quotaExceeded: true,
           tier: userTier,
-          reason: 'daily_limit'
+          reason,
+          conversationMessagesToday,
+          messagesAllowed,
+          isDecay,
+          hasCompletedVideo
         }, { status: 429 });
       }
 
+      // Use credit
       await sql`
         UPDATE user_message_credits
         SET credits_remaining = credits_remaining - 1,
@@ -185,20 +244,35 @@ export async function POST(request, { params }) {
             updated_at = NOW()
         WHERE user_id = ${uid}
       `;
+    }
+
+    // Track conversation-specific message count
+    await sql`
+      INSERT INTO conversation_daily_messages (conversation_id, user_id, messages_sent, date)
+      VALUES (${conversationId}, ${uid}, 1, ${today})
+      ON CONFLICT (conversation_id, user_id, date) DO UPDATE SET
+        messages_sent = conversation_daily_messages.messages_sent + 1,
+        updated_at = NOW()
+    `;
+
+    // Also track in legacy system for backward compatibility
+    const dailyCountRows = await sql`
+      SELECT messages_sent FROM user_daily_message_counts 
+      WHERE user_id = ${uid} AND date = ${today}
+    `;
+    
+    if (!dailyCountRows?.length) {
+      await sql`
+        INSERT INTO user_daily_message_counts (user_id, messages_sent, date)
+        VALUES (${uid}, 1, ${today})
+      `;
     } else {
-      if (!dailyCountRows?.length) {
-        await sql`
-          INSERT INTO user_daily_message_counts (user_id, messages_sent, date)
-          VALUES (${uid}, 1, ${today})
-        `;
-      } else {
-        await sql`
-          UPDATE user_daily_message_counts
-          SET messages_sent = messages_sent + 1,
-              updated_at = NOW()
-          WHERE user_id = ${uid} AND date = ${today}
-        `;
-      }
+      await sql`
+        UPDATE user_daily_message_counts
+        SET messages_sent = messages_sent + 1,
+            updated_at = NOW()
+        WHERE user_id = ${uid} AND date = ${today}
+      `;
     }
 
     const messageRow = await sql`
