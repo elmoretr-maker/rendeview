@@ -89,7 +89,7 @@ export class ErrorBoundary extends Component<Props, State> {
           </p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
             <button
-              onClick={() => window.location.href = '/account/signin?callbackUrl=/discovery'}
+              onClick={() => window.location.href = '/account/signin'}
               style={{
                 padding: '0.75rem 1.5rem',
                 backgroundColor: COLORS.primary,
