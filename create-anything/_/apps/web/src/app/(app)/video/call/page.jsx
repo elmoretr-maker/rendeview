@@ -9,7 +9,8 @@ import {
   DollarSign,
   CheckCircle,
   XCircle,
-  X
+  X,
+  Ban
 } from "lucide-react";
 import { toast } from "sonner";
 import { loadStripe } from "@stripe/stripe-js";
@@ -133,6 +134,7 @@ export default function VideoCall() {
   const [postCallNote, setPostCallNote] = useState("");
   const [otherUserId, setOtherUserId] = useState(null);
   const [savingNote, setSavingNote] = useState(false);
+  const [blockingUser, setBlockingUser] = useState(false);
 
   const pollIntervalRef = useRef(null);
   const localTimerRef = useRef(null);
@@ -157,6 +159,15 @@ export default function VideoCall() {
 
       if (data.session.remainingSeconds !== undefined) {
         setLocalRemainingSeconds(data.session.remainingSeconds);
+      }
+
+      // Capture other user ID for blocking
+      if (data.session && !otherUserId) {
+        const callerId = data.session.caller_id;
+        const calleeId = data.session.callee_id;
+        const currentUserId = currentUser?.id;
+        const otherUser = currentUserId === callerId ? calleeId : callerId;
+        setOtherUserId(otherUser);
       }
 
       if (!tierUpgradeNudgeShown.current && data.currentUserTier && data.otherUserTier) {
@@ -339,6 +350,45 @@ export default function VideoCall() {
     queryClient.invalidateQueries({ queryKey: ["video-sessions"] });
     toast.success("Call ended");
     navigate(`/messages/${matchId}`);
+  };
+
+  const handleBlockAndEnd = async () => {
+    if (!otherUserId || blockingUser) return;
+    
+    setBlockingUser(true);
+    try {
+      // First end the session
+      if (sessionId) {
+        await fetch(`/api/video/sessions/${sessionId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ state: "ended" }),
+        });
+      }
+
+      // Then block the user
+      const res = await fetch("/api/blockers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blockedId: otherUserId }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: "Failed to block user" }));
+        throw new Error(error.error || "Failed to block user");
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["video-sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["matches"] });
+      toast.success("User blocked and call ended");
+      navigate(`/matches`);
+    } catch (err) {
+      console.error("Failed to block user:", err);
+      toast.error(err.message || "Failed to block user. Call ended.");
+      navigate(`/messages/${matchId}`);
+    } finally {
+      setBlockingUser(false);
+    }
   };
 
   const handleReport = async () => {
@@ -713,6 +763,20 @@ export default function VideoCall() {
             size="lg"
           >
             Report
+          </Button>
+          <Button
+            onClick={handleBlockAndEnd}
+            flex={1}
+            leftIcon={<Ban size={20} />}
+            bg="red.600"
+            color="white"
+            _hover={{ bg: "red.700" }}
+            size="lg"
+            isLoading={blockingUser}
+            loadingText="Blocking..."
+            isDisabled={!otherUserId}
+          >
+            Block & End
           </Button>
         </Flex>
       </Box>
