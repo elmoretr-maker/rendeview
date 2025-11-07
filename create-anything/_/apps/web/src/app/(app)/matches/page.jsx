@@ -157,17 +157,17 @@ function MatchesContent() {
           </Button>
         </Flex>
 
-        {/* Top Picks Section */}
-        {savedProfiles.length > 0 && (
-          <Box mb={8}>
-            <Flex align="center" gap={2} mb={4}>
-              <Star size={24} color="#FFD700" fill="#FFD700" />
-              <Heading size="md" color="gray.800">Top Picks</Heading>
-              <Badge colorScheme="purple" fontSize="xs" px={2} py={0.5} borderRadius="full">
-                {savedProfiles.length}/5
-              </Badge>
-            </Flex>
-            
+        {/* Top Picks Section - Always Visible */}
+        <Box mb={8}>
+          <Flex align="center" gap={2} mb={4}>
+            <Star size={24} color="#FFD700" fill="#FFD700" />
+            <Heading size="md" color="gray.800">Top Picks</Heading>
+            <Badge colorScheme="purple" fontSize="xs" px={2} py={0.5} borderRadius="full">
+              {savedProfiles.length}/5
+            </Badge>
+          </Flex>
+          
+          {savedProfiles.length > 0 ? (
             <VStack spacing={3} align="stretch">
               {savedProfiles.map((profile) => (
                 <Card
@@ -238,21 +238,41 @@ function MatchesContent() {
                 </Card>
               ))}
             </VStack>
-            
-            {savedProfiles.length < 5 && (
-              <Text fontSize="sm" color="gray.600" mt={2} textAlign="center">
-                Save up to 5 profiles from Discovery to your Top Picks
-              </Text>
-            )}
-          </Box>
-        )}
+          ) : (
+            <Card bg="purple.50" variant="outline" borderColor="purple.200">
+              <CardBody p={6}>
+                <VStack spacing={3}>
+                  <Star size={32} color="#D1D5DB" strokeWidth={1.5} />
+                  <Text fontSize="md" color="gray.700" fontWeight="medium" textAlign="center">
+                    No Top Picks saved yet
+                  </Text>
+                  <Text fontSize="sm" color="gray.600" textAlign="center" maxW="sm">
+                    Save up to 5 profiles from Discovery to keep track of people you're most interested in
+                  </Text>
+                  <Button
+                    onClick={() => navigate("/discovery")}
+                    colorScheme="purple"
+                    size="sm"
+                    mt={2}
+                  >
+                    Go to Discovery
+                  </Button>
+                </VStack>
+              </CardBody>
+            </Card>
+          )}
+          
+          {savedProfiles.length > 0 && savedProfiles.length < 5 && (
+            <Text fontSize="sm" color="gray.600" mt={2} textAlign="center">
+              Save up to 5 profiles from Discovery to your Top Picks
+            </Text>
+          )}
+        </Box>
 
         {/* Regular Matches Section */}
-        {savedProfiles.length > 0 && (
-          <Heading size="md" color="gray.800" mb={4}>
-            All Matches
-          </Heading>
-        )}
+        <Heading size="md" color="gray.800" mb={4}>
+          All Matches
+        </Heading>
 
         {matches.length === 0 ? (
           <VStack spacing={4} py={12}>
