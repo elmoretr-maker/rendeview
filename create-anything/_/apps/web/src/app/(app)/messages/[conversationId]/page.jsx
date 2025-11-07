@@ -653,51 +653,38 @@ function ChatContent() {
               <Flex gap={4} align="stretch">
                 <VStack flex={1} align="stretch" spacing={1}>
                   <Text fontSize="xs" fontWeight="medium" color="gray.600">
-                    First Messages with {otherUser?.name || 'this user'}
+                    Messages with {otherUser?.name || 'this user'}
                   </Text>
                   <HStack spacing={2}>
                     <Progress 
                       flex={1} 
-                      value={(quotaData.quota.firstEncounter.remaining / quotaData.quota.firstEncounter.limit) * 100}
-                      colorScheme="teal"
+                      value={(quotaData.messagesRemaining / quotaData.messagesAllowedToday) * 100}
+                      colorScheme={quotaData.messagesRemaining > 5 ? "teal" : quotaData.messagesRemaining > 0 ? "orange" : "red"}
                       borderRadius="full"
                       size="sm"
                     />
                     <Text fontSize="sm" fontWeight="bold" color="gray.800">
-                      {quotaData.quota.firstEncounter.remaining}/{quotaData.quota.firstEncounter.limit}
+                      {quotaData.messagesRemaining}/{quotaData.messagesAllowedToday}
                     </Text>
                   </HStack>
-                </VStack>
-                <VStack flex={1} align="stretch" spacing={1}>
-                  <Text fontSize="xs" fontWeight="medium" color="gray.600">
-                    Daily Messages ({quotaData.tier})
-                  </Text>
-                  <HStack spacing={2}>
-                    <Progress 
-                      flex={1} 
-                      value={(quotaData.quota.dailyTier.remaining / quotaData.quota.dailyTier.limit) * 100}
-                      colorScheme="purple"
-                      borderRadius="full"
-                      size="sm"
-                    />
-                    <Text fontSize="sm" fontWeight="bold" color="gray.800">
-                      {quotaData.quota.dailyTier.remaining}/{quotaData.quota.dailyTier.limit}
+                  {quotaData.isDecayMode && (
+                    <Text fontSize="xs" color="orange.600" fontWeight="medium">
+                      ⏱️ Decay mode - Complete a video call to restore full quota
                     </Text>
-                  </HStack>
+                  )}
+                  {quotaData.hasCompletedVideo && quotaData.bonusMessages > 0 && (
+                    <Text fontSize="xs" color="teal.600" fontWeight="medium">
+                      ✅ +{quotaData.bonusMessages} bonus messages (video completed)
+                    </Text>
+                  )}
                 </VStack>
               </Flex>
-              {quotaData.quota.credits.remaining > 0 && (
+              {quotaData.creditsAvailable > 0 && (
                 <Box mt={3} pt={3} borderTop="1px" borderColor="gray.100">
                   <Text fontSize="xs" color="gray.600">
-                    💳 Message Credits: <Text as="span" fontWeight="bold" color="gray.800">{quotaData.quota.credits.remaining}</Text>
+                    💳 Message Credits: <Text as="span" fontWeight="bold" color="gray.800">{quotaData.creditsAvailable}</Text>
                   </Text>
                 </Box>
-              )}
-              {quotaData.hasVideoCalledWith && quotaData.tier === 'business' && (
-                <HStack mt={2} fontSize="xs" color="teal.500">
-                  <Text>✓</Text>
-                  <Text fontWeight="medium">Premium features unlocked</Text>
-                </HStack>
               )}
             </CardBody>
           </Card>
