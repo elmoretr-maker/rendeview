@@ -7,6 +7,8 @@ import AppHeader from "@/components/AppHeader";
 import SessionExpired from "@/components/SessionExpired";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
+import MatchBadge from "@/components/MatchBadge";
+import { useIsMatched } from "@/hooks/useIsMatched";
 import { Star, X } from "lucide-react";
 import {
   Box,
@@ -24,6 +26,83 @@ import {
   IconButton,
   Badge,
 } from "@chakra-ui/react";
+
+function TopPickCard({ profile, navigate, removeSavedMutation }) {
+  const { data: matchStatus } = useIsMatched(profile.id);
+  
+  return (
+    <Card
+      _hover={{ bg: "white", shadow: "md" }}
+      transition="all 0.2s"
+      bg="purple.50"
+      variant="outline"
+      borderColor="purple.200"
+      position="relative"
+    >
+      <CardBody p={4}>
+        <HStack spacing={3}>
+          <Box
+            w="48px"
+            h="48px"
+            borderRadius="full"
+            overflow="hidden"
+            flexShrink={0}
+            bg="gray.200"
+            cursor="pointer"
+            onClick={() => navigate(`/profile/${profile.id}`)}
+            _hover={{ opacity: 0.8 }}
+          >
+            {profile.photo ? (
+              <Box
+                as="img"
+                src={getAbsoluteUrl(profile.photo)}
+                alt={profile.name || `User ${profile.id}`}
+                w="full"
+                h="full"
+                objectFit="cover"
+              />
+            ) : (
+              <Flex w="full" h="full" align="center" justify="center" bg="gray.300" color="gray.600" fontWeight="semibold" fontSize="lg">
+                {(profile.name || 'U').charAt(0).toUpperCase()}
+              </Flex>
+            )}
+          </Box>
+          <VStack 
+            align="start" 
+            spacing={0} 
+            flex={1}
+            cursor="pointer"
+            onClick={() => navigate(`/profile/${profile.id}`)}
+          >
+            <HStack spacing={2}>
+              <Text fontWeight="semibold" color="gray.800">
+                {profile.name || `User ${profile.id}`}
+              </Text>
+              {matchStatus?.isMatched && (
+                <MatchBadge size="sm" />
+              )}
+            </HStack>
+            <Text fontSize="sm" color="gray.600" noOfLines={1}>
+              {profile.bio || "No bio available"}
+            </Text>
+          </VStack>
+          <IconButton
+            icon={<X size={18} />}
+            onClick={(e) => {
+              e.stopPropagation();
+              removeSavedMutation.mutate(profile.id);
+            }}
+            size="sm"
+            variant="ghost"
+            colorScheme="red"
+            borderRadius="full"
+            aria-label="Remove from Top Picks"
+          />
+        </HStack>
+      </CardBody>
+    </Card>
+  );
+}
 
 function MatchesContent() {
   const navigate = useNavigate();
@@ -170,72 +249,12 @@ function MatchesContent() {
           {savedProfiles.length > 0 ? (
             <VStack spacing={3} align="stretch">
               {savedProfiles.map((profile) => (
-                <Card
+                <TopPickCard 
                   key={profile.id}
-                  _hover={{ bg: "white", shadow: "md" }}
-                  transition="all 0.2s"
-                  bg="purple.50"
-                  variant="outline"
-                  borderColor="purple.200"
-                  position="relative"
-                >
-                  <CardBody p={4}>
-                    <HStack spacing={3}>
-                      <Box
-                        w="48px"
-                        h="48px"
-                        borderRadius="full"
-                        overflow="hidden"
-                        flexShrink={0}
-                        bg="gray.200"
-                        cursor="pointer"
-                        onClick={() => navigate(`/profile/${profile.id}`)}
-                        _hover={{ opacity: 0.8 }}
-                      >
-                        {profile.photo ? (
-                          <Box
-                            as="img"
-                            src={getAbsoluteUrl(profile.photo)}
-                            alt={profile.name || `User ${profile.id}`}
-                            w="full"
-                            h="full"
-                            objectFit="cover"
-                          />
-                        ) : (
-                          <Flex w="full" h="full" align="center" justify="center" bg="gray.300" color="gray.600" fontWeight="semibold" fontSize="lg">
-                            {(profile.name || 'U').charAt(0).toUpperCase()}
-                          </Flex>
-                        )}
-                      </Box>
-                      <VStack 
-                        align="start" 
-                        spacing={0} 
-                        flex={1}
-                        cursor="pointer"
-                        onClick={() => navigate(`/profile/${profile.id}`)}
-                      >
-                        <Text fontWeight="semibold" color="gray.800">
-                          {profile.name || `User ${profile.id}`}
-                        </Text>
-                        <Text fontSize="sm" color="gray.600" noOfLines={1}>
-                          {profile.bio || "No bio available"}
-                        </Text>
-                      </VStack>
-                      <IconButton
-                        icon={<X size={18} />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeSavedMutation.mutate(profile.id);
-                        }}
-                        size="sm"
-                        variant="ghost"
-                        colorScheme="red"
-                        borderRadius="full"
-                        aria-label="Remove from Top Picks"
-                      />
-                    </HStack>
-                  </CardBody>
-                </Card>
+                  profile={profile}
+                  navigate={navigate}
+                  removeSavedMutation={removeSavedMutation}
+                />
               ))}
             </VStack>
           ) : (

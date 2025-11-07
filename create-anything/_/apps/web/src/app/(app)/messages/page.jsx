@@ -5,6 +5,8 @@ import useUser from "@/utils/useUser";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import SessionExpired from "@/components/SessionExpired";
+import MatchBadge from "@/components/MatchBadge";
+import { useIsMatched } from "@/hooks/useIsMatched";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
 import {
   Box,
@@ -20,6 +22,83 @@ import {
   CardBody,
   Badge,
 } from "@chakra-ui/react";
+
+function ConversationCard({ item, navigate }) {
+  const { data: matchStatus } = useIsMatched(item.other_user_id);
+  
+  return (
+    <Card
+      transition="all 0.2s"
+      bg="white"
+      variant="outline"
+      shadow="sm"
+      _hover={{ shadow: "md" }}
+    >
+      <CardBody p={4}>
+        <HStack spacing={4} align="center">
+          <Box
+            cursor="pointer"
+            onClick={() => navigate(`/profile/${item.other_user_id}`)}
+            _hover={{ opacity: 0.8 }}
+            transition="opacity 0.2s"
+          >
+            <Avatar
+              size="lg"
+              src={item.other_user_photo ? getAbsoluteUrl(item.other_user_photo) : undefined}
+              name={item.other_user_name || `User ${item.other_user_id}`}
+              bg="purple.100"
+              color="purple.600"
+            />
+          </Box>
+          <VStack align="start" spacing={1} flex={1}>
+            <HStack spacing={2}>
+              <Box
+                as="span"
+                fontWeight="bold" 
+                color="gray.800"
+                fontSize="lg"
+                cursor="pointer"
+                onClick={() => navigate(`/profile/${item.other_user_id}`)}
+                _hover={{ color: "purple.600" }}
+                transition="color 0.2s"
+              >
+                {item.other_user_name || `User ${item.other_user_id}`}
+              </Box>
+              {matchStatus?.isMatched && (
+                <MatchBadge size="sm" />
+              )}
+            </HStack>
+            <Text fontSize="sm" color="gray.600" noOfLines={2}>
+              {item.last_message_body || "Start a conversation"}
+            </Text>
+          </VStack>
+          <VStack spacing={2} align="end">
+            <Button
+              onClick={() => navigate(`/messages/${item.conversation_id}`)}
+              colorScheme="purple"
+              size="md"
+              px={6}
+              fontWeight="semibold"
+            >
+              Open Chat
+            </Button>
+            {item.unread_count > 0 && (
+              <Badge
+                colorScheme="purple"
+                borderRadius="full"
+                px={2}
+                py={1}
+                fontSize="xs"
+              >
+                {item.unread_count} new
+              </Badge>
+            )}
+          </VStack>
+        </HStack>
+      </CardBody>
+    </Card>
+  );
+}
 
 export default function Messages() {
   const navigate = useNavigate();
@@ -102,72 +181,11 @@ export default function Messages() {
         ) : (
           <VStack spacing={3} align="stretch">
             {conversations.map((item) => (
-              <Card
+              <ConversationCard 
                 key={item.conversation_id}
-                transition="all 0.2s"
-                bg="white"
-                variant="outline"
-                shadow="sm"
-                _hover={{ shadow: "md" }}
-              >
-                <CardBody p={4}>
-                  <HStack spacing={4} align="center">
-                    <Box
-                      cursor="pointer"
-                      onClick={() => navigate(`/profile/${item.other_user_id}`)}
-                      _hover={{ opacity: 0.8 }}
-                      transition="opacity 0.2s"
-                    >
-                      <Avatar
-                        size="lg"
-                        src={item.other_user_photo ? getAbsoluteUrl(item.other_user_photo) : undefined}
-                        name={item.other_user_name || `User ${item.other_user_id}`}
-                        bg="purple.100"
-                        color="purple.600"
-                      />
-                    </Box>
-                    <VStack align="start" spacing={1} flex={1}>
-                      <Box
-                        as="span"
-                        fontWeight="bold" 
-                        color="gray.800"
-                        fontSize="lg"
-                        cursor="pointer"
-                        onClick={() => navigate(`/profile/${item.other_user_id}`)}
-                        _hover={{ color: "purple.600" }}
-                        transition="color 0.2s"
-                      >
-                        {item.other_user_name || `User ${item.other_user_id}`}
-                      </Box>
-                      <Text fontSize="sm" color="gray.600" noOfLines={2}>
-                        {item.last_message_body || "Start a conversation"}
-                      </Text>
-                    </VStack>
-                    <VStack spacing={2} align="end">
-                      <Button
-                        onClick={() => navigate(`/messages/${item.conversation_id}`)}
-                        colorScheme="purple"
-                        size="md"
-                        px={6}
-                        fontWeight="semibold"
-                      >
-                        Open Chat
-                      </Button>
-                      {item.unread_count > 0 && (
-                        <Badge
-                          colorScheme="purple"
-                          borderRadius="full"
-                          px={2}
-                          py={1}
-                          fontSize="xs"
-                        >
-                          {item.unread_count} new
-                        </Badge>
-                      )}
-                    </VStack>
-                  </HStack>
-                </CardBody>
-              </Card>
+                item={item}
+                navigate={navigate}
+              />
             ))}
           </VStack>
         )}
