@@ -123,9 +123,16 @@ Mobile app loads web signin/signup pages in WebView to authenticate. The server-
 **Solution Implemented:**
 Updated signin and signup page loaders to detect mobile authentication requests:
 1. Check for `callbackUrl` query parameter (indicates mobile auth request)
-2. If user already has valid session AND callbackUrl exists → Redirect to callbackUrl
-3. This allows mobile WebView to reach the callback endpoint and extract JWT
-4. Maintains server-side session validation for web users
+2. Validate callbackUrl to prevent open redirect vulnerability (only allow same-origin paths starting with `/` but not `//`)
+3. If user already has valid session AND callbackUrl is valid → Redirect to callbackUrl
+4. This allows mobile WebView to reach the callback endpoint and extract JWT
+5. Maintains server-side session validation for web users
+
+**Security Measures:**
+- Callback URL validation prevents open redirect attacks
+- Only same-origin paths allowed (e.g., `/api/auth/token`)
+- Rejects absolute URLs and protocol-relative URLs (e.g., `//attacker.com`)
+- Architect-approved security implementation
 
 **Technical Details:**
 - Mobile Native: Loads `/account/signin?callbackUrl=/api/auth/token`
