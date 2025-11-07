@@ -18,20 +18,9 @@ function getCookie(request, name) {
 export default function CreateAuth(config = {}) {
         const adapter = config.adapter;
         
-        const auth = async (explicitRequest = null) => {
-                // Accept explicit Request (for SSR/navigation) or fall back to Hono context
-                let req;
-                if (explicitRequest) {
-                        req = explicitRequest;
-                } else {
-                        try {
-                                const c = getContext();
-                                req = c.req.raw;
-                        } catch (error) {
-                                // No context available (SSR without Hono)
-                                return null;
-                        }
-                }
+        const auth = async () => {
+                const c = getContext();
+                const req = c.req.raw;
                 
                 const token = await getToken({
                         req,

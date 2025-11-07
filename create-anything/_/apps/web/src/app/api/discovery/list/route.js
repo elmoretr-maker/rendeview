@@ -114,8 +114,8 @@ export async function GET(request) {
     
     const demoProfiles = await sql(demoProfilesQuery, [userId]);
     
-    // Combine real candidates first, then demo profiles
-    const allCandidates = [...candidates, ...demoProfiles];
+    // Combine demo profiles first (for easy testing), then real candidates
+    const allCandidates = [...demoProfiles, ...candidates];
 
     // Attach primary photo and calculate compatibility scores
     const result = [];
