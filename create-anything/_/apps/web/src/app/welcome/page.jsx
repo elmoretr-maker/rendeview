@@ -8,24 +8,18 @@ import {
   Heading,
   Text,
   Button,
-  Image,
-  useColorModeValue
+  Image
 } from "@chakra-ui/react";
 
 export default function Welcome() {
   const navigate = useNavigate();
-
-  const bgGradient = useColorModeValue(
-    "linear(to-br, purple.50, blue.50, pink.50)",
-    "linear(to-br, purple.900, blue.900, pink.900)"
-  );
 
   return (
     <Box 
       minH="100vh" 
       display="flex" 
       flexDirection="column" 
-      bgGradient={bgGradient}
+      bgGradient="linear(to-br, purple.50, blue.50, pink.50)"
       position="relative"
       overflow="hidden"
     >
