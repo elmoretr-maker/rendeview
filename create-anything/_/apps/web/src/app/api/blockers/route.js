@@ -66,7 +66,7 @@ export async function POST(request) {
     if (result.length > 0) {
       await sql`
         UPDATE auth_users 
-        SET block_count = block_count + 1 
+        SET block_count = COALESCE(block_count, 0) + 1 
         WHERE id = ${blockedId}`;
 
       const [blockedUser] = await sql`
