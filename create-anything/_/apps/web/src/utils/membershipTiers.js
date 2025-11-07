@@ -125,55 +125,67 @@ export const SMART_PROMPT_CONFIG = {
   DECAYED_MESSAGE_LIMIT: 2 // Messages allowed after decay period
 };
 
-// Message credit pricing (2x penalty until 3 video calls with different people)
+// Message credit pricing (Rolling Monthly Reward System)
+// Initial unlock: Complete 3 video calls with 3 different people
+// Maintenance: Complete 3 NEW video calls with NEW people each calendar month
 export const MESSAGE_CREDIT_PRICING = {
-  // BEFORE 3 video calls with different people (2x penalty pricing)
-  BEFORE_VIDEO_THRESHOLD: {
+  INITIAL_UNLOCK_THRESHOLD: 3, // Complete 3 video calls with 3 different people to unlock
+  MONTHLY_MAINTENANCE_THRESHOLD: 3, // Complete 3 NEW video calls each month to maintain discount
+  DISCOUNT_WARNING_DAYS: 7, // Days before end of month to show warning nudge
+  
+  // STANDARD PRICING (Default or if monthly requirement not met)
+  STANDARD: {
     PACK_SMALL: {
       credits: 20,
       price: '$1.99',
       priceInCents: 199,
-      perMessageCost: 0.0995 // ~$0.10/msg
+      perMessageCost: 0.10,
+      label: 'Small Pack'
     },
     PACK_MEDIUM: {
       credits: 50,
       price: '$4.99',
       priceInCents: 499,
-      perMessageCost: 0.0998 // ~$0.10/msg
+      perMessageCost: 0.10,
+      label: 'Medium Pack'
     },
     PACK_LARGE: {
       credits: 100,
       price: '$9.99',
       priceInCents: 999,
-      perMessageCost: 0.0999, // ~$0.10/msg
-      label: 'Most Popular'
-    }
-  },
-  // AFTER 3 video calls with different people (discounted pricing - reward)
-  AFTER_VIDEO_THRESHOLD: {
-    PACK_SMALL: {
-      credits: 60,
-      price: '$1.99',
-      priceInCents: 199,
-      perMessageCost: 0.0332, // ~$0.03/msg
-      label: 'Quick Chat'
-    },
-    PACK_MEDIUM: {
-      credits: 200,
-      price: '$4.99',
-      priceInCents: 499,
-      perMessageCost: 0.025, // ~$0.025/msg
-      label: 'Popular'
-    },
-    PACK_LARGE: {
-      credits: 500,
-      price: '$9.99',
-      priceInCents: 999,
-      perMessageCost: 0.02, // ~$0.02/msg
+      perMessageCost: 0.10,
       label: 'Best Value'
     }
   },
-  VIDEO_CALL_THRESHOLD: 3 // Complete video calls with 3 different people to unlock discounted pricing
+  
+  // REWARD PRICING (50% bonus - active if monthly requirement met)
+  // User must complete 3 NEW video calls each calendar month to keep this pricing
+  REWARD: {
+    PACK_SMALL: {
+      credits: 30,
+      price: '$1.99',
+      priceInCents: 199,
+      perMessageCost: 0.07,
+      bonusPercentage: 50,
+      label: 'Small Pack'
+    },
+    PACK_MEDIUM: {
+      credits: 75,
+      price: '$4.99',
+      priceInCents: 499,
+      perMessageCost: 0.07,
+      bonusPercentage: 50,
+      label: 'Medium Pack'
+    },
+    PACK_LARGE: {
+      credits: 150,
+      price: '$9.99',
+      priceInCents: 999,
+      perMessageCost: 0.07,
+      bonusPercentage: 50,
+      label: 'Best Value'
+    }
+  }
 };
 
 // Premium features unlocked after video call (Business tier)
