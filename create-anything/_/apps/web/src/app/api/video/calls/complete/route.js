@@ -1,5 +1,5 @@
-import { auth } from '../../../../auth';
-import sql from '../../utils/sql';
+import { auth } from '@/auth';
+import sql from '@/app/api/utils/sql';
 
 /**
  * POST /api/video/calls/complete

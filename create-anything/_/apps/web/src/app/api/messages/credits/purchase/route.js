@@ -1,6 +1,6 @@
-import { auth } from '../../../../../auth';
-import sql from '../../../utils/sql';
-import { getMessageCreditPricing } from '../../../../../utils/membershipTiers';
+import { auth } from '@/auth';
+import sql from '@/app/api/utils/sql';
+import { getMessageCreditPricing } from '@/utils/membershipTiers';
 
 /**
  * POST /api/messages/credits/purchase

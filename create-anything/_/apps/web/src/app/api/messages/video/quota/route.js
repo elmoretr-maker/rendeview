@@ -1,6 +1,6 @@
-import { auth } from '../../../../../auth';
-import sql from '../../../utils/sql';
-import { getVideoMessageLimits } from '../../../../../utils/membershipTiers';
+import { auth } from '@/auth';
+import sql from '@/app/api/utils/sql';
+import { getVideoMessageLimits } from '@/utils/membershipTiers';
 
 /**
  * GET /api/messages/video/quota?conversationId={id}

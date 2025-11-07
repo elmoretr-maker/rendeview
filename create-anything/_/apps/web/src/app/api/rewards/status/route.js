@@ -1,10 +1,10 @@
-import { auth } from '../../../../auth';
-import sql from '../../utils/sql';
+import { auth } from '@/auth';
+import sql from '@/app/api/utils/sql';
 import { 
   MESSAGE_CREDIT_PRICING,
   shouldShowRewardWarning,
   getRemainingVideoCallsForReward
-} from '../../../../utils/membershipTiers';
+} from '@/utils/membershipTiers';
 
 /**
  * GET /api/rewards/status

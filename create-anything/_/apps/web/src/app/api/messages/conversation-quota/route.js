@@ -1,12 +1,12 @@
-import { auth } from '../../../../auth';
-import sql from '../../utils/sql';
+import { auth } from '@/auth';
+import sql from '@/app/api/utils/sql';
 import { 
   getPerPersonMessageLimit, 
   getBonusMessagesAfterVideo,
   isConversationInDecayMode,
   getDecayedMessageLimit,
   SMART_PROMPT_CONFIG
-} from '../../../../utils/membershipTiers';
+} from '@/utils/membershipTiers';
 
 /**
  * GET /api/messages/conversation-quota?conversationId={id}
