@@ -215,156 +215,204 @@ export default function Matches() {
         <FlatList
           ListHeaderComponent={() => (
             <>
-              {/* Top Picks Section */}
-              {savedProfiles.length > 0 && (
-                <View style={{ marginBottom: 24 }}>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                    <Text style={{ fontSize: 20, fontWeight: "700", color: COLORS.text, fontFamily: "Inter_700Bold" }}>
-                      ⭐ Top Picks
+              {/* Top Picks Section - Always Visible */}
+              <View style={{ marginBottom: 24 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  <Text style={{ fontSize: 20, fontWeight: "700", color: COLORS.text, fontFamily: "Inter_700Bold" }}>
+                    ⭐ Top Picks
+                  </Text>
+                  <View
+                    style={{
+                      backgroundColor: "#EDE7FF",
+                      paddingHorizontal: 8,
+                      paddingVertical: 2,
+                      borderRadius: 12,
+                    }}
+                  >
+                    <Text style={{ color: COLORS.primary, fontSize: 12, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>
+                      {savedProfiles.length}/5
                     </Text>
-                    <View
-                      style={{
-                        backgroundColor: "#EDE7FF",
-                        paddingHorizontal: 8,
-                        paddingVertical: 2,
-                        borderRadius: 12,
-                      }}
-                    >
-                      <Text style={{ color: COLORS.primary, fontSize: 12, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>
-                        {savedProfiles.length}/5
-                      </Text>
-                    </View>
                   </View>
-                  
-                  {savedProfiles.map((profile) => (
-                    <TouchableOpacity
-                      key={profile.id}
-                      onPress={() => router.push(`/profile/${profile.id}`)}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        paddingVertical: 12,
-                        paddingHorizontal: 12,
-                        marginBottom: 8,
-                        backgroundColor: "#FFF9EB",
-                        borderRadius: 12,
-                        borderWidth: 1,
-                        borderColor: "#FFD700",
-                      }}
-                    >
-                      {profile.photo ? (
-                        <AuthenticatedImage
-                          source={{ uri: profile.photo }}
-                          style={{
-                            width: 48,
-                            height: 48,
-                            borderRadius: 24,
-                            backgroundColor: "#EEE",
-                          }}
-                        />
-                      ) : (
-                        <View
-                          style={{
-                            width: 48,
-                            height: 48,
-                            borderRadius: 24,
-                            backgroundColor: "#EEE",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Text style={{ color: COLORS.text, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>
-                            {profile.name ? profile.name.charAt(0).toUpperCase() : "?"}
-                          </Text>
-                        </View>
-                      )}
-                      <View style={{ marginLeft: 12, flex: 1 }}>
-                        <Text
-                          style={{
-                            fontWeight: "600",
-                            color: COLORS.text,
-                            fontFamily: "Inter_600SemiBold",
-                          }}
-                        >
-                          {profile.name || `User ${profile.id}`}
-                        </Text>
-                        <Text
-                          style={{
-                            color: "#6B7280",
-                            fontSize: 12,
-                            fontFamily: "Inter_400Regular",
-                          }}
-                          numberOfLines={1}
-                        >
-                          {profile.bio || "No bio available"}
-                        </Text>
-                      </View>
+                </View>
+                
+                {savedProfiles.length > 0 ? (
+                  <>
+                    {savedProfiles.map((profile) => (
                       <TouchableOpacity
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          Alert.alert(
-                            "Remove from Top Picks",
-                            `Remove ${profile.name || "this user"} from Top Picks?`,
-                            [
-                              { text: "Cancel", style: "cancel" },
-                              {
-                                text: "Remove",
-                                style: "destructive",
-                                onPress: async () => {
-                                  try {
-                                    const res = await apiFetch(`/api/saved-profiles?savedUserId=${profile.id}`, {
-                                      method: "DELETE",
-                                    });
-                                    if (res.ok) {
-                                      queryClient.invalidateQueries({ queryKey: ["savedProfiles"] });
-                                    }
-                                  } catch (err) {
-                                    Alert.alert("Error", "Could not remove from Top Picks");
-                                  }
-                                },
-                              },
-                            ]
-                          );
-                        }}
+                        key={profile.id}
+                        onPress={() => router.push(`/profile/${profile.id}`)}
                         style={{
-                          padding: 8,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          paddingVertical: 12,
+                          paddingHorizontal: 12,
+                          marginBottom: 8,
+                          backgroundColor: "#FFF9EB",
+                          borderRadius: 12,
+                          borderWidth: 1,
+                          borderColor: "#FFD700",
                         }}
                       >
-                        <Text style={{ color: COLORS.error, fontSize: 18 }}>✕</Text>
+                        {profile.photo ? (
+                          <AuthenticatedImage
+                            source={{ uri: profile.photo }}
+                            style={{
+                              width: 48,
+                              height: 48,
+                              borderRadius: 24,
+                              backgroundColor: "#EEE",
+                            }}
+                          />
+                        ) : (
+                          <View
+                            style={{
+                              width: 48,
+                              height: 48,
+                              borderRadius: 24,
+                              backgroundColor: "#EEE",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Text style={{ color: COLORS.text, fontWeight: "600", fontFamily: "Inter_600SemiBold" }}>
+                              {profile.name ? profile.name.charAt(0).toUpperCase() : "?"}
+                            </Text>
+                          </View>
+                        )}
+                        <View style={{ marginLeft: 12, flex: 1 }}>
+                          <Text
+                            style={{
+                              fontWeight: "600",
+                              color: COLORS.text,
+                              fontFamily: "Inter_600SemiBold",
+                            }}
+                          >
+                            {profile.name || `User ${profile.id}`}
+                          </Text>
+                          <Text
+                            style={{
+                              color: "#6B7280",
+                              fontSize: 12,
+                              fontFamily: "Inter_400Regular",
+                            }}
+                            numberOfLines={1}
+                          >
+                            {profile.bio || "No bio available"}
+                          </Text>
+                        </View>
+                        <TouchableOpacity
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            Alert.alert(
+                              "Remove from Top Picks",
+                              `Remove ${profile.name || "this user"} from Top Picks?`,
+                              [
+                                { text: "Cancel", style: "cancel" },
+                                {
+                                  text: "Remove",
+                                  style: "destructive",
+                                  onPress: async () => {
+                                    try {
+                                      const res = await apiFetch(`/api/saved-profiles?savedUserId=${profile.id}`, {
+                                        method: "DELETE",
+                                      });
+                                      if (res.ok) {
+                                        queryClient.invalidateQueries({ queryKey: ["savedProfiles"] });
+                                      }
+                                    } catch (err) {
+                                      Alert.alert("Error", "Could not remove from Top Picks");
+                                    }
+                                  },
+                                },
+                              ]
+                            );
+                          }}
+                          style={{
+                            padding: 8,
+                          }}
+                        >
+                          <Text style={{ color: COLORS.error, fontSize: 18 }}>✕</Text>
+                        </TouchableOpacity>
                       </TouchableOpacity>
-                    </TouchableOpacity>
-                  ))}
-                  
-                  {savedProfiles.length < 5 && (
-                    <Text
+                    ))}
+                    
+                    {savedProfiles.length < 5 && (
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: COLORS.gray600,
+                          textAlign: "center",
+                          marginTop: 8,
+                          fontFamily: "Inter_400Regular",
+                        }}
+                      >
+                        Save up to 5 profiles from Discovery to your Top Picks
+                      </Text>
+                    )}
+                  </>
+                ) : (
+                  <View style={{
+                    backgroundColor: "#FFF9EB",
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: "#FFD700",
+                    padding: 20,
+                    alignItems: "center",
+                  }}>
+                    <Text style={{ fontSize: 32, marginBottom: 8 }}>⭐</Text>
+                    <Text style={{
+                      fontSize: 16,
+                      fontWeight: "600",
+                      color: COLORS.text,
+                      fontFamily: "Inter_600SemiBold",
+                      textAlign: "center",
+                      marginBottom: 6,
+                    }}>
+                      No Top Picks saved yet
+                    </Text>
+                    <Text style={{
+                      fontSize: 13,
+                      color: COLORS.gray600,
+                      fontFamily: "Inter_400Regular",
+                      textAlign: "center",
+                      marginBottom: 16,
+                    }}>
+                      Save up to 5 profiles from Discovery to keep track of people you're most interested in
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => router.push("/(tabs)/discovery")}
                       style={{
-                        fontSize: 12,
-                        color: COLORS.gray600,
-                        textAlign: "center",
-                        marginTop: 8,
-                        fontFamily: "Inter_400Regular",
+                        backgroundColor: COLORS.primary,
+                        paddingHorizontal: 20,
+                        paddingVertical: 8,
+                        borderRadius: 8,
                       }}
                     >
-                      Save up to 5 profiles from Discovery to your Top Picks
-                    </Text>
-                  )}
-                </View>
-              )}
+                      <Text style={{
+                        color: "#FFF",
+                        fontWeight: "600",
+                        fontFamily: "Inter_600SemiBold",
+                        fontSize: 14,
+                      }}>
+                        Go to Discovery
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
 
               {/* All Matches Header */}
-              {savedProfiles.length > 0 && (
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "700",
-                    color: COLORS.text,
-                    fontFamily: "Inter_700Bold",
-                    marginBottom: 12,
-                  }}
-                >
-                  All Matches
-                </Text>
-              )}
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "700",
+                  color: COLORS.text,
+                  fontFamily: "Inter_700Bold",
+                  marginBottom: 12,
+                }}
+              >
+                All Matches
+              </Text>
             </>
           )}
           ListEmptyComponent={() => (
