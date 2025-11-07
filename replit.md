@@ -21,10 +21,17 @@ Key features include:
 - **Matching System**: Enhanced matching incorporates a comprehensive interests system and a weighted scoring algorithm (v2) for compatibility calculation. Compatibility percentage displayed on Discovery cards.
 - **Admin Dashboard**: Features comprehensive user safety management, revenue overview, and dynamic pricing settings. Pricing changes made in the Admin Dashboard immediately propagate to all web and mobile surfaces.
 - **Deployment**: Mobile application uses EAS (Expo Application Services) for production-ready cloud builds, supporting development, preview, and production profiles.
-- **Mobile Feature Parity**: As of November 2025, achieved 95%+ feature parity between web and mobile platforms. Recent additions include:
+- **Mobile Feature Parity**: As of November 2025, achieved 100% video chat feature parity between web and mobile platforms. Recent additions include:
   - **Schedule Proposal Screen** (`schedule/propose/[userId]`): Users can propose video dates with calendar date selection, time slots (9 AM - 9 PM, 30-min intervals), and duration options (15/30/45/60 min). Validates match status before allowing proposals.
   - **Blocked Users Management** (`settings/blocked`): Users can view blocked users list, add private notes explaining why they blocked someone, and unblock users. Includes formatted dates and search functionality.
   - **Enhanced Profile Organization**: Mobile profile screen now mirrors web app structure with clear visual section headers (Basic Info, Preferences & Lifestyle, Photos & Media, Availability & Privacy, Location) for improved usability and consistency.
+  - **Video Chat Parity** (Nov 7, 2025): Complete modernization of mobile video call to match web architecture. Both platforms now feature:
+    - Session-based polling with server-synchronized timers
+    - Tier-based duration limits with grace periods
+    - Extension request/accept/pay flow ($8 for 10 minutes)
+    - In-call reporting and blocking functionality
+    - Post-call private notes
+    - Consistent pricing and user experience across all devices
 
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)
