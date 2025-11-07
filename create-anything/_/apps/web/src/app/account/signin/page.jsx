@@ -1,7 +1,41 @@
 import { useState } from "react";
-import { Navigate } from "react-router";
+import { redirect } from "react-router";
 import useAuth from "@/utils/useAuth";
-import useUser from "@/utils/useUser";
+import { auth } from "@/auth";
+import sql from "@/app/api/utils/sql";
+
+export async function loader() {
+  const session = await auth();
+  
+  if (session?.user?.id) {
+    const userId = Number(session.user.id);
+    
+    const [profileData] = await sql`
+      SELECT 
+        profile_completed,
+        data_consent_given,
+        membership_tier
+      FROM auth_users 
+      WHERE id = ${userId}
+    `;
+    
+    if (!profileData) {
+      return null;
+    }
+    
+    if (!profileData.data_consent_given) {
+      return redirect("/onboarding/data-consent-required");
+    }
+    
+    if (!profileData.profile_completed) {
+      return redirect("/onboarding/profile");
+    }
+    
+    return redirect("/discovery");
+  }
+  
+  return null;
+}
 
 export default function SignInPage() {
   const [error, setError] = useState(null);
@@ -11,19 +45,6 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const { signInWithCredentials } = useAuth();
-  const { data: user, loading: userLoading } = useUser();
-
-  if (userLoading) {
-    return (
-      <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50">
-        <div className="text-lg text-gray-600">Loading...</div>
-      </div>
-    );
-  }
-
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
 
   const onSubmit = async (e) => {
     e.preventDefault();

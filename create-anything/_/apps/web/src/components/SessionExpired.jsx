@@ -8,7 +8,7 @@ export default function SessionExpired() {
   const navigate = useNavigate();
   
   const handleSignIn = () => {
-    navigate("/account/signin?callbackUrl=/discovery");
+    navigate("/account/signin");
   };
 
   return (
