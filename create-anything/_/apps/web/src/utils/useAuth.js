@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { signOut } from "@auth/create/react";
 
 function useAuth() {
   const callbackUrl = typeof window !== 'undefined' 
@@ -58,6 +57,32 @@ function useAuth() {
 
     return data;
   }, [callbackUrl])
+
+  const signOut = useCallback(async (options = {}) => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Sign out failed');
+      }
+
+      if (options.redirect !== false) {
+        window.location.href = options.callbackUrl || '/account/signin';
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Sign out error:', error);
+      throw error;
+    }
+  }, [])
 
   return {
     signInWithCredentials,
