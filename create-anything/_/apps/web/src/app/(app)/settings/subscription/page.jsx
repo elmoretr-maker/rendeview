@@ -236,6 +236,33 @@ export default function SubscriptionPage() {
             </Text>
           </Box>
 
+          {/* Why Upgrade - Featured Section */}
+          <Card bg="gradient-to-r" bgGradient="linear(to-r, purple.500, pink.500)">
+            <CardBody>
+              <VStack align="start" spacing={3}>
+                <Heading size="md" color="white">Why Upgrade?</Heading>
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="full">
+                  <Box>
+                    <Text fontWeight="semibold" color="white" fontSize="sm" mb={1}>📸 More Photos & Videos</Text>
+                    <Text fontSize="xs" color="whiteAlpha.900">Showcase your personality with up to 20 photos and longer videos</Text>
+                  </Box>
+                  <Box>
+                    <Text fontWeight="semibold" color="white" fontSize="sm" mb={1}>⏱️ Longer Video Calls</Text>
+                    <Text fontSize="xs" color="whiteAlpha.900">Chat for up to 45 minutes per call</Text>
+                  </Box>
+                  <Box>
+                    <Text fontWeight="semibold" color="white" fontSize="sm" mb={1}>🎯 Unlimited Video Meetings</Text>
+                    <Text fontSize="xs" color="whiteAlpha.900">No daily limits - meet as many people as you want</Text>
+                  </Box>
+                  <Box>
+                    <Text fontWeight="semibold" color="white" fontSize="sm" mb={1}>💬 More Messages</Text>
+                    <Text fontSize="xs" color="whiteAlpha.900">Send up to 500 messages daily</Text>
+                  </Box>
+                </SimpleGrid>
+              </VStack>
+            </CardBody>
+          </Card>
+
           {/* Current Plan */}
           {currentTier && (
             <Card borderWidth={2} borderColor="purple.500">
@@ -532,33 +559,6 @@ export default function SubscriptionPage() {
                     Tomorrow resets to 15 new daily messages
                   </Text>
                 </Box>
-              </VStack>
-            </CardBody>
-          </Card>
-
-          {/* Upgrade Benefits */}
-          <Card bg="gradient-to-r" bgGradient="linear(to-r, purple.500, pink.500)">
-            <CardBody>
-              <VStack align="start" spacing={3}>
-                <Heading size="md" color="white">Why Upgrade?</Heading>
-                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="full">
-                  <Box>
-                    <Text fontWeight="semibold" color="white" fontSize="sm" mb={1}>📸 More Photos & Videos</Text>
-                    <Text fontSize="xs" color="whiteAlpha.900">Showcase your personality with up to 20 photos</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="semibold" color="white" fontSize="sm" mb={1}>⏱️ Longer Video Calls</Text>
-                    <Text fontSize="xs" color="whiteAlpha.900">Chat for up to 45 minutes per call</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="semibold" color="white" fontSize="sm" mb={1}>🎯 Unlimited Meetings</Text>
-                    <Text fontSize="xs" color="whiteAlpha.900">No daily limits on video meetings</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="semibold" color="white" fontSize="sm" mb={1}>💬 More Messages</Text>
-                    <Text fontSize="xs" color="whiteAlpha.900">Send up to 500 messages daily</Text>
-                  </Box>
-                </SimpleGrid>
               </VStack>
             </CardBody>
           </Card>
