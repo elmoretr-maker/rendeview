@@ -242,6 +242,29 @@ app.all('/integrations/:path{.+}', async (c, next) => {
 
 app.use('/api/auth/*', async (c, next) => {
   if (isAuthAction(c.req.path)) {
+    
+    // START FIX: Normalize the request object for Auth.js
+    try {
+      const originalRaw = c.req.raw;
+
+      // Create a minimal, normalized req object that contains headers and url.
+      // This prevents the "Cannot read 'type'" error in Auth.js core.
+      const normalizedReq = {
+        headers: originalRaw.headers,
+        url: originalRaw.url,
+        method: originalRaw.method,
+      };
+
+      // Safely patch the context's raw request.
+      // This is the "monkey-patch" that authHandler() will now use.
+      c.req.raw = normalizedReq as any;
+
+    } catch (e) {
+      console.error("Error normalizing request for Auth.js:", e);
+      // If normalization fails, proceed anyway and let Auth.js handle the error.
+    }
+    // END FIX
+    
     return authHandler()(c, next);
   }
   return next();
