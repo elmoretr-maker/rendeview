@@ -39,3 +39,70 @@ The application utilizes a client-server architecture. The frontend uses React 1
 - **Backend Framework**: Hono (Node.js)
 - **Mobile UI Components**: @react-native-community/slider, @expo-google-fonts/inter, react-native-maps, expo-location
 - **Geocoding**: OpenStreetMap Nominatim API
+
+## ✅ RESOLVED ISSUES
+
+### Login Loop / Session Endpoint Missing
+**Status:** ✅ RESOLVED (Nov 7, 2025)
+
+**Original Problem:**
+- Users experienced infinite loop between Welcome page and Welcome Back page
+- Console error: `ClientFetchError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON`
+- Auth.js client tried to fetch `/api/auth/session` but endpoint didn't exist
+- Server returned HTML (404 page) instead of JSON, causing client crash
+
+**Root Cause:**
+The Auth.js client library automatically calls `/api/auth/session` to check authentication status. This endpoint was never created, so the server returned the React app HTML instead of a JSON response, causing the JSON parser to fail and the app to loop.
+
+**Solution Implemented:**
+Created `/api/auth/session/route.js` endpoint that:
+1. Uses existing `auth()` wrapper to check session validity
+2. Returns `null` (JSON) when user is not authenticated
+3. Returns session object `{"user": {...}, "expires": "..."}` when authenticated
+4. Always sets `Content-Type: application/json` header
+5. Gracefully handles errors by returning `null` instead of throwing
+
+**Technical Details:**
+- Endpoint: `GET /api/auth/session`
+- Unauthenticated response: `null`
+- Authenticated response: `{"user": {"id", "email", "name", "image"}, "expires": "..."}`
+- Error handling: Returns `null` on any error (no stack trace leaks)
+
+**Key Benefits:**
+- ✅ Eliminates login loop completely
+- ✅ Proper JSON responses (no HTML errors)
+- ✅ Welcome page loads without errors
+- ✅ Auth.js client session checks work correctly
+- ✅ Secure error handling without exposing internals
+
+**Files Created:**
+- `create-anything/_/apps/web/src/app/api/auth/session/route.js` (new session endpoint)
+
+### Custom Authentication Routes (@hono/auth-js Bypass)
+**Status:** ✅ RESOLVED (Nov 7, 2025)
+
+**Original Problem:**
+- `@hono/auth-js` middleware fundamentally incompatible with React Router 7
+- Standard Auth.js signin/signup flow failed with "Cannot read properties of undefined (reading 'type')"
+- Users unable to authenticate through normal Auth.js routes
+
+**Solution Implemented:**
+Custom authentication routes that bypass `@hono/auth-js` middleware:
+1. `/api/auth/custom-signin` - Validates credentials, creates sessions, issues JWTs
+2. `/api/auth/custom-signup` - Creates users with bcrypt hashing, sessions, and JWTs
+3. Updated `auth()` wrapper to decode JWTs with proper salt parameter
+4. Frontend calls custom routes directly instead of broken Auth.js flow
+
+**Security Measures:**
+- NO logging of JWT tokens, cookies, or credentials
+- Secure HTTP-only cookies with `__Secure-` prefix for HTTPS
+- Database-backed session validation (12-hour expiry)
+- Password hashing with bcrypt (10 rounds)
+- Architect-approved security implementation
+
+**Files Modified:**
+- `create-anything/_/apps/web/src/app/api/auth/custom-signin/route.js` (new)
+- `create-anything/_/apps/web/src/app/api/auth/custom-signup/route.js` (new)
+- `create-anything/_/apps/web/src/utils/useAuth.js` (updated to call custom routes)
+- `create-anything/_/apps/web/src/__create/@auth/create.js` (JWT decode with salt)
+- `create-anything/_/apps/web/__create/index.ts` (disabled @hono/auth-js middleware)
