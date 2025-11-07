@@ -82,9 +82,44 @@ export async function GET(request) {
       : [userId];
     const candidates = await sql(q, params);
 
+    // Fetch demo profiles (for new users to test the app)
+    // These profiles always appear at the end if user hasn't already liked/blocked them
+    const demoProfilesQuery = `
+      SELECT u.id, u.name, u.image, u.immediate_available, u.typical_availability, 
+             u.primary_photo_url, u.bio, u.membership_tier, u.last_active, u.interests,
+             u.relationship_goals, u.smoking, u.drinking, u.exercise,
+             u.latitude, u.longitude,
+             0 as liked_you,
+             3 as activity_priority
+      FROM auth_users u
+      WHERE u.email IN (
+        'emma.rodriguez@example.com',
+        'marcus.johnson@example.com',
+        'sophia.chen@example.com',
+        'james.martinez@example.com',
+        'olivia.taylor@example.com',
+        'ryan.thompson@example.com'
+      )
+      AND u.id <> $1
+      AND NOT EXISTS (
+        SELECT 1 FROM blockers b WHERE b.blocker_id = $1 AND b.blocked_id = u.id
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM blockers b2 WHERE b2.blocked_id = $1 AND b2.blocker_id = u.id
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM likes l2 WHERE l2.liker_id = $1 AND l2.liked_id = u.id
+      )
+      ORDER BY u.id ASC`;
+    
+    const demoProfiles = await sql(demoProfilesQuery, [userId]);
+    
+    // Combine real candidates first, then demo profiles
+    const allCandidates = [...candidates, ...demoProfiles];
+
     // Attach primary photo and calculate compatibility scores
     const result = [];
-    for (const c of candidates) {
+    for (const c of allCandidates) {
       let photo = c.primary_photo_url || null;
       if (!photo) {
         const media = await sql(
