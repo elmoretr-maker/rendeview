@@ -64,17 +64,14 @@ export async function POST(request) {
       RETURNING id`;
 
     if (result.length > 0) {
-      await sql`
+      const [updated] = await sql`
         UPDATE auth_users 
         SET block_count = COALESCE(block_count, 0) + 1 
-        WHERE id = ${blockedId}`;
+        WHERE id = ${blockedId}
+        RETURNING block_count, name`;
 
-      const [blockedUser] = await sql`
-        SELECT block_count, name 
-        FROM auth_users 
-        WHERE id = ${blockedId}`;
-
-      const blockCount = blockedUser?.block_count || 0;
+      const blockCount = updated?.block_count || 0;
+      const userName = updated?.name || '';
       let warning = null;
 
       if (blockCount === 3) {
@@ -82,13 +79,13 @@ export async function POST(request) {
           UPDATE auth_users 
           SET flagged_for_admin = true 
           WHERE id = ${blockedId}`;
-        warning = `This user (${blockedUser.name}) has now been blocked by 3 people and has been flagged for admin review.`;
+        warning = `This user (${userName}) has now been blocked by 3 people and has been flagged for admin review.`;
       } else if (blockCount >= 4) {
         await sql`
           UPDATE auth_users 
           SET account_status = 'under_review', flagged_for_admin = true 
           WHERE id = ${blockedId}`;
-        warning = `This user (${blockedUser.name}) has been blocked by ${blockCount} people and their account is now under review.`;
+        warning = `This user (${userName}) has been blocked by ${blockCount} people and their account is now under review.`;
       }
 
       return Response.json({ ok: true, warning, blockCount });
