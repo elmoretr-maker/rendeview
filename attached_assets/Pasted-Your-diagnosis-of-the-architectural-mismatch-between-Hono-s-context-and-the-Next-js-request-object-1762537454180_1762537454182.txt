@@ -1,0 +1,51 @@
+Your diagnosis of the "architectural mismatch" between Hono's context and the Next.js request object is 100% correct. Your previous fix failed due to a type incompatibility in the `getToken()` function.
+
+Execute the following **Genuine Fix** to make the auth() wrapper universal:
+
+1.  **MODIFY THE `auth()` WRAPPER:**
+    * Update `create-anything/_/apps/web/src/__create/@auth/create.js`.
+    * Modify the `auth` function to accept the optional `explicitRequest` object.
+    * **CRITICAL:** Inside the function, **do not** pass the full `req` object to `getToken()`. Instead, create a new, minimal object that *only* contains the headers.
+
+    *Reference Code:*
+    ```javascript
+    // create-anything/_/apps/web/src/__create/@auth/create.js
+    
+    // ... other imports
+    import { getToken } from "auth-js/jwt";
+    import { getContext } from "hono/context-storage";
+    
+    export const auth = async (explicitRequest = null) => {
+      let reqHeaders;
+    
+      if (explicitRequest) {
+        // Path 1: We are in a Next.js API Route. Get headers from the passed request.
+        reqHeaders = explicitRequest.headers;
+      } else {
+        // Path 2: We are in a Hono context. Get headers from the context.
+        const honoReq = getContext()?.req?.raw;
+        reqHeaders = honoReq ? honoReq.headers : {};
+      }
+    
+      // Create a minimal, normalized req object that ONLY contains headers.
+      // This prevents the "Cannot read 'type'" error.
+      const minimalReq = { headers: reqHeaders };
+    
+      const token = await getToken({
+        req: minimalReq, // Pass the new minimal object here
+        secret: process.env.AUTH_SECRET,
+        secureCookie: process.env.AUTH_URL.startsWith('https'),
+      });
+      
+      // ... [Rest of your auth logic: adapter.createSession, etc.]
+      // ... [Ensure the session creation logic you added previously is still here]
+    
+      // ... [Return the final user/session object]
+    };
+    ```
+
+2.  **UPDATE ALL API ROUTES:**
+    * Ensure all Next.js API route handlers (like `/api/discovery/list/route.js`) pass the `request` object to the auth utility: `await getAuthenticatedUserId(request);`
+
+3.  **VERIFY:**
+    * Confirm that the "Session Expired" error on the Discovery page is resolved and that sessions are still being correctly created in the `auth_sessions` database table.
