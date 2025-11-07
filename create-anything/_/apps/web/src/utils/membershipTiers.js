@@ -48,7 +48,18 @@ export const TIER_LIMITS = {
     dailyMessages: 500,
     perMatchDailyMessages: 50,
     perMatchDailyMessagesAfterVideo: 75,
-    firstEncounterMessages: 10
+    firstEncounterMessages: 10,
+    // Premium Business Features
+    priorityPlacement: true,           // Appear higher in discovery
+    videoVerifiedBadge: true,          // Special verified badge after video calls
+    advancedFilters: true,             // Filter by interests, location radius, etc.
+    readReceipts: true,                // See when messages are read
+    schedulingAssistant: true,         // Smart scheduling suggestions
+    profileBoostsPerWeek: 1,           // Weekly profile boost
+    dailyPicks: 10,                    // Curated matches daily
+    rewindLimit: 5,                    // Undo passes per day
+    unlimitedLikes: true,              // No daily like limit
+    incognitoMode: true                // Browse invisibly
   }
 };
 

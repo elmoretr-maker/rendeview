@@ -416,6 +416,18 @@ export default function SubscriptionPage() {
                             • {t.perMatchDailyMessages}/{t.perMatchDailyMessagesAfterVideo || t.perMatchDailyMessages} Messages/Match/Day{t.perMatchDailyMessagesAfterVideo ? ' (after video)' : ''}
                           </ListItem>
                         )}
+                        {t.key === 'business' && (
+                          <>
+                            <ListItem color="purple.600" fontWeight="semibold" mt={2}>Premium Features:</ListItem>
+                            <ListItem fontSize="xs">• Priority Placement in Discovery</ListItem>
+                            <ListItem fontSize="xs">• Video Verified Badge</ListItem>
+                            <ListItem fontSize="xs">• Advanced Filters</ListItem>
+                            <ListItem fontSize="xs">• Read Receipts</ListItem>
+                            <ListItem fontSize="xs">• Weekly Profile Boost</ListItem>
+                            <ListItem fontSize="xs">• 10 Daily Curated Picks</ListItem>
+                            <ListItem fontSize="xs">• Incognito Mode</ListItem>
+                          </>
+                        )}
                       </List>
                       
                       {isCurrent ? (
