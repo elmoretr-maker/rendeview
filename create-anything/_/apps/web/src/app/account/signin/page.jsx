@@ -4,10 +4,19 @@ import useAuth from "@/utils/useAuth";
 import { auth } from "@/auth";
 import sql from "@/app/api/utils/sql";
 
-export async function loader() {
+export async function loader({ request }) {
   const session = await auth();
   
   if (session?.user?.id) {
+    const url = new URL(request.url);
+    const callbackUrl = url.searchParams.get('callbackUrl');
+    
+    if (callbackUrl) {
+      if (callbackUrl.startsWith('/') && !callbackUrl.startsWith('//')) {
+        return redirect(callbackUrl);
+      }
+    }
+    
     const userId = Number(session.user.id);
     
     const [profileData] = await sql`

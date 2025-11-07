@@ -106,3 +106,33 @@ Custom authentication routes that bypass `@hono/auth-js` middleware:
 - `create-anything/_/apps/web/src/utils/useAuth.js` (updated to call custom routes)
 - `create-anything/_/apps/web/src/__create/@auth/create.js` (JWT decode with salt)
 - `create-anything/_/apps/web/__create/index.ts` (disabled @hono/auth-js middleware)
+
+### Mobile App Login Loop Prevention
+**Status:** ✅ RESOLVED (Nov 7, 2025)
+
+**Original Problem:**
+- Mobile app could experience login loop when user has stale session cookies in WebView
+- User signs in → Session cookie stored in WebView + JWT in SecureStore
+- User signs out → SecureStore cleared, but WebView cookies remain
+- User tries to sign in again → Signin page loader sees stale session → Redirects to /discovery
+- Mobile WebView never reaches callback URL → No JWT extracted → User stuck in loop
+
+**Root Cause:**
+Mobile app loads web signin/signup pages in WebView to authenticate. The server-side loader on signin/signup pages would redirect already-authenticated users to `/discovery`, breaking the mobile auth flow which needs to reach the callback URL (`/api/auth/token` for native, `/api/auth/expo-web-success` for web) to extract the JWT.
+
+**Solution Implemented:**
+Updated signin and signup page loaders to detect mobile authentication requests:
+1. Check for `callbackUrl` query parameter (indicates mobile auth request)
+2. If user already has valid session AND callbackUrl exists → Redirect to callbackUrl
+3. This allows mobile WebView to reach the callback endpoint and extract JWT
+4. Maintains server-side session validation for web users
+
+**Technical Details:**
+- Mobile Native: Loads `/account/signin?callbackUrl=/api/auth/token`
+- Mobile Web (iframe): Loads `/account/signin?callbackUrl=/api/auth/expo-web-success`
+- Both callback endpoints return JWT for mobile to store in SecureStore
+- Loader redirects authenticated users to callback URL instead of /discovery when callbackUrl parameter present
+
+**Files Modified:**
+- `create-anything/_/apps/web/src/app/account/signin/page.jsx` (added callbackUrl detection)
+- `create-anything/_/apps/web/src/app/account/signup/page.jsx` (added callbackUrl detection)
