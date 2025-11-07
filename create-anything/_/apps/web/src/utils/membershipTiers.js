@@ -78,18 +78,20 @@ export const EXTENSION_PRICING = {
 };
 
 // Video messaging (short video clips sent in chat)
+// IMPORTANT: These are FLAT DAILY TOTALS across ALL conversations, not per-person
+// User allocates their daily allowance however they choose across all their chats
 export const VIDEO_MESSAGE_PRICING = {
   FREE_VIDEOS_PER_DAY: {
-    [MEMBERSHIP_TIERS.FREE]: 3,
-    [MEMBERSHIP_TIERS.CASUAL]: 10,
-    [MEMBERSHIP_TIERS.DATING]: 25,
-    [MEMBERSHIP_TIERS.BUSINESS]: 50
+    [MEMBERSHIP_TIERS.FREE]: 1,      // 1 video message total per day
+    [MEMBERSHIP_TIERS.CASUAL]: 3,    // 3 video messages total per day
+    [MEMBERSHIP_TIERS.DATING]: 5,    // 5 video messages total per day
+    [MEMBERSHIP_TIERS.BUSINESS]: 10  // 10 video messages total per day
   },
   MAX_DURATION_SECONDS: {
-    [MEMBERSHIP_TIERS.FREE]: 10,
-    [MEMBERSHIP_TIERS.CASUAL]: 15,
-    [MEMBERSHIP_TIERS.DATING]: 30,
-    [MEMBERSHIP_TIERS.BUSINESS]: 60
+    [MEMBERSHIP_TIERS.FREE]: 10,     // 10 second clips
+    [MEMBERSHIP_TIERS.CASUAL]: 15,   // 15 second clips
+    [MEMBERSHIP_TIERS.DATING]: 30,   // 30 second clips
+    [MEMBERSHIP_TIERS.BUSINESS]: 60  // 60 second clips
   },
   // Pricing for video messages beyond daily limit
   BUNDLES: {
