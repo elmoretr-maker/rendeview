@@ -431,7 +431,6 @@ export function Layout({ children }: { children: ReactNode }) {
         <meta property="og:title" content="Rende-VIEW - Find Your Perfect Match" />
         <meta property="og:description" content="Modern dating platform with video calling, messaging, and smart matching" />
         <meta property="og:type" content="website" />
-        <Links />
         <script type="module" src="/src/__create/dev-error-overlay.js"></script>
         <link rel="icon" href="/src/__create/favicon.png" />
       </head>
