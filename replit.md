@@ -143,3 +143,45 @@ Updated signin and signup page loaders to detect mobile authentication requests:
 **Files Modified:**
 - `create-anything/_/apps/web/src/app/account/signin/page.jsx` (added callbackUrl detection)
 - `create-anything/_/apps/web/src/app/account/signup/page.jsx` (added callbackUrl detection)
+
+### Logout Endpoint Not Clearing Session Cookies
+**Status:** ✅ RESOLVED (Nov 7, 2025)
+
+**Original Problem:**
+- Logout endpoint (`/api/auth/logout`) returned success message but failed to clear session cookies
+- Users remained authenticated after logout attempt
+- Protected API endpoints still accessible after logout
+- Session cookies persisted in browser, leaving users logged in
+
+**Root Cause:**
+The logout endpoint attempted to set multiple `Set-Cookie` headers by passing an array to the Response headers object. However, HTTP requires each cookie to be set with a separate `Set-Cookie` header. The incorrect implementation prevented cookies from being cleared by the browser.
+
+**Solution Implemented:**
+Fixed logout endpoint to properly clear all authentication cookies:
+1. Use the Fetch API `Headers` object to construct response headers
+2. Call `headers.append('Set-Cookie', cookieValue)` for each cookie individually
+3. Set expiry date to `Thu, 01 Jan 1970 00:00:00 GMT` to delete cookies
+4. Preserve `Secure` attribute for `__Secure-*` prefixed cookies (HTTPS-only)
+5. Clear all 6 authentication cookies: session-token, callback-url, csrf-token (both regular and secure variants)
+
+**Technical Details:**
+- All 6 cookies properly expired: `authjs.session-token`, `__Secure-authjs.session-token`, `authjs.callback-url`, `__Secure-authjs.callback-url`, `authjs.csrf-token`, `__Secure-authjs.csrf-token`
+- Each cookie header includes: `Path=/`, `HttpOnly`, `SameSite=Lax`
+- Secure cookies also include `Secure` flag for HTTPS enforcement
+- Response body unchanged: `{"success":true,"message":"Logged out successfully"}`
+
+**E2E Test Results:**
+- ✅ User logged in → Profile API returns user data
+- ✅ User logs out → Logout API returns success
+- ✅ After logout → Profile API returns `{"error":"Unauthorized"}`
+- ✅ Session cookies cleared from browser
+- ✅ Architect review: PASSED
+
+**Key Benefits:**
+- ✅ Users can now properly log out of the application
+- ✅ Session cookies immediately cleared from browser
+- ✅ Security vulnerability eliminated
+- ✅ Protected routes return 401 after logout
+
+**Files Modified:**
+- `create-anything/_/apps/web/src/app/api/auth/logout/route.js` (fixed cookie clearing with Headers API)
