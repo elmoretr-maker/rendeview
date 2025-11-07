@@ -851,7 +851,23 @@ export default function Profile() {
           </View>
         </View>
 
-        {/* Photos section */}
+        {/* ========== PHOTOS & MEDIA SECTION ========== */}
+        <View style={{ 
+          backgroundColor: "#F3F4F6", 
+          padding: 12, 
+          borderRadius: 8, 
+          marginBottom: 16,
+          marginTop: 8,
+          borderLeftWidth: 4,
+          borderLeftColor: COLORS.primary
+        }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons name="images-outline" size={20} color={COLORS.primary} style={{ marginRight: 8 }} />
+            <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, ...STYLES.text.bold }}>
+              Photos & Media
+            </Text>
+          </View>
+        </View>
         <Text style={{ fontSize: 16, fontWeight: "700", marginBottom: 12, color: COLORS.text, ...STYLES.text.bold }}>
           Photos ({photos.length}/{limits.maxPhotos}) *
         </Text>
