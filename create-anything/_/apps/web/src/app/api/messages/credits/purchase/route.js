@@ -1,6 +1,9 @@
 import { auth } from '@/auth';
 import sql from '@/app/api/utils/sql';
 import { getMessageCreditPricing } from '@/utils/membershipTiers';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 /**
  * POST /api/messages/credits/purchase
@@ -58,51 +61,131 @@ export async function POST(request) {
       return Response.json({ error: "Invalid pack configuration" }, { status: 500 });
     }
 
-    // TODO: Verify Stripe payment intent before crediting
-    // For now, assuming payment is verified
-    // In production, you would:
-    // 1. Retrieve payment intent from Stripe API
-    // 2. Verify amount matches packDetails.priceInCents
-    // 3. Verify status is 'succeeded'
-    // 4. Check idempotency to prevent double-crediting
+    // CRITICAL SECURITY: Verify Stripe payment intent before crediting
+    let paymentIntent;
+    try {
+      paymentIntent = await stripe.paymentIntents.retrieve(stripePaymentIntentId);
+    } catch (stripeErr) {
+      console.error('[/api/messages/credits/purchase] Invalid payment intent:', stripeErr);
+      return Response.json({ 
+        error: "Invalid payment intent ID" 
+      }, { status: 400 });
+    }
 
-    // Get or create user_message_credits record
-    const [existingCredits] = await sql`
-      SELECT credits_remaining, total_purchased, total_spent
-      FROM user_message_credits
-      WHERE user_id = ${userId}
+    // Verify payment succeeded
+    if (paymentIntent.status !== 'succeeded') {
+      console.error(`[/api/messages/credits/purchase] Payment not succeeded: ${paymentIntent.status}`);
+      return Response.json({ 
+        error: `Payment status is ${paymentIntent.status}, not succeeded` 
+      }, { status: 400 });
+    }
+
+    // Verify amount matches expected price (convert to cents)
+    const expectedAmountCents = packDetails.priceInCents;
+    if (paymentIntent.amount !== expectedAmountCents) {
+      console.error(`[/api/messages/credits/purchase] Amount mismatch: expected ${expectedAmountCents}, got ${paymentIntent.amount}`);
+      return Response.json({ 
+        error: "Payment amount does not match pack price" 
+      }, { status: 400 });
+    }
+
+    // Check idempotency to prevent double-crediting (use payment intent ID as idempotency key)
+    const [existingPurchase] = await sql`
+      SELECT id FROM message_credit_purchases 
+      WHERE user_id = ${userId} AND payment_intent_id = ${stripePaymentIntentId}
     `;
 
-    let newBalance;
-    if (existingCredits) {
-      // Update existing record
-      newBalance = existingCredits.credits_remaining + packDetails.credits;
-      await sql`
-        UPDATE user_message_credits
-        SET 
-          credits_remaining = ${newBalance},
-          total_purchased = total_purchased + ${packDetails.credits},
-          updated_at = NOW()
-        WHERE user_id = ${userId}
+    if (existingPurchase) {
+      // Already processed this payment
+      const [currentCredits] = await sql`
+        SELECT credits_remaining FROM user_message_credits WHERE user_id = ${userId}
       `;
-    } else {
-      // Create new record
-      newBalance = packDetails.credits;
-      await sql`
-        INSERT INTO user_message_credits (
-          user_id, 
-          credits_remaining, 
-          total_purchased, 
-          total_spent
+      
+      return Response.json({
+        success: true,
+        creditsAdded: packDetails.credits,
+        newBalance: currentCredits?.credits_remaining || 0,
+        pricingTier: hasActiveReward ? 'REWARD' : 'STANDARD',
+        packDetails: {
+          credits: packDetails.credits,
+          price: packDetails.price,
+          perMessageCost: packDetails.perMessageCost
+        },
+        alreadyProcessed: true
+      });
+    }
+
+    // Use transaction for atomic credit addition and purchase tracking
+    let newBalance;
+    await sql.begin(async (tx) => {
+      // Get or create user_message_credits record
+      const [existingCredits] = await tx`
+        SELECT credits_remaining, total_purchased, total_spent
+        FROM user_message_credits
+        WHERE user_id = ${userId}
+        FOR UPDATE
+      `;
+
+      if (existingCredits) {
+        // Update existing record
+        newBalance = existingCredits.credits_remaining + packDetails.credits;
+        await tx`
+          UPDATE user_message_credits
+          SET 
+            credits_remaining = COALESCE(credits_remaining, 0) + ${packDetails.credits},
+            total_purchased = COALESCE(total_purchased, 0) + ${packDetails.credits},
+            updated_at = NOW()
+          WHERE user_id = ${userId}
+        `;
+      } else {
+        // Create new record
+        newBalance = packDetails.credits;
+        await tx`
+          INSERT INTO user_message_credits (
+            user_id, 
+            credits_remaining, 
+            total_purchased, 
+            total_spent
+          )
+          VALUES (
+            ${userId}, 
+            ${packDetails.credits}, 
+            ${packDetails.credits}, 
+            0
+          )
+        `;
+      }
+
+      // Record this purchase for idempotency
+      await tx`
+        INSERT INTO message_credit_purchases (
+          user_id,
+          payment_intent_id,
+          pack_size,
+          credits_amount,
+          price_cents,
+          pricing_tier,
+          created_at
         )
         VALUES (
-          ${userId}, 
-          ${packDetails.credits}, 
-          ${packDetails.credits}, 
-          0
+          ${userId},
+          ${stripePaymentIntentId},
+          ${packSize},
+          ${packDetails.credits},
+          ${expectedAmountCents},
+          ${hasActiveReward ? 'REWARD' : 'STANDARD'},
+          NOW()
         )
       `;
-    }
+    });
+
+    // Get final balance
+    const [finalCredits] = await sql`
+      SELECT credits_remaining FROM user_message_credits WHERE user_id = ${userId}
+    `;
+    newBalance = finalCredits?.credits_remaining || newBalance;
+
+    console.log(`[/api/messages/credits/purchase] Success: ${packDetails.credits} credits added to user ${userId}`);
 
     return Response.json({
       success: true,

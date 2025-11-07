@@ -114,59 +114,61 @@ export async function POST(request: Request): Promise<Response> {
         const tier = session.metadata?.tier || null;
         const refUserId = session.client_reference_id || null;
 
-        if (mode === "subscription") {
-          if (customerId) {
-            await sql`UPDATE auth_users SET subscription_status = 'active', last_check_subscription_status_at = now() WHERE stripe_id = ${customerId}`;
-          }
-          
-          if (!customerId && refUserId) {
-            await sql`UPDATE auth_users SET subscription_status = 'active', last_check_subscription_status_at = now() WHERE id = ${Number(refUserId)}`;
-          }
-          
-          if (refUserId && tier) {
-            const v = tier.toLowerCase();
-            if (["casual", "dating", "business"].includes(v)) {
-              await sql`UPDATE auth_users SET membership_tier = ${v} WHERE id = ${Number(refUserId)}`;
+        await sql.begin(async (tx) => {
+          if (mode === "subscription") {
+            if (customerId) {
+              await tx`UPDATE auth_users SET subscription_status = 'active', last_check_subscription_status_at = now() WHERE stripe_id = ${customerId}`;
+            }
+            
+            if (!customerId && refUserId) {
+              await tx`UPDATE auth_users SET subscription_status = 'active', last_check_subscription_status_at = now() WHERE id = ${Number(refUserId)}`;
+            }
+            
+            if (refUserId && tier) {
+              const v = tier.toLowerCase();
+              if (["casual", "dating", "business"].includes(v)) {
+                await tx`UPDATE auth_users SET membership_tier = ${v} WHERE id = ${Number(refUserId)}`;
+              }
+            }
+
+            logger.business(BusinessEvent.SUBSCRIPTION_CREATED, {
+              userId: refUserId ? Number(refUserId) : null,
+              tier,
+              kind,
+              stripeCustomerId: customerId,
+            });
+          } else if (mode === "payment" && kind === "message_credits") {
+            const userId = session.metadata?.user_id;
+            const credits = session.metadata?.credits;
+            
+            if (userId && credits) {
+              const creditsInt = parseInt(credits, 10);
+              
+              await tx`
+                INSERT INTO user_message_credits (user_id, credits_remaining, total_purchased)
+                VALUES (${Number(userId)}, ${creditsInt}, ${creditsInt})
+                ON CONFLICT (user_id) 
+                DO UPDATE SET 
+                  credits_remaining = COALESCE(user_message_credits.credits_remaining, 0) + ${creditsInt},
+                  total_purchased = COALESCE(user_message_credits.total_purchased, 0) + ${creditsInt},
+                  updated_at = NOW()
+              `;
+              
+              logger.business(BusinessEvent.PAYMENT_SUCCEEDED, {
+                userId: Number(userId),
+                kind: 'message_credits',
+                credits: creditsInt,
+                amount: session.amount_total,
+              });
+              
+              logger.info('Message credits added successfully', {
+                userId: Number(userId),
+                creditsAdded: creditsInt,
+                sessionId: session.id,
+              });
             }
           }
-
-          logger.business(BusinessEvent.SUBSCRIPTION_CREATED, {
-            userId: refUserId ? Number(refUserId) : null,
-            tier,
-            kind,
-            stripeCustomerId: customerId,
-          });
-        } else if (mode === "payment" && kind === "message_credits") {
-          const userId = session.metadata?.user_id;
-          const credits = session.metadata?.credits;
-          
-          if (userId && credits) {
-            const creditsInt = parseInt(credits, 10);
-            
-            await sql`
-              INSERT INTO user_message_credits (user_id, credits_remaining, total_purchased)
-              VALUES (${Number(userId)}, ${creditsInt}, ${creditsInt})
-              ON CONFLICT (user_id) 
-              DO UPDATE SET 
-                credits_remaining = user_message_credits.credits_remaining + ${creditsInt},
-                total_purchased = user_message_credits.total_purchased + ${creditsInt},
-                updated_at = NOW()
-            `;
-            
-            logger.business(BusinessEvent.PAYMENT_SUCCEEDED, {
-              userId: Number(userId),
-              kind: 'message_credits',
-              credits: creditsInt,
-              amount: session.amount_total,
-            });
-            
-            logger.info('Message credits added successfully', {
-              userId: Number(userId),
-              creditsAdded: creditsInt,
-              sessionId: session.id,
-            });
-          }
-        }
+        });
         break;
       }
       
@@ -185,15 +187,17 @@ export async function POST(request: Request): Promise<Response> {
             if (scheduledTier && scheduledTier !== 'free') {
               const tierName = scheduledTier.toLowerCase();
               if (['casual', 'dating', 'business'].includes(tierName)) {
-                await sql`
-                  UPDATE auth_users 
-                  SET membership_tier = ${tierName},
-                      scheduled_tier = NULL,
-                      tier_change_at = NULL,
-                      subscription_status = 'active',
-                      last_check_subscription_status_at = now()
-                  WHERE stripe_id = ${customerId}
-                `;
+                await sql.begin(async (tx) => {
+                  await tx`
+                    UPDATE auth_users 
+                    SET membership_tier = ${tierName},
+                        scheduled_tier = NULL,
+                        tier_change_at = NULL,
+                        subscription_status = 'active',
+                        last_check_subscription_status_at = now()
+                    WHERE stripe_id = ${customerId}
+                  `;
+                });
                 
                 await stripe.subscriptions.update(subscriptionId, {
                   metadata: { scheduled_tier: '' }
@@ -221,7 +225,9 @@ export async function POST(request: Request): Promise<Response> {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as StripeCustomerId;
         if (customerId) {
-          await sql`UPDATE auth_users SET subscription_status = 'past_due', last_check_subscription_status_at = now() WHERE stripe_id = ${customerId}`;
+          await sql.begin(async (tx) => {
+            await tx`UPDATE auth_users SET subscription_status = 'past_due', last_check_subscription_status_at = now() WHERE stripe_id = ${customerId}`;
+          });
           
           logger.warn('Invoice payment failed', {
             customerId,
@@ -238,31 +244,33 @@ export async function POST(request: Request): Promise<Response> {
         if (customerId) {
           const scheduledTier = subscription.metadata?.scheduled_tier;
           
-          if (scheduledTier === "free") {
-            await sql`
-              UPDATE auth_users 
-              SET subscription_status = 'canceled', 
-                  membership_tier = 'free',
-                  scheduled_tier = NULL,
-                  tier_change_at = NULL,
-                  last_check_subscription_status_at = now() 
-              WHERE stripe_id = ${customerId}
-            `;
-            
-            logger.business(BusinessEvent.SUBSCRIPTION_CANCELLED, {
-              stripeCustomerId: customerId,
-              reason: 'downgrade_to_free',
-            });
-            
-            logger.info('Finalized downgrade to free tier', { customerId });
-          } else {
-            await sql`UPDATE auth_users SET subscription_status = 'canceled', last_check_subscription_status_at = now() WHERE stripe_id = ${customerId}`;
-            
-            logger.business(BusinessEvent.SUBSCRIPTION_CANCELLED, {
-              stripeCustomerId: customerId,
-              reason: 'subscription_deleted',
-            });
-          }
+          await sql.begin(async (tx) => {
+            if (scheduledTier === "free") {
+              await tx`
+                UPDATE auth_users 
+                SET subscription_status = 'canceled', 
+                    membership_tier = 'free',
+                    scheduled_tier = NULL,
+                    tier_change_at = NULL,
+                    last_check_subscription_status_at = now() 
+                WHERE stripe_id = ${customerId}
+              `;
+              
+              logger.business(BusinessEvent.SUBSCRIPTION_CANCELLED, {
+                stripeCustomerId: customerId,
+                reason: 'downgrade_to_free',
+              });
+              
+              logger.info('Finalized downgrade to free tier', { customerId });
+            } else {
+              await tx`UPDATE auth_users SET subscription_status = 'canceled', last_check_subscription_status_at = now() WHERE stripe_id = ${customerId}`;
+              
+              logger.business(BusinessEvent.SUBSCRIPTION_CANCELLED, {
+                stripeCustomerId: customerId,
+                reason: 'subscription_deleted',
+              });
+            }
+          });
         }
         break;
       }
@@ -278,15 +286,17 @@ export async function POST(request: Request): Promise<Response> {
           if (user?.scheduled_tier && scheduledTier && scheduledTier !== 'free') {
             const tierName = scheduledTier.toLowerCase();
             if (['casual', 'dating', 'business'].includes(tierName)) {
-              await sql`
-                UPDATE auth_users 
-                SET membership_tier = ${tierName},
-                    scheduled_tier = NULL,
-                    tier_change_at = NULL,
-                    subscription_status = 'active',
-                    last_check_subscription_status_at = now()
-                WHERE stripe_id = ${customerId}
-              `;
+              await sql.begin(async (tx) => {
+                await tx`
+                  UPDATE auth_users 
+                  SET membership_tier = ${tierName},
+                      scheduled_tier = NULL,
+                      tier_change_at = NULL,
+                      subscription_status = 'active',
+                      last_check_subscription_status_at = now()
+                  WHERE stripe_id = ${customerId}
+                `;
+              });
               
               logger.business(BusinessEvent.SUBSCRIPTION_UPDATED, {
                 stripeCustomerId: customerId,

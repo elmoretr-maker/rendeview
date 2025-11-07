@@ -236,56 +236,51 @@ export async function POST(request, { params }) {
         }, { status: 429 });
       }
 
-      // Use credit
-      await sql`
-        UPDATE user_message_credits
-        SET credits_remaining = credits_remaining - 1,
-            total_spent = total_spent + 1,
-            updated_at = NOW()
-        WHERE user_id = ${uid}
-      `;
+      // Use credit within transaction
+      await sql.begin(async (tx) => {
+        await tx`
+          UPDATE user_message_credits
+          SET credits_remaining = COALESCE(credits_remaining, 0) - 1,
+              total_spent = COALESCE(total_spent, 0) + 1,
+              updated_at = NOW()
+          WHERE user_id = ${uid}
+        `;
+      });
     }
 
-    // Track conversation-specific message count
-    await sql`
-      INSERT INTO conversation_daily_messages (conversation_id, user_id, messages_sent, date)
-      VALUES (${conversationId}, ${uid}, 1, ${today})
-      ON CONFLICT (conversation_id, user_id, date) DO UPDATE SET
-        messages_sent = conversation_daily_messages.messages_sent + 1,
-        updated_at = NOW()
-    `;
+    // Use transaction for atomic message sending and tracking
+    let messageRow;
+    await sql.begin(async (tx) => {
+      // Track conversation-specific message count
+      await tx`
+        INSERT INTO conversation_daily_messages (conversation_id, user_id, messages_sent, date)
+        VALUES (${conversationId}, ${uid}, 1, ${today})
+        ON CONFLICT (conversation_id, user_id, date) DO UPDATE SET
+          messages_sent = COALESCE(conversation_daily_messages.messages_sent, 0) + 1,
+          updated_at = NOW()
+      `;
 
-    // Also track in legacy system for backward compatibility
-    const dailyCountRows = await sql`
-      SELECT messages_sent FROM user_daily_message_counts 
-      WHERE user_id = ${uid} AND date = ${today}
-    `;
-    
-    if (!dailyCountRows?.length) {
-      await sql`
+      // Also track in legacy system for backward compatibility
+      await tx`
         INSERT INTO user_daily_message_counts (user_id, messages_sent, date)
         VALUES (${uid}, 1, ${today})
+        ON CONFLICT (user_id, date) DO UPDATE SET
+          messages_sent = COALESCE(user_daily_message_counts.messages_sent, 0) + 1,
+          updated_at = NOW()
       `;
-    } else {
-      await sql`
-        UPDATE user_daily_message_counts
-        SET messages_sent = messages_sent + 1,
-            updated_at = NOW()
-        WHERE user_id = ${uid} AND date = ${today}
+
+      messageRow = await tx`
+        INSERT INTO messages (conversation_id, sender_id, body, created_at)
+        VALUES (${conversationId}, ${uid}, ${body}, NOW())
+        RETURNING id, sender_id, body, created_at
       `;
-    }
 
-    const messageRow = await sql`
-      INSERT INTO messages (conversation_id, sender_id, body, created_at)
-      VALUES (${conversationId}, ${uid}, ${body}, NOW())
-      RETURNING id, sender_id, body, created_at
-    `;
-
-    await sql`
-      UPDATE conversations
-      SET updated_at = NOW(), last_message_at = NOW()
-      WHERE id = ${conversationId}
-    `;
+      await tx`
+        UPDATE conversations
+        SET updated_at = NOW(), last_message_at = NOW()
+        WHERE id = ${conversationId}
+      `;
+    });
 
     return Response.json({ message: messageRow[0] }, { status: 201 });
   } catch (err) {

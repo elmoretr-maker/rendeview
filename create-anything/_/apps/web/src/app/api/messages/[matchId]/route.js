@@ -233,7 +233,7 @@ export async function POST(request, { params: { matchId } }) {
       deductionSource = 'first_encounter';
       await sql`
         UPDATE match_first_encounter_messages 
-        SET messages_remaining = messages_remaining - 1, updated_at = NOW()
+        SET messages_remaining = COALESCE(messages_remaining, 0) - 1, updated_at = NOW()
         WHERE match_id = ${matchId} AND user_id = ${uid}
       `;
       remainingAfter.firstEncounter = firstEncounterRemaining - 1;
@@ -244,7 +244,7 @@ export async function POST(request, { params: { matchId } }) {
         INSERT INTO user_daily_message_counts (user_id, date, messages_sent)
         VALUES (${uid}, ${today}, 1)
         ON CONFLICT (user_id, date) 
-        DO UPDATE SET messages_sent = user_daily_message_counts.messages_sent + 1, updated_at = NOW()
+        DO UPDATE SET messages_sent = COALESCE(user_daily_message_counts.messages_sent, 0) + 1, updated_at = NOW()
       `;
       remainingAfter.dailyTier = dailyMessagesRemaining - 1;
     } else if (creditsRemaining > 0) {
@@ -252,8 +252,8 @@ export async function POST(request, { params: { matchId } }) {
       
       await sql`
         UPDATE user_message_credits 
-        SET credits_remaining = credits_remaining - 1, 
-            total_spent = total_spent + 1,
+        SET credits_remaining = COALESCE(credits_remaining, 0) - 1, 
+            total_spent = COALESCE(total_spent, 0) + 1,
             updated_at = NOW()
         WHERE user_id = ${uid}
       `;
@@ -271,7 +271,7 @@ export async function POST(request, { params: { matchId } }) {
         INSERT INTO match_daily_message_counts (match_id, user_id, date, messages_sent)
         VALUES (${matchId}, ${uid}, ${today}, 1)
         ON CONFLICT (match_id, user_id, date)
-        DO UPDATE SET messages_sent = match_daily_message_counts.messages_sent + 1, updated_at = NOW()
+        DO UPDATE SET messages_sent = COALESCE(match_daily_message_counts.messages_sent, 0) + 1, updated_at = NOW()
       `;
       remainingAfter.perMatchDaily = perMatchDailyRemaining - 1;
     }

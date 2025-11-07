@@ -224,58 +224,6 @@ export async function POST(request: Request): Promise<Response> {
         tier,
       });
       
-      // Fallback: when the Stripe proxy returns HTML (common in certain dev environments)
-      if (msg.includes("Unexpected token '<'")) {
-        try {
-          if (kind === "subscription" && tier) {
-            const v = String(tier).toLowerCase();
-            if (["casual", "dating", "business"].includes(v)) {
-              await sql`
-                UPDATE auth_users 
-                SET membership_tier = ${v}, 
-                    subscription_status = 'active', 
-                    last_check_subscription_status_at = now() 
-                WHERE id = ${uid}
-              `;
-              
-              logger.warn('Fallback membership update applied', {
-                userId: uid,
-                tier: v,
-              });
-            }
-          }
-        } catch (e2: any) {
-          logger.error('Fallback membership update failed', e2, { userId: uid });
-        }
-        return Response.json({ url: successUrl + "?mockStripe=1", sessionId: 'cs_test_123' });
-      }
-      
-      // Development fallback
-      if (process.env.ENV === "DEVELOPMENT") {
-        try {
-          if (kind === "subscription" && tier) {
-            const v = String(tier).toLowerCase();
-            if (["casual", "dating", "business"].includes(v)) {
-              await sql`
-                UPDATE auth_users 
-                SET membership_tier = ${v}, 
-                    subscription_status = 'active', 
-                    last_check_subscription_status_at = now() 
-                WHERE id = ${uid}
-              `;
-              
-              logger.warn('Dev fallback membership update applied', {
-                userId: uid,
-                tier: v,
-              });
-            }
-          }
-        } catch (e2: any) {
-          logger.error('Dev fallback membership update failed', e2, { userId: uid });
-        }
-        return Response.json({ url: successUrl + "?mockStripe=1", sessionId: 'cs_test_123' });
-      }
-      
       logger.business(BusinessEvent.PAYMENT_FAILED, {
         userId: uid,
         error: msg,

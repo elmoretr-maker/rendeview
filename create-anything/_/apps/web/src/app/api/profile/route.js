@@ -42,40 +42,10 @@ export async function GET(request) {
   }
 }
 
-// TEMPORARY STABILIZATION: Mock photo upload endpoint
-// This POST handler returns placeholder image URLs to unblock onboarding when uploads fail.
-// It does not persist anything; callers should subsequently save via PUT /api/profile.
 export async function POST(request) {
-  try {
-    const userId = await getAuthenticatedUserId(request);
-    if (!userId) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    let count = 3;
-    try {
-      const body = await request.json();
-      const desired = Number(body?.count);
-      if (Number.isFinite(desired)) {
-        count = Math.max(1, Math.min(6, Math.trunc(desired)));
-      }
-    } catch {}
-
-    const placeholders = [
-      "https://placehold.co/400x400/8A2BE2/FFFFFF?text=Photo+1",
-      "https://placehold.co/400x400/8A2BE2/FFFFFF?text=Photo+2",
-      "https://placehold.co/400x400/8A2BE2/FFFFFF?text=Photo+3",
-      "https://placehold.co/400x400/8A2BE2/FFFFFF?text=Photo+4",
-      "https://placehold.co/400x400/8A2BE2/FFFFFF?text=Photo+5",
-      "https://placehold.co/400x400/8A2BE2/FFFFFF?text=Photo+6",
-    ];
-
-    const urls = placeholders.slice(0, count);
-    return Response.json({ ok: true, urls }, { status: 200 });
-  } catch (err) {
-    console.error("POST /api/profile mock upload error", err);
-    return Response.json({ error: "Internal Server Error" }, { status: 500 });
-  }
+  return Response.json({ 
+    error: "Direct photo upload not supported. Use proper upload endpoints." 
+  }, { status: 400 });
 }
 
 export async function PUT(request) {
@@ -186,30 +156,23 @@ export async function PUT(request) {
       await sql(q, [...values, userId]);
     }
 
-    // Media updates with temporary placeholder fallback to stabilize onboarding
+    // Media updates - production version requires valid URLs
     let responseMedia = [];
     if (Array.isArray(body.media)) {
-      const usePlaceholders = Boolean(body.media_placeholder);
-      const placeholders = [
-        "https://placehold.co/400x400/8A2BE2/FFFFFF?text=Photo+1",
-        "https://placehold.co/400x400/8A2BE2/FFFFFF?text=Photo+2",
-        "https://placehold.co/400x400/8A2BE2/FFFFFF?text=Photo+3",
-        "https://placehold.co/400x400/8A2BE2/FFFFFF?text=Photo+4",
-        "https://placehold.co/400x400/8A2BE2/FFFFFF?text=Photo+5",
-        "https://placehold.co/400x400/8A2BE2/FFFFFF?text=Photo+6",
-      ];
-
       await sql.transaction([
         sql`DELETE FROM profile_media WHERE user_id = ${userId}`,
       ]);
 
       for (let i = 0; i < body.media.length; i++) {
         const m = body.media[i];
+        if (!m?.url) {
+          return Response.json({ 
+            error: "All media items must have a valid URL" 
+          }, { status: 400 });
+        }
+        
         const type = m?.type || "photo";
-        const url =
-          usePlaceholders || !m?.url
-            ? placeholders[i] || placeholders[0]
-            : m.url;
+        const url = m.url;
         const sortOrder = Number.isInteger(m?.sort_order) ? m.sort_order : i;
         await sql`INSERT INTO profile_media (user_id, type, url, sort_order) VALUES (${userId}, ${type}, ${url}, ${sortOrder})`;
         responseMedia.push({ type, url, sort_order: sortOrder });

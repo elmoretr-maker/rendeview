@@ -220,15 +220,20 @@ export async function POST(request) {
     if (myTier === "free") {
       const now = new Date();
       
-      // Set first_video_call_at if this is their very first video call ever
-      if (!firstEverCallDate) {
-        await sql`UPDATE auth_users SET 
-          video_meetings_count = video_meetings_count + 1,
-          first_video_call_at = ${now.toISOString()}
-        WHERE id = ${session.user.id}`;
-      } else {
-        await sql`UPDATE auth_users SET video_meetings_count = video_meetings_count + 1 WHERE id = ${session.user.id}`;
-      }
+      // Use transaction for atomic meeting count increment
+      await sql.begin(async (tx) => {
+        // Set first_video_call_at if this is their very first video call ever
+        if (!firstEverCallDate) {
+          await tx`UPDATE auth_users SET 
+            video_meetings_count = COALESCE(video_meetings_count, 0) + 1,
+            first_video_call_at = ${now.toISOString()}
+          WHERE id = ${session.user.id}`;
+        } else {
+          await tx`UPDATE auth_users SET 
+            video_meetings_count = COALESCE(video_meetings_count, 0) + 1 
+          WHERE id = ${session.user.id}`;
+        }
+      });
       
       // This will be their 3rd meeting after increment
       isFinalFreeMeeting = (meetingCount + 1) === 3;

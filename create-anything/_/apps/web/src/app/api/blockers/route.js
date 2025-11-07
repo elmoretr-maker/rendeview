@@ -57,46 +57,53 @@ export async function POST(request) {
       return Response.json({ error: "Invalid user" }, { status: 400 });
     }
 
-    const result = await sql`
-      INSERT INTO blockers (blocker_id, blocked_id)
-      VALUES (${uid}, ${blockedId})
-      ON CONFLICT (blocker_id, blocked_id) DO NOTHING
-      RETURNING id`;
+    let blockCount = 0;
+    let warning = null;
+    let wasNewBlock = false;
 
-    if (result.length > 0) {
-      const [updated] = await sql`
-        UPDATE auth_users 
-        SET block_count = COALESCE(block_count, 0) + 1 
-        WHERE id = ${blockedId}
-        RETURNING block_count, name`;
+    await sql.begin(async (tx) => {
+      const result = await tx`
+        INSERT INTO blockers (blocker_id, blocked_id)
+        VALUES (${uid}, ${blockedId})
+        ON CONFLICT (blocker_id, blocked_id) DO NOTHING
+        RETURNING id`;
 
-      const blockCount = updated?.block_count || 0;
-      const userName = updated?.name || '';
-      let warning = null;
+      wasNewBlock = result.length > 0;
 
-      if (blockCount === 3) {
-        await sql`
+      if (wasNewBlock) {
+        const [updated] = await tx`
           UPDATE auth_users 
-          SET flagged_for_admin = true 
+          SET block_count = COALESCE(block_count, 0) + 1 
+          WHERE id = ${blockedId}
+          RETURNING block_count, name`;
+
+        blockCount = updated?.block_count || 0;
+        const userName = updated?.name || '';
+
+        if (blockCount === 3) {
+          await tx`
+            UPDATE auth_users 
+            SET flagged_for_admin = true 
+            WHERE id = ${blockedId}`;
+          warning = `This user (${userName}) has now been blocked by 3 people and has been flagged for admin review.`;
+        } else if (blockCount >= 4) {
+          await tx`
+            UPDATE auth_users 
+            SET account_status = 'under_review', flagged_for_admin = true 
+            WHERE id = ${blockedId}`;
+          warning = `This user (${userName}) has been blocked by ${blockCount} people and their account is now under review.`;
+        }
+      } else {
+        const [blockedUser] = await tx`
+          SELECT block_count 
+          FROM auth_users 
           WHERE id = ${blockedId}`;
-        warning = `This user (${userName}) has now been blocked by 3 people and has been flagged for admin review.`;
-      } else if (blockCount >= 4) {
-        await sql`
-          UPDATE auth_users 
-          SET account_status = 'under_review', flagged_for_admin = true 
-          WHERE id = ${blockedId}`;
-        warning = `This user (${userName}) has been blocked by ${blockCount} people and their account is now under review.`;
+        
+        blockCount = blockedUser?.block_count || 0;
       }
+    });
 
-      return Response.json({ ok: true, warning, blockCount });
-    }
-
-    const [blockedUser] = await sql`
-      SELECT block_count 
-      FROM auth_users 
-      WHERE id = ${blockedId}`;
-    
-    return Response.json({ ok: true, blockCount: blockedUser?.block_count || 0 });
+    return Response.json({ ok: true, warning, blockCount });
   } catch (err) {
     console.error("POST /api/blockers error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });
