@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import SessionExpired from "@/components/SessionExpired";
 import MatchCelebration from "@/components/MatchCelebration";
+import { RewardStatusBanner } from "@/components/RewardStatusBanner";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { DiscoveryCardSkeleton } from "@/app/components/SkeletonLoader";
@@ -578,6 +579,11 @@ function DiscoveryContent() {
         onClose={() => setShowCelebration(false)}
         matchedUser={matchedUser}
       />
+      
+      {/* Reward Status Banner - Show monthly video call progress */}
+      <Box px={4} pt={4}>
+        <RewardStatusBanner />
+      </Box>
       
       {user?.membership_tier === 'free' && (
         <Box px={4} pt={4}>

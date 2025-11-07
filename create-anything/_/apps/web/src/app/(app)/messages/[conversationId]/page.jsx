@@ -8,6 +8,12 @@ import SessionExpired from "@/components/SessionExpired";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { BuyCreditsModal } from "@/components/BuyCreditsModal";
 import { SmartNudge } from "@/components/SmartNudge";
+import { 
+  LongMessagePrompt,
+  VideoSchedulingNudge,
+  DecayModePrompt,
+  PreVideoLimitReached
+} from "@/components/SmartPrompts";
 import { Video, X, Clock, Crown, ArrowLeft } from "lucide-react";
 import { containsExternalContact, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
@@ -60,6 +66,17 @@ function ChatContent() {
   // Cooldown timer state for free tier limit
   const [videoCooldown, setVideoCooldown] = useState(null);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  
+  // Smart prompts state
+  const [showLongMessagePrompt, setShowLongMessagePrompt] = useState(false);
+  const [showVideoNudge, setShowVideoNudge] = useState(false);
+  const [showDecayPrompt, setShowDecayPrompt] = useState(false);
+  const [showLimitPrompt, setShowLimitPrompt] = useState(false);
+  
+  // Track if prompts have been dismissed (persist dismissal)
+  const longMessageDismissed = useRef(false);
+  const videoNudgeDismissed = useRef(false);
+  const decayModeDismissed = useRef(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["messages", conversationId],
@@ -103,11 +120,11 @@ function ChatContent() {
     enabled: !!data?.otherUser?.id,
   });
 
-  // Fetch message quota
+  // Fetch message quota (using new Progressive Video Unlock API)
   const { data: quotaData, refetch: refetchQuota } = useQuery({
-    queryKey: ["messageQuota", conversationId],
+    queryKey: ["conversationQuota", conversationId],
     queryFn: async () => {
-      const res = await fetch(`/api/message-quota?conversationId=${conversationId}`);
+      const res = await fetch(`/api/messages/conversation-quota?conversationId=${conversationId}`);
       if (res.status === 403) {
         // Conversation blocked, return null
         return null;
@@ -119,6 +136,39 @@ function ChatContent() {
     refetchInterval: 10000,
     retry: false, // Don't retry quota fetches
   });
+  
+  // Monitor text length for long message prompt (280+ characters)
+  useEffect(() => {
+    if (text.length >= 280 && !showLongMessagePrompt && !longMessageDismissed.current) {
+      setShowLongMessagePrompt(true);
+    }
+    // Reset dismissal when text goes below threshold (user deleted text)
+    if (text.length < 280) {
+      longMessageDismissed.current = false;
+    }
+  }, [text, showLongMessagePrompt]);
+  
+  // Monitor message count for video scheduling nudge (at message 8)
+  useEffect(() => {
+    if (quotaData?.messagesSentToday === 8 && quotaData?.messagesRemaining === 2 && !quotaData?.hasCompletedVideo && !videoNudgeDismissed.current) {
+      setShowVideoNudge(true);
+    }
+    // Reset dismissal when message count changes (user sent another message)
+    if (quotaData?.messagesSentToday !== 8) {
+      videoNudgeDismissed.current = false;
+    }
+  }, [quotaData]);
+  
+  // Monitor decay mode
+  useEffect(() => {
+    if (quotaData?.isDecayMode && quotaData?.messagesRemaining <= 1 && !showDecayPrompt && !decayModeDismissed.current) {
+      setShowDecayPrompt(true);
+    }
+    // Reset dismissal when decay mode ends (video call completed)
+    if (!quotaData?.isDecayMode) {
+      decayModeDismissed.current = false;
+    }
+  }, [quotaData, showDecayPrompt]);
 
   // Update note content when noteData changes
   React.useEffect(() => {
@@ -205,9 +255,18 @@ function ChatContent() {
         return;
       }
       
+      // Progressive Video Unlock - Show appropriate prompt based on reason
       if (e?.data?.quotaExceeded) {
-        toast.error("Out of messages!");
-        setShowBuyCreditsModal(true);
+        const reason = e?.data?.reason;
+        
+        if (reason === 'pre_video_limit') {
+          setShowLimitPrompt(true); // PreVideoLimitReached prompt
+        } else if (reason === 'decay_limit') {
+          setShowDecayPrompt(true); // DecayModePrompt
+        } else {
+          // Generic limit reached - show buy credits modal
+          setShowBuyCreditsModal(true);
+        }
         return;
       }
       
@@ -938,6 +997,70 @@ function ChatContent() {
           </ModalBody>
         </ModalContent>
       </Modal>
+      
+      {/* Smart Prompts for Progressive Video Unlock */}
+      {showLongMessagePrompt && (
+        <LongMessagePrompt
+          onKeepTyping={() => {
+            longMessageDismissed.current = true;
+            setShowLongMessagePrompt(false);
+            // Text continues as-is, user can send (will cost 1 credit if over limit)
+          }}
+          onScheduleVideo={() => {
+            longMessageDismissed.current = true;
+            setShowLongMessagePrompt(false);
+            navigate(`/schedule/propose/${data?.otherUser?.id}`);
+          }}
+          onDismiss={() => {
+            longMessageDismissed.current = true;
+            setShowLongMessagePrompt(false);
+            setText(""); // Clear the text
+          }}
+        />
+      )}
+      
+      {showVideoNudge && (
+        <VideoSchedulingNudge
+          onScheduleVideo={() => {
+            videoNudgeDismissed.current = true;
+            setShowVideoNudge(false);
+            navigate(`/schedule/propose/${data?.otherUser?.id}`);
+          }}
+          onDismiss={() => {
+            videoNudgeDismissed.current = true;
+            setShowVideoNudge(false);
+          }}
+          messagesRemaining={quotaData?.messagesRemaining || 0}
+        />
+      )}
+      
+      {showDecayPrompt && (
+        <DecayModePrompt
+          onScheduleVideo={() => {
+            decayModeDismissed.current = true;
+            setShowDecayPrompt(false);
+            navigate(`/schedule/propose/${data?.otherUser?.id}`);
+          }}
+          onDismiss={() => {
+            decayModeDismissed.current = true;
+            setShowDecayPrompt(false);
+          }}
+        />
+      )}
+      
+      {showLimitPrompt && (
+        <PreVideoLimitReached
+          onScheduleVideo={() => {
+            setShowLimitPrompt(false);
+            navigate(`/schedule/propose/${data?.otherUser?.id}`);
+          }}
+          onBuyCredits={() => {
+            setShowLimitPrompt(false);
+            setShowBuyCreditsModal(true);
+          }}
+          onDismiss={() => setShowLimitPrompt(false)}
+        />
+      )}
     </Box>
   );
 }
