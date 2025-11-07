@@ -624,20 +624,53 @@ export default function Profile() {
           paddingBottom: insets.bottom + 24,
         }}
       >
-        <Text
-          style={{
-            fontSize: 28,
-            fontWeight: "700",
-            marginBottom: 8,
-            color: COLORS.text,
-            ...STYLES.text.bold,
-          }}
-        >
-          Your Profile
-        </Text>
-        <Text style={{ color: COLORS.text, opacity: 0.7, marginBottom: 24, ...STYLES.text.regular }}>
-          Update your profile information, photos, and preferences
-        </Text>
+        {/* Header with Membership Tier Badge */}
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                fontSize: 28,
+                fontWeight: "700",
+                marginBottom: 8,
+                color: COLORS.text,
+                ...STYLES.text.bold,
+              }}
+            >
+              My Profile
+            </Text>
+            <Text style={{ color: COLORS.text, opacity: 0.7, ...STYLES.text.regular }}>
+              Update your profile information
+            </Text>
+          </View>
+          <View style={{
+            backgroundColor: "#0D9488",
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 8,
+            marginLeft: 8,
+          }}>
+            <Text style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "700", ...STYLES.text.bold }}>
+              {tier.toUpperCase()}
+            </Text>
+          </View>
+        </View>
+
+        {/* ========== BASIC INFO SECTION ========== */}
+        <View style={{ 
+          backgroundColor: "#F3F4F6", 
+          padding: 12, 
+          borderRadius: 8, 
+          marginBottom: 16,
+          borderLeftWidth: 4,
+          borderLeftColor: COLORS.primary
+        }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons name="person-outline" size={20} color={COLORS.primary} style={{ marginRight: 8 }} />
+            <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, ...STYLES.text.bold }}>
+              Basic Info
+            </Text>
+          </View>
+        </View>
 
         {/* Name field */}
         <Text style={{ fontWeight: "600", marginBottom: 8, color: COLORS.text, ...STYLES.text.semiBold }}>
@@ -739,12 +772,25 @@ export default function Profile() {
             : `${interests.length}/${INTERESTS_CONFIG.MAX_ALLOWED} selected`}
         </Text>
 
-        {/* Preferences Section */}
-        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 8, color: COLORS.text, ...STYLES.text.bold }}>
-          About You (Optional)
-        </Text>
+        {/* ========== PREFERENCES SECTION ========== */}
+        <View style={{ 
+          backgroundColor: "#F3F4F6", 
+          padding: 12, 
+          borderRadius: 8, 
+          marginBottom: 16,
+          marginTop: 8,
+          borderLeftWidth: 4,
+          borderLeftColor: COLORS.primary
+        }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons name="heart-outline" size={20} color={COLORS.primary} style={{ marginRight: 8 }} />
+            <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, ...STYLES.text.bold }}>
+              Preferences & Lifestyle
+            </Text>
+          </View>
+        </View>
         <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 16, ...STYLES.text.regular }}>
-          Help us find better matches by sharing more about yourself
+          Help us find better matches by sharing more about yourself (all optional)
         </Text>
 
         {/* Preference Fields in Grid */}
@@ -787,8 +833,26 @@ export default function Profile() {
           ))}
         </View>
 
+        {/* ========== MEDIA SECTION ========== */}
+        <View style={{ 
+          backgroundColor: "#F3F4F6", 
+          padding: 12, 
+          borderRadius: 8, 
+          marginBottom: 16,
+          marginTop: 8,
+          borderLeftWidth: 4,
+          borderLeftColor: COLORS.primary
+        }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons name="images-outline" size={20} color={COLORS.primary} style={{ marginRight: 8 }} />
+            <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, ...STYLES.text.bold }}>
+              Photos & Videos
+            </Text>
+          </View>
+        </View>
+
         {/* Photos section */}
-        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text, ...STYLES.text.bold }}>
+        <Text style={{ fontSize: 16, fontWeight: "700", marginBottom: 12, color: COLORS.text, ...STYLES.text.bold }}>
           Photos ({photos.length}/{limits.maxPhotos}) *
         </Text>
         {photos.length === 0 ? (
@@ -863,7 +927,7 @@ export default function Profile() {
         </TouchableOpacity>
 
         {/* Video section */}
-        <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12, color: COLORS.text, ...STYLES.text.bold }}>
+        <Text style={{ fontSize: 16, fontWeight: "700", marginBottom: 12, color: COLORS.text, ...STYLES.text.bold }}>
           Video Introduction (Optional)
         </Text>
         <Text style={{ fontSize: 12, color: COLORS.text, opacity: 0.6, marginBottom: 12, ...STYLES.text.regular }}>
@@ -1036,10 +1100,28 @@ export default function Profile() {
           </View>
         )}
 
+        {/* ========== AVAILABILITY SECTION ========== */}
+        <View style={{ 
+          backgroundColor: "#F3F4F6", 
+          padding: 12, 
+          borderRadius: 8, 
+          marginBottom: 16,
+          marginTop: 8,
+          borderLeftWidth: 4,
+          borderLeftColor: COLORS.primary
+        }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons name="time-outline" size={20} color={COLORS.primary} style={{ marginRight: 8 }} />
+            <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, ...STYLES.text.bold }}>
+              Availability
+            </Text>
+          </View>
+        </View>
+
         {/* Availability Settings */}
         <View style={{ backgroundColor: COLORS.white, padding: 16, borderRadius: 12, marginBottom: 16, borderWidth: 1, borderColor: "#E5E7EB" }}>
-          <Text style={{ fontSize: 16, fontWeight: "600", color: COLORS.text, marginBottom: 12, ...STYLES.text.semiBold }}>
-            Availability Settings
+          <Text style={{ fontSize: 14, fontWeight: "600", color: COLORS.text, marginBottom: 12, ...STYLES.text.semiBold }}>
+            Online & Video Call Settings
           </Text>
           
           {/* Immediate Availability Toggle */}
@@ -1121,6 +1203,24 @@ export default function Profile() {
           </View>
         </View>
 
+        {/* ========== LOCATION SECTION ========== */}
+        <View style={{ 
+          backgroundColor: "#F3F4F6", 
+          padding: 12, 
+          borderRadius: 8, 
+          marginBottom: 16,
+          marginTop: 8,
+          borderLeftWidth: 4,
+          borderLeftColor: COLORS.primary
+        }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons name="location-outline" size={20} color={COLORS.primary} style={{ marginRight: 8 }} />
+            <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, ...STYLES.text.bold }}>
+              Location & Discovery
+            </Text>
+          </View>
+        </View>
+
         {/* Location Settings */}
         <LocationSettings
           initialLatitude={latitude}
@@ -1129,6 +1229,24 @@ export default function Profile() {
           onSave={handleLocationSave}
           fontLoaded={loaded}
         />
+
+        {/* ========== ACCOUNT ACTIONS SECTION ========== */}
+        <View style={{ 
+          backgroundColor: "#F3F4F6", 
+          padding: 12, 
+          borderRadius: 8, 
+          marginBottom: 16,
+          marginTop: 16,
+          borderLeftWidth: 4,
+          borderLeftColor: COLORS.primary
+        }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Ionicons name="settings-outline" size={20} color={COLORS.primary} style={{ marginRight: 8 }} />
+            <Text style={{ fontSize: 18, fontWeight: "700", color: COLORS.text, ...STYLES.text.bold }}>
+              Account & Settings
+            </Text>
+          </View>
+        </View>
 
         {/* Complete button */}
         <TouchableOpacity
