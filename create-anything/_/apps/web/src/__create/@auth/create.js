@@ -18,12 +18,24 @@ function getCookie(request, name) {
 export default function CreateAuth(config = {}) {
         const adapter = config.adapter;
         
-        const auth = async () => {
-                const c = getContext();
-                const req = c.req.raw;
+        const auth = async (explicitRequest = null) => {
+                let reqHeaders;
+                
+                if (explicitRequest) {
+                        // Path 1: We are in a Next.js API Route. Get headers from the passed request.
+                        reqHeaders = explicitRequest.headers;
+                } else {
+                        // Path 2: We are in a Hono context. Get headers from the context.
+                        const honoReq = getContext()?.req?.raw;
+                        reqHeaders = honoReq ? honoReq.headers : new Headers();
+                }
+                
+                // Create a minimal, normalized req object that ONLY contains headers.
+                // This prevents the "Cannot read 'type'" error.
+                const minimalReq = { headers: reqHeaders };
                 
                 const token = await getToken({
-                        req,
+                        req: minimalReq,
                         secret: process.env.AUTH_SECRET,
                         secureCookie: process.env.AUTH_URL.startsWith('https'),
                 });

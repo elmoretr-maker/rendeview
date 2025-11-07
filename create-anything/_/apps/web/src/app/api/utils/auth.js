@@ -4,11 +4,11 @@ import sql from "./sql";
 /**
  * Get authenticated user ID from session
  * 
- * @param {Request} [request] - Optional Request object (unused, kept for API compatibility)
+ * @param {Request} [request] - Optional Request object for Next.js API routes
  * @returns {Promise<number|null>} User ID or null if not authenticated
  */
 export async function getAuthenticatedUserId(request = null) {
-  const session = await auth();
+  const session = await auth(request);
   return session?.user?.id || null;
 }
 
