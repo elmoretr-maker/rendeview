@@ -421,8 +421,8 @@ const SandboxBridge: FC = () => {
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <head>
+    <html lang="en" suppressHydrationWarning>
+      <head suppressHydrationWarning>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Rende-VIEW - Find Your Perfect Match</title>
@@ -435,8 +435,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <script type="module" src="/src/__create/dev-error-overlay.js"></script>
         <link rel="icon" href="/src/__create/favicon.png" />
       </head>
-      <body>
-        <ClientOnly loader={() => <LoadFonts />} />
+      <body suppressHydrationWarning>
         <ClientOnly loader={() => <SandboxBridge />} />
         {children}
         <HotReloadIndicator />
