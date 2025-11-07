@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Heart, X, Video, ArrowLeft, MapPin } from "lucide-react";
+import { Heart, X, Video, ArrowLeft, MapPin, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import AppHeader from "@/components/AppHeader";
 import SessionExpired from "@/components/SessionExpired";
@@ -99,6 +99,18 @@ export default function RemoteProfile() {
     },
     onError: () => toast.error("Could not discard profile"),
   });
+
+  const handleOpenChat = async () => {
+    try {
+      const res = await fetch(`/api/conversations/with/${targetId}`);
+      if (!res.ok) throw new Error("Failed to get conversation");
+      const data = await res.json();
+      navigate(`/messages/${data.conversation_id}`);
+    } catch (error) {
+      console.error("Error opening chat:", error);
+      toast.error("Could not open chat. Please try again.");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -413,6 +425,18 @@ export default function RemoteProfile() {
             _hover={{ shadow: "xl" }}
           >
             Like
+          </Button>
+          <Button
+            onClick={handleOpenChat}
+            leftIcon={<MessageCircle size={24} />}
+            size="lg"
+            borderRadius="2xl"
+            fontWeight="bold"
+            colorScheme="purple"
+            shadow="lg"
+            _hover={{ shadow: "xl" }}
+          >
+            Open Chat
           </Button>
           <Button
             onClick={() => navigate(`/schedule/propose/${targetId}`)}
