@@ -247,12 +247,10 @@ app.use('/api/auth/*', async (c, next) => {
     try {
       const originalRaw = c.req.raw;
 
-      // Create a minimal, normalized req object that contains headers and url.
+      // Create a minimal, normalized req object that ONLY contains headers.
       // This prevents the "Cannot read 'type'" error in Auth.js core.
       const normalizedReq = {
         headers: originalRaw.headers,
-        url: originalRaw.url,
-        method: originalRaw.method,
       };
 
       // Safely patch the context's raw request.
