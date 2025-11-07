@@ -507,23 +507,32 @@ export default function SubscriptionPage() {
                 </Text>
 
                 <Box bg="purple.50" p={4} borderRadius="md" mb={3}>
-                  <Text fontSize="sm" fontWeight="semibold" mb={2} color="purple.700">Free Daily Video Messages:</Text>
+                  <Text fontSize="sm" fontWeight="semibold" mb={2} color="purple.700">
+                    Free Daily Video Messages (Flat Total Across All Chats):
+                  </Text>
+                  <Text fontSize="xs" color="purple.600" mb={3}>
+                    You decide how to distribute your daily allowance across all your conversations!
+                  </Text>
                   <SimpleGrid columns={{ base: 2, md: 4 }} spacing={2}>
                     <Box>
                       <Text fontSize="xs" color="gray.600">Free</Text>
-                      <Text fontWeight="bold">{VIDEO_MESSAGE_PRICING.FREE_VIDEOS_PER_DAY.free}/day (10s)</Text>
+                      <Text fontWeight="bold">{VIDEO_MESSAGE_PRICING.FREE_VIDEOS_PER_DAY.free} total/day</Text>
+                      <Text fontSize="xs" color="gray.500">(10s clips)</Text>
                     </Box>
                     <Box>
                       <Text fontSize="xs" color="gray.600">Casual</Text>
-                      <Text fontWeight="bold">{VIDEO_MESSAGE_PRICING.FREE_VIDEOS_PER_DAY.casual}/day (15s)</Text>
+                      <Text fontWeight="bold">{VIDEO_MESSAGE_PRICING.FREE_VIDEOS_PER_DAY.casual} total/day</Text>
+                      <Text fontSize="xs" color="gray.500">(15s clips)</Text>
                     </Box>
                     <Box>
                       <Text fontSize="xs" color="gray.600">Dating</Text>
-                      <Text fontWeight="bold">{VIDEO_MESSAGE_PRICING.FREE_VIDEOS_PER_DAY.dating}/day (30s)</Text>
+                      <Text fontWeight="bold">{VIDEO_MESSAGE_PRICING.FREE_VIDEOS_PER_DAY.dating} total/day</Text>
+                      <Text fontSize="xs" color="gray.500">(30s clips)</Text>
                     </Box>
                     <Box>
                       <Text fontSize="xs" color="gray.600">Business</Text>
-                      <Text fontWeight="bold">{VIDEO_MESSAGE_PRICING.FREE_VIDEOS_PER_DAY.business}/day (60s)</Text>
+                      <Text fontWeight="bold">{VIDEO_MESSAGE_PRICING.FREE_VIDEOS_PER_DAY.business} total/day</Text>
+                      <Text fontSize="xs" color="gray.500">(60s clips)</Text>
                     </Box>
                   </SimpleGrid>
                 </Box>
@@ -582,93 +591,102 @@ export default function SubscriptionPage() {
                   Need more messages beyond your daily limit? Purchase message credits to keep the conversation going. Credits never expire and can be used anytime.
                 </Text>
 
-                {/* Video Call Reward Badge */}
+                {/* Rolling Reward System Badge */}
                 <Box bg="gradient-to-r" bgGradient="linear(to-r, green.500, teal.500)" p={4} borderRadius="lg" mb={4}>
                   <HStack spacing={2} mb={2}>
-                    <Badge colorScheme="yellow" fontSize="sm" px={3} py={1}>🎁 UNLOCK REWARDS</Badge>
+                    <Badge colorScheme="yellow" fontSize="sm" px={3} py={1}>🎁 ROLLING MONTHLY REWARDS</Badge>
                   </HStack>
                   <Text color="white" fontWeight="bold" fontSize="md" mb={1}>
-                    Video Chat with 3 People & Cut Your Credit Cost by 67%!
+                    Complete 3 Video Dates Monthly = 50% Bonus Messages!
                   </Text>
-                  <Text color="whiteAlpha.900" fontSize="sm">
-                    Complete video calls with 3 different people to unlock discounted message pricing. 
-                    Example: $1.99 gets you 20 messages normally, but 60 messages after reward!
+                  <Text color="whiteAlpha.900" fontSize="sm" mb={3}>
+                    Unlock: Complete 3 video calls with 3 different people to get reward pricing.
+                    Maintain: Complete 3 NEW video calls each calendar month to keep your discount active.
                   </Text>
+                  <Box bg="whiteAlpha.200" p={3} borderRadius="md">
+                    <Text color="white" fontSize="xs" fontWeight="semibold" mb={1}>How It Works:</Text>
+                    <List spacing={1} fontSize="xs" color="whiteAlpha.900">
+                      <ListItem>✓ Month 1: Complete 3 video calls → Unlock 50% bonus credits</ListItem>
+                      <ListItem>✓ Month 2+: Complete 3 NEW calls/month → Keep your discount</ListItem>
+                      <ListItem>✓ Miss a month? Discount expires, complete 3 calls to reactivate</ListItem>
+                      <ListItem>✓ Get 7-day warning before month ends if you need more calls</ListItem>
+                    </List>
+                  </Box>
                 </Box>
 
-                {/* Before Threshold Pricing */}
+                {/* Standard Pricing */}
                 <Box mb={4}>
                   <Text fontSize="xs" fontWeight="semibold" color="gray.600" mb={2}>
-                    Standard Pricing (Before 3 Video Calls):
+                    Standard Pricing (Default):
                   </Text>
                   <SimpleGrid columns={{ base: 1, md: 3 }} spacing={3}>
                     <Card borderWidth={1} borderColor="gray.200">
                       <CardBody py={3}>
                         <HStack justify="space-between">
-                          <Text fontWeight="bold">{MESSAGE_CREDIT_PRICING.BEFORE_VIDEO_THRESHOLD.PACK_SMALL.credits} Messages</Text>
-                          <Text color="purple.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.BEFORE_VIDEO_THRESHOLD.PACK_SMALL.price}</Text>
+                          <Text fontWeight="bold">{MESSAGE_CREDIT_PRICING.STANDARD.PACK_SMALL.credits} Messages</Text>
+                          <Text color="purple.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.STANDARD.PACK_SMALL.price}</Text>
                         </HStack>
-                        <Text fontSize="xs" color="gray.500">~$0.10/message</Text>
+                        <Text fontSize="xs" color="gray.500">~${MESSAGE_CREDIT_PRICING.STANDARD.PACK_SMALL.perMessageCost.toFixed(2)}/message</Text>
                       </CardBody>
                     </Card>
                     <Card borderWidth={1} borderColor="gray.200">
                       <CardBody py={3}>
                         <HStack justify="space-between">
-                          <Text fontWeight="bold">{MESSAGE_CREDIT_PRICING.BEFORE_VIDEO_THRESHOLD.PACK_MEDIUM.credits} Messages</Text>
-                          <Text color="purple.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.BEFORE_VIDEO_THRESHOLD.PACK_MEDIUM.price}</Text>
+                          <Text fontWeight="bold">{MESSAGE_CREDIT_PRICING.STANDARD.PACK_MEDIUM.credits} Messages</Text>
+                          <Text color="purple.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.STANDARD.PACK_MEDIUM.price}</Text>
                         </HStack>
-                        <Text fontSize="xs" color="gray.500">~$0.10/message</Text>
+                        <Text fontSize="xs" color="gray.500">~${MESSAGE_CREDIT_PRICING.STANDARD.PACK_MEDIUM.perMessageCost.toFixed(2)}/message</Text>
                       </CardBody>
                     </Card>
                     <Card borderWidth={1} borderColor="purple.200">
                       <CardBody py={3}>
                         <HStack justify="space-between" mb={1}>
-                          <Badge colorScheme="purple" fontSize="xs">{MESSAGE_CREDIT_PRICING.BEFORE_VIDEO_THRESHOLD.PACK_LARGE.label}</Badge>
+                          <Badge colorScheme="purple" fontSize="xs">{MESSAGE_CREDIT_PRICING.STANDARD.PACK_LARGE.label}</Badge>
                         </HStack>
                         <HStack justify="space-between">
-                          <Text fontWeight="bold">{MESSAGE_CREDIT_PRICING.BEFORE_VIDEO_THRESHOLD.PACK_LARGE.credits} Messages</Text>
-                          <Text color="purple.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.BEFORE_VIDEO_THRESHOLD.PACK_LARGE.price}</Text>
+                          <Text fontWeight="bold">{MESSAGE_CREDIT_PRICING.STANDARD.PACK_LARGE.credits} Messages</Text>
+                          <Text color="purple.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.STANDARD.PACK_LARGE.price}</Text>
                         </HStack>
-                        <Text fontSize="xs" color="gray.500">~$0.10/message</Text>
+                        <Text fontSize="xs" color="gray.500">~${MESSAGE_CREDIT_PRICING.STANDARD.PACK_LARGE.perMessageCost.toFixed(2)}/message</Text>
                       </CardBody>
                     </Card>
                   </SimpleGrid>
                 </Box>
 
-                {/* After Threshold Pricing */}
+                {/* Reward Pricing */}
                 <Box>
                   <Text fontSize="xs" fontWeight="semibold" color="green.600" mb={2}>
-                    Reward Pricing (After 3 Video Calls with Different People): 
+                    Reward Pricing (Active Video Daters - 3 Calls/Month): 
                   </Text>
                   <SimpleGrid columns={{ base: 1, md: 3 }} spacing={3} mb={4}>
                     <Card borderWidth={2} borderColor="green.300" bg="green.50">
                       <CardBody py={3}>
                         <HStack justify="space-between">
-                          <Text fontWeight="bold" color="green.700">{MESSAGE_CREDIT_PRICING.AFTER_VIDEO_THRESHOLD.PACK_SMALL.credits} Messages</Text>
-                          <Text color="green.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.AFTER_VIDEO_THRESHOLD.PACK_SMALL.price}</Text>
+                          <Text fontWeight="bold" color="green.700">{MESSAGE_CREDIT_PRICING.REWARD.PACK_SMALL.credits} Messages</Text>
+                          <Text color="green.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.REWARD.PACK_SMALL.price}</Text>
                         </HStack>
-                        <Text fontSize="xs" color="green.600">~$0.03/message (67% off!)</Text>
+                        <Text fontSize="xs" color="green.600">~${MESSAGE_CREDIT_PRICING.REWARD.PACK_SMALL.perMessageCost.toFixed(2)}/msg ({MESSAGE_CREDIT_PRICING.REWARD.PACK_SMALL.bonusPercentage}% bonus!)</Text>
                       </CardBody>
                     </Card>
                     <Card borderWidth={2} borderColor="green.300" bg="green.50">
                       <CardBody py={3}>
                         <HStack justify="space-between">
-                          <Text fontWeight="bold" color="green.700">{MESSAGE_CREDIT_PRICING.AFTER_VIDEO_THRESHOLD.PACK_MEDIUM.credits} Messages</Text>
-                          <Text color="green.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.AFTER_VIDEO_THRESHOLD.PACK_MEDIUM.price}</Text>
+                          <Text fontWeight="bold" color="green.700">{MESSAGE_CREDIT_PRICING.REWARD.PACK_MEDIUM.credits} Messages</Text>
+                          <Text color="green.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.REWARD.PACK_MEDIUM.price}</Text>
                         </HStack>
-                        <Text fontSize="xs" color="green.600">~$0.025/message (75% off!)</Text>
+                        <Text fontSize="xs" color="green.600">~${MESSAGE_CREDIT_PRICING.REWARD.PACK_MEDIUM.perMessageCost.toFixed(2)}/msg ({MESSAGE_CREDIT_PRICING.REWARD.PACK_MEDIUM.bonusPercentage}% bonus!)</Text>
                       </CardBody>
                     </Card>
                     <Card borderWidth={2} borderColor="green.400" bg="green.100">
                       <CardBody py={3}>
                         <HStack justify="space-between" mb={1}>
-                          <Badge colorScheme="green" fontSize="xs">{MESSAGE_CREDIT_PRICING.AFTER_VIDEO_THRESHOLD.PACK_LARGE.label}</Badge>
+                          <Badge colorScheme="green" fontSize="xs">{MESSAGE_CREDIT_PRICING.REWARD.PACK_LARGE.label}</Badge>
                         </HStack>
                         <HStack justify="space-between">
-                          <Text fontWeight="bold" color="green.700">{MESSAGE_CREDIT_PRICING.AFTER_VIDEO_THRESHOLD.PACK_LARGE.credits} Messages</Text>
-                          <Text color="green.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.AFTER_VIDEO_THRESHOLD.PACK_LARGE.price}</Text>
+                          <Text fontWeight="bold" color="green.700">{MESSAGE_CREDIT_PRICING.REWARD.PACK_LARGE.credits} Messages</Text>
+                          <Text color="green.600" fontWeight="semibold">{MESSAGE_CREDIT_PRICING.REWARD.PACK_LARGE.price}</Text>
                         </HStack>
-                        <Text fontSize="xs" color="green.600">~$0.02/message (80% off!)</Text>
+                        <Text fontSize="xs" color="green.600">~${MESSAGE_CREDIT_PRICING.REWARD.PACK_LARGE.perMessageCost.toFixed(2)}/msg ({MESSAGE_CREDIT_PRICING.REWARD.PACK_LARGE.bonusPercentage}% bonus!)</Text>
                       </CardBody>
                     </Card>
                   </SimpleGrid>
@@ -678,7 +696,7 @@ export default function SubscriptionPage() {
                   <ListItem>• Credits automatically used when daily limit reached</ListItem>
                   <ListItem>• Purchase from chat screen when out of messages</ListItem>
                   <ListItem>• Credits never expire and roll over indefinitely</ListItem>
-                  <ListItem>• Reward pricing unlocks permanently after 3 video calls</ListItem>
+                  <ListItem>• Reward pricing requires 3 video calls each calendar month to maintain</ListItem>
                   <ListItem>• Use with any tier - Free, Casual, Dating, or Business</ListItem>
                 </List>
               </Box>
