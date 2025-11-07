@@ -37,7 +37,8 @@ export default function CreateAuth(config = {}) {
                 const token = await getToken({
                         req: minimalReq,
                         secret: process.env.AUTH_SECRET,
-                        secureCookie: process.env.AUTH_URL.startsWith('https'),
+                        secureCookie: process.env.AUTH_URL?.startsWith('https') ?? false,
+                        salt: 'authjs.session-token',
                 });
                 
                 if (!token) {
@@ -75,8 +76,6 @@ export default function CreateAuth(config = {}) {
                 }
                 
                 if (token) {
-                        console.log('[CREATE-AUTH] JWT-only fallback for user:', token.sub);
-                        
                         if (adapter) {
                                 try {
                                         const result = await pool.query(
@@ -93,10 +92,6 @@ export default function CreateAuth(config = {}) {
                                                         userId: token.sub,
                                                         expires,
                                                 });
-                                                
-                                                console.log('[CREATE-AUTH] Created new database session for user:', token.sub);
-                                        } else {
-                                                console.log('[CREATE-AUTH] Found existing valid session for user:', token.sub);
                                         }
                                 } catch (error) {
                                         console.error('[CREATE-AUTH] Session check/creation error:', error);

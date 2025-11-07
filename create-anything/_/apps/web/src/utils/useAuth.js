@@ -1,44 +1,67 @@
 import { useCallback } from 'react';
-import { signIn, signOut } from "@auth/create/react";
+import { signOut } from "@auth/create/react";
 
 function useAuth() {
   const callbackUrl = typeof window !== 'undefined' 
     ? new URLSearchParams(window.location.search).get('callbackUrl')
     : null;
 
-  const signInWithCredentials = useCallback((options) => {
-    return signIn("credentials-signin", {
-      ...options,
-      callbackUrl: callbackUrl ?? options.callbackUrl
+  const signInWithCredentials = useCallback(async (options) => {
+    const formData = new FormData();
+    formData.append('email', options.email);
+    formData.append('password', options.password);
+
+    const response = await fetch('/api/auth/custom-signin', {
+      method: 'POST',
+      body: formData,
     });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const error = new Error(data.error || 'Sign in failed');
+      error.message = 'CredentialsSignin';
+      throw error;
+    }
+
+    if (options.redirect) {
+      window.location.href = options.callbackUrl || callbackUrl || '/';
+    }
+
+    return data;
   }, [callbackUrl])
 
-  const signUpWithCredentials = useCallback((options) => {
-    return signIn("credentials-signup", {
-      ...options,
-      callbackUrl: callbackUrl ?? options.callbackUrl
-    });
-  }, [callbackUrl])
+  const signUpWithCredentials = useCallback(async (options) => {
+    const formData = new FormData();
+    formData.append('email', options.email);
+    formData.append('password', options.password);
+    if (options.name) {
+      formData.append('name', options.name);
+    }
 
-  const signInWithGoogle = useCallback((options) => {
-    return signIn("google", {
-      ...options,
-      callbackUrl: callbackUrl ?? options.callbackUrl
+    const response = await fetch('/api/auth/custom-signup', {
+      method: 'POST',
+      body: formData,
     });
-  }, [callbackUrl]);
-  const signInWithFacebook = useCallback((options) => {
-    return signIn("facebook", options);
-  }, []);
-  const signInWithTwitter = useCallback((options) => {
-    return signIn("twitter", options);
-  }, []);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const error = new Error(data.error || 'Sign up failed');
+      error.message = data.error === 'User already exists' ? 'EmailCreateAccount' : 'CredentialsSignin';
+      throw error;
+    }
+
+    if (options.redirect) {
+      window.location.href = options.callbackUrl || callbackUrl || '/';
+    }
+
+    return data;
+  }, [callbackUrl])
 
   return {
     signInWithCredentials,
     signUpWithCredentials,
-    signInWithGoogle,
-    signInWithFacebook,
-    signInWithTwitter,
     signOut,
   }
 }
