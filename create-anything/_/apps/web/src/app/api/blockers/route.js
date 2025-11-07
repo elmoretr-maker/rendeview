@@ -94,7 +94,12 @@ export async function POST(request) {
       return Response.json({ ok: true, warning, blockCount });
     }
 
-    return Response.json({ ok: true });
+    const [blockedUser] = await sql`
+      SELECT block_count 
+      FROM auth_users 
+      WHERE id = ${blockedId}`;
+    
+    return Response.json({ ok: true, blockCount: blockedUser?.block_count || 0 });
   } catch (err) {
     console.error("POST /api/blockers error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });

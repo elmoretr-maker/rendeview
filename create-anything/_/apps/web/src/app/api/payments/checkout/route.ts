@@ -247,7 +247,7 @@ export async function POST(request: Request): Promise<Response> {
         } catch (e2: any) {
           logger.error('Fallback membership update failed', e2, { userId: uid });
         }
-        return Response.json({ url: successUrl + "?mockStripe=1" });
+        return Response.json({ url: successUrl + "?mockStripe=1", sessionId: 'cs_test_123' });
       }
       
       // Development fallback
@@ -273,7 +273,7 @@ export async function POST(request: Request): Promise<Response> {
         } catch (e2: any) {
           logger.error('Dev fallback membership update failed', e2, { userId: uid });
         }
-        return Response.json({ url: successUrl + "?mockStripe=1" });
+        return Response.json({ url: successUrl + "?mockStripe=1", sessionId: 'cs_test_123' });
       }
       
       logger.business(BusinessEvent.PAYMENT_FAILED, {
@@ -284,7 +284,7 @@ export async function POST(request: Request): Promise<Response> {
       return Response.json({ error: msg || "Stripe error" }, { status: 500 });
     }
 
-    const response = { url: checkout.url };
+    const response = { url: checkout.url, sessionId: checkout.id };
     
     // Store response with idempotency key if provided
     if (idempotencyKey) {
