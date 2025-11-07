@@ -105,11 +105,11 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
         bg="white"
       >
         <Box
-          as="button"
           onClick={onTap}
           w="full"
           position="relative"
           textAlign="left"
+          cursor="pointer"
         >
           {profile.photo ? (
             <Box position="relative">
