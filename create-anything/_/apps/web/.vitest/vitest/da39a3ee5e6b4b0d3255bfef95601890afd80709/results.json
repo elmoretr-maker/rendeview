@@ -1,1 +1,1 @@
-{"version":"3.2.4","results":[[":src/__tests__/integration/safety.test.ts",{"duration":15448.923813999998,"failed":false}],[":src/__tests__/integration/subscription.test.ts",{"duration":4301.137256,"failed":false}]]}
+{"version":"3.2.4","results":[[":src/__tests__/integration/safety.test.ts",{"duration":15514.575130999998,"failed":false}],[":src/__tests__/integration/subscription.test.ts",{"duration":4116.104867,"failed":false}]]}

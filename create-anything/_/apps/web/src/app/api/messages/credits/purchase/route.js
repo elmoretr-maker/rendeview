@@ -116,48 +116,28 @@ export async function POST(request) {
     }
 
     // Use transaction for atomic credit addition and purchase tracking
-    let newBalance;
-    await sql.begin(async (tx) => {
-      // Get or create user_message_credits record
-      const [existingCredits] = await tx`
-        SELECT credits_remaining, total_purchased, total_spent
-        FROM user_message_credits
-        WHERE user_id = ${userId}
-        FOR UPDATE
-      `;
-
-      if (existingCredits) {
-        // Update existing record
-        newBalance = existingCredits.credits_remaining + packDetails.credits;
-        await tx`
-          UPDATE user_message_credits
-          SET 
-            credits_remaining = COALESCE(credits_remaining, 0) + ${packDetails.credits},
-            total_purchased = COALESCE(total_purchased, 0) + ${packDetails.credits},
-            updated_at = NOW()
-          WHERE user_id = ${userId}
-        `;
-      } else {
-        // Create new record
-        newBalance = packDetails.credits;
-        await tx`
-          INSERT INTO user_message_credits (
-            user_id, 
-            credits_remaining, 
-            total_purchased, 
-            total_spent
-          )
-          VALUES (
-            ${userId}, 
-            ${packDetails.credits}, 
-            ${packDetails.credits}, 
-            0
-          )
-        `;
-      }
-
+    await sql.transaction([
+      // Upsert user_message_credits using ON CONFLICT
+      sql`
+        INSERT INTO user_message_credits (
+          user_id, 
+          credits_remaining, 
+          total_purchased, 
+          total_spent
+        )
+        VALUES (
+          ${userId}, 
+          ${packDetails.credits}, 
+          ${packDetails.credits}, 
+          0
+        )
+        ON CONFLICT (user_id) DO UPDATE SET
+          credits_remaining = COALESCE(user_message_credits.credits_remaining, 0) + ${packDetails.credits},
+          total_purchased = COALESCE(user_message_credits.total_purchased, 0) + ${packDetails.credits},
+          updated_at = NOW()
+      `,
       // Record this purchase for idempotency
-      await tx`
+      sql`
         INSERT INTO message_credit_purchases (
           user_id,
           payment_intent_id,
@@ -176,14 +156,14 @@ export async function POST(request) {
           ${hasActiveReward ? 'REWARD' : 'STANDARD'},
           NOW()
         )
-      `;
-    });
+      `
+    ]);
 
     // Get final balance
     const [finalCredits] = await sql`
       SELECT credits_remaining FROM user_message_credits WHERE user_id = ${userId}
     `;
-    newBalance = finalCredits?.credits_remaining || newBalance;
+    const newBalance = finalCredits?.credits_remaining || 0;
 
     console.log(`[/api/messages/credits/purchase] Success: ${packDetails.credits} credits added to user ${userId}`);
 

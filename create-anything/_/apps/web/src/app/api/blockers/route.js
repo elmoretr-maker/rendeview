@@ -57,51 +57,45 @@ export async function POST(request) {
       return Response.json({ error: "Invalid user" }, { status: 400 });
     }
 
-    let blockCount = 0;
+    // Execute block insertion with atomic counter increment AND moderation updates
+    // CTE pattern ensures UPDATE only runs when INSERT actually created a new row
+    // Handles both new blocks and duplicate attempts atomically in single transaction
+    await sql.transaction([
+      sql`
+        WITH inserted AS (
+          INSERT INTO blockers (blocker_id, blocked_id) 
+          VALUES (${uid}, ${blockedId})
+          ON CONFLICT (blocker_id, blocked_id) DO NOTHING
+          RETURNING id
+        )
+        UPDATE auth_users 
+        SET 
+          block_count = COALESCE(block_count, 0) + 1,
+          flagged_for_admin = CASE 
+            WHEN COALESCE(block_count, 0) + 1 >= 3 THEN true 
+            ELSE flagged_for_admin 
+          END,
+          account_status = CASE 
+            WHEN COALESCE(block_count, 0) + 1 >= 4 THEN 'under_review' 
+            ELSE account_status 
+          END
+        WHERE id = ${blockedId}
+          AND EXISTS (SELECT 1 FROM inserted)
+      `
+    ]);
+
+    // Get updated block count and user info for response
+    const [updated] = await sql`
+      SELECT block_count, name FROM auth_users WHERE id = ${blockedId}`;
+    const blockCount = updated?.block_count || 0;
+    const userName = updated?.name || '';
     let warning = null;
-    let wasNewBlock = false;
 
-    await sql.begin(async (tx) => {
-      const result = await tx`
-        INSERT INTO blockers (blocker_id, blocked_id)
-        VALUES (${uid}, ${blockedId})
-        ON CONFLICT (blocker_id, blocked_id) DO NOTHING
-        RETURNING id`;
-
-      wasNewBlock = result.length > 0;
-
-      if (wasNewBlock) {
-        const [updated] = await tx`
-          UPDATE auth_users 
-          SET block_count = COALESCE(block_count, 0) + 1 
-          WHERE id = ${blockedId}
-          RETURNING block_count, name`;
-
-        blockCount = updated?.block_count || 0;
-        const userName = updated?.name || '';
-
-        if (blockCount === 3) {
-          await tx`
-            UPDATE auth_users 
-            SET flagged_for_admin = true 
-            WHERE id = ${blockedId}`;
-          warning = `This user (${userName}) has now been blocked by 3 people and has been flagged for admin review.`;
-        } else if (blockCount >= 4) {
-          await tx`
-            UPDATE auth_users 
-            SET account_status = 'under_review', flagged_for_admin = true 
-            WHERE id = ${blockedId}`;
-          warning = `This user (${userName}) has been blocked by ${blockCount} people and their account is now under review.`;
-        }
-      } else {
-        const [blockedUser] = await tx`
-          SELECT block_count 
-          FROM auth_users 
-          WHERE id = ${blockedId}`;
-        
-        blockCount = blockedUser?.block_count || 0;
-      }
-    });
+    if (blockCount === 3) {
+      warning = `This user (${userName}) has now been blocked by 3 people and has been flagged for admin review.`;
+    } else if (blockCount >= 4) {
+      warning = `This user (${userName}) has been blocked by ${blockCount} people and their account is now under review.`;
+    }
 
     return Response.json({ ok: true, warning, blockCount });
   } catch (err) {

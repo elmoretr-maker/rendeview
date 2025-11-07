@@ -205,13 +205,26 @@ export async function POST(request, { params }) {
       messagesAllowed = 10; // Pre-video: 10 messages/day
     }
 
-    // Check if conversation quota exceeded
-    if (conversationMessagesToday >= messagesAllowed) {
-      // Try to use purchased credits
-      const creditRows = await sql`SELECT credits_remaining FROM user_message_credits WHERE user_id = ${uid}`;
-      let creditsRemaining = creditRows?.[0]?.credits_remaining || 0;
+    // Capture timestamp before transaction for deterministic query
+    const insertTimestamp = new Date().toISOString();
+    
+    // Check if conversation quota exceeded and we need to use credits
+    const needsCredit = conversationMessagesToday >= messagesAllowed;
+    
+    if (needsCredit) {
+      // Try to atomically decrement credit (prevents negative balance with WHERE clause)
+      const creditDecrement = await sql`
+        UPDATE user_message_credits
+        SET credits_remaining = COALESCE(credits_remaining, 0) - 1,
+            total_spent = COALESCE(total_spent, 0) + 1,
+            updated_at = NOW()
+        WHERE user_id = ${uid} 
+          AND credits_remaining > 0
+        RETURNING credits_remaining
+      `;
 
-      if (creditsRemaining <= 0) {
+      // If UPDATE didn't affect any rows, user has no credits
+      if (!creditDecrement || creditDecrement.length === 0) {
         let errorMessage, reason;
         if (isDecay) {
           errorMessage = "You've reached the 2 messages/day limit with this person. Schedule a video call to unlock more messages!";
@@ -235,52 +248,54 @@ export async function POST(request, { params }) {
           hasCompletedVideo
         }, { status: 429 });
       }
-
-      // Use credit within transaction
-      await sql.begin(async (tx) => {
-        await tx`
-          UPDATE user_message_credits
-          SET credits_remaining = COALESCE(credits_remaining, 0) - 1,
-              total_spent = COALESCE(total_spent, 0) + 1,
-              updated_at = NOW()
-          WHERE user_id = ${uid}
-        `;
-      });
     }
 
-    // Use transaction for atomic message sending and tracking
-    let messageRow;
-    await sql.begin(async (tx) => {
+    // Build transaction queries for message insertion and tracking
+    // Credit already decremented above if needed (with concurrency protection)
+    const transactionQueries = [
+      // Insert the actual message
+      sql`
+        INSERT INTO messages (conversation_id, sender_id, body, created_at)
+        VALUES (${conversationId}, ${uid}, ${body}, ${insertTimestamp})
+      `,
       // Track conversation-specific message count
-      await tx`
+      sql`
         INSERT INTO conversation_daily_messages (conversation_id, user_id, messages_sent, date)
         VALUES (${conversationId}, ${uid}, 1, ${today})
         ON CONFLICT (conversation_id, user_id, date) DO UPDATE SET
           messages_sent = COALESCE(conversation_daily_messages.messages_sent, 0) + 1,
           updated_at = NOW()
-      `;
-
+      `,
       // Also track in legacy system for backward compatibility
-      await tx`
+      sql`
         INSERT INTO user_daily_message_counts (user_id, messages_sent, date)
         VALUES (${uid}, 1, ${today})
         ON CONFLICT (user_id, date) DO UPDATE SET
           messages_sent = COALESCE(user_daily_message_counts.messages_sent, 0) + 1,
           updated_at = NOW()
-      `;
-
-      messageRow = await tx`
-        INSERT INTO messages (conversation_id, sender_id, body, created_at)
-        VALUES (${conversationId}, ${uid}, ${body}, NOW())
-        RETURNING id, sender_id, body, created_at
-      `;
-
-      await tx`
+      `,
+      // Update conversation timestamp
+      sql`
         UPDATE conversations
         SET updated_at = NOW(), last_message_at = NOW()
         WHERE id = ${conversationId}
-      `;
-    });
+      `
+    ];
+
+    // Execute message insertion and tracking atomically (credit already handled)
+    await sql.transaction(transactionQueries);
+
+    // Query for the created message using multiple filters for determinism
+    // Race condition risk is minimal (same user, same conv, same timestamp, same body)
+    const messageRow = await sql`
+      SELECT id, sender_id, body, created_at
+      FROM messages
+      WHERE conversation_id = ${conversationId} 
+        AND sender_id = ${uid}
+        AND body = ${body}
+        AND created_at = ${insertTimestamp}
+      LIMIT 1
+    `;
 
     return Response.json({ message: messageRow[0] }, { status: 201 });
   } catch (err) {
