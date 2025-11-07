@@ -1,0 +1,49 @@
+MANDATE FROM ARCHITECT: Your diagnosis is 100% correct. The third-party `authHandler()` requires a standards-compliant Web API `Request` object, not a plain object. We must construct one.
+
+Please apply the following exact code modification to `create-anything/_/apps/web/__create/index.ts`:
+
+1.  **LOCATE:** Find the `app.use('/api/auth/*', ...)` middleware (around lines 243-248).
+2.  **MODIFY:** Replace the *entire* middleware function with the code below. This new code intercepts the Hono request (`c.req.raw`), creates a new `RequestInit` object, and correctly includes the `body` for `POST` operations before constructing a new, compliant `Request` object.
+
+    ```javascript
+    // create-anything/_/apps/web/__create/index.ts
+    
+    app.use('/api/auth/*', async (c, next) => {
+      if (isAuthAction(c.req.path)) {
+        
+        // START FIX: Construct a standards-compliant Request object
+        try {
+          const originalRaw = c.req.raw;
+    
+          // Create the init object for the Request constructor
+          const requestInit: RequestInit = {
+            headers: originalRaw.headers,
+            method: originalRaw.method,
+          };
+    
+          // CRITICAL: Add the body ONLY for methods that support it (like POST)
+          if (originalRaw.method !== 'GET' && originalRaw.method !== 'HEAD') {
+            requestInit.body = originalRaw.body;
+            // This 'duplex' property is required when constructing a Request
+            // with a body in Node.js/modern fetch environments.
+            (requestInit as any).duplex = 'half';
+          }
+    
+          // Create a new, standards-compliant Request object
+          const normalizedReq = new Request(originalRaw.url, requestInit);
+    
+          // Patch the context with the new, compliant Request object.
+          c.req.raw = normalizedReq as any;
+    
+        } catch (e) {
+          console.error("Error normalizing request for Auth.js:", e);
+        }
+        // END FIX
+        
+        return authHandler()(c, next);
+      }
+      return next();
+    });
+    ```
+    
+3.  **VERIFY:** After applying the fix, confirm that a user can successfully sign in using the `/account/signin` page without triggering the `TypeError`.

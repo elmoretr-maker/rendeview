@@ -243,18 +243,35 @@ app.all('/integrations/:path{.+}', async (c, next) => {
 app.use('/api/auth/*', async (c, next) => {
   if (isAuthAction(c.req.path)) {
     
-    // START FIX: Normalize the request object for Auth.js
+    // START FIX: Construct a standards-compliant Request object for Auth.js
     try {
       const originalRaw = c.req.raw;
 
-      // Create a minimal, normalized req object that ONLY contains headers.
-      // This prevents the "Cannot read 'type'" error in Auth.js core.
-      const normalizedReq = {
+      // Create the init object for the Request constructor
+      const requestInit: RequestInit = {
         headers: originalRaw.headers,
+        method: originalRaw.method,
       };
 
-      // Safely patch the context's raw request.
-      // This is the "monkey-patch" that authHandler() will now use.
+      // CRITICAL: Add the body ONLY for methods that support it (like POST)
+      if (originalRaw.method !== 'GET' && originalRaw.method !== 'HEAD') {
+        // Guard against reusing consumed body streams
+        if (originalRaw.bodyUsed) {
+          console.warn('[AUTH] Request body already consumed, cloning may fail');
+        }
+        requestInit.body = originalRaw.body;
+        // This 'duplex' property is required when constructing a Request
+        // with a body in Node.js/modern fetch environments.
+        (requestInit as any).duplex = 'half';
+      }
+
+      // Ensure we have an absolute URL (required for Request constructor)
+      const url = originalRaw.url;
+
+      // Create a new, standards-compliant Request object
+      const normalizedReq = new Request(url, requestInit);
+
+      // Patch the context with the new, compliant Request object.
       c.req.raw = normalizedReq as any;
 
     } catch (e) {
