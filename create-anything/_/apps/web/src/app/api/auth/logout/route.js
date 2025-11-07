@@ -1,6 +1,5 @@
 export async function POST(request) {
   try {
-    // List of auth-related cookies to clear
     const authCookies = [
       'authjs.session-token',
       '__Secure-authjs.session-token',
@@ -10,17 +9,18 @@ export async function POST(request) {
       '__Secure-authjs.csrf-token',
     ];
     
-    // Create Set-Cookie headers to expire all auth cookies
-    const cookieHeaders = authCookies.map(name => 
-      `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax`
-    );
+    const headers = new Headers();
+    headers.set('Content-Type', 'application/json');
+    
+    authCookies.forEach(name => {
+      const isSecure = name.startsWith('__Secure-');
+      const cookieValue = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax${isSecure ? '; Secure' : ''}`;
+      headers.append('Set-Cookie', cookieValue);
+    });
     
     return new Response(JSON.stringify({ success: true, message: "Logged out successfully" }), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Set-Cookie': cookieHeaders
-      }
+      headers: headers
     });
   } catch (error) {
     console.error("Logout error:", error);
