@@ -437,15 +437,35 @@ export function buildDynamicExtensions(dbPricing) {
 }
 
 /**
- * Get message credit pricing based on user's video call completion count
- * @param {number} uniqueVideoCallCount - Number of completed video calls with different people
- * @returns {object} Message credit pricing (before or after threshold)
+ * Get message credit pricing based on user's reward status
+ * @param {boolean} hasActiveReward - Whether user currently has active reward pricing (3 video calls this month)
+ * @returns {object} Message credit pricing (STANDARD or REWARD)
  */
-export function getMessageCreditPricing(uniqueVideoCallCount) {
-  const hasMetThreshold = uniqueVideoCallCount >= MESSAGE_CREDIT_PRICING.VIDEO_CALL_THRESHOLD;
-  return hasMetThreshold 
-    ? MESSAGE_CREDIT_PRICING.AFTER_VIDEO_THRESHOLD 
-    : MESSAGE_CREDIT_PRICING.BEFORE_VIDEO_THRESHOLD;
+export function getMessageCreditPricing(hasActiveReward) {
+  return hasActiveReward 
+    ? MESSAGE_CREDIT_PRICING.REWARD 
+    : MESSAGE_CREDIT_PRICING.STANDARD;
+}
+
+/**
+ * Check if user should see warning about losing reward pricing
+ * @param {number} videoCallsThisMonth - Number of video calls completed this calendar month
+ * @param {number} daysUntilMonthEnd - Days remaining in current month
+ * @returns {boolean} Whether to show warning nudge
+ */
+export function shouldShowRewardWarning(videoCallsThisMonth, daysUntilMonthEnd) {
+  const needsMore = videoCallsThisMonth < MESSAGE_CREDIT_PRICING.MONTHLY_MAINTENANCE_THRESHOLD;
+  const withinWarningPeriod = daysUntilMonthEnd <= MESSAGE_CREDIT_PRICING.DISCOUNT_WARNING_DAYS;
+  return needsMore && withinWarningPeriod;
+}
+
+/**
+ * Calculate remaining video calls needed this month for reward pricing
+ * @param {number} videoCallsThisMonth - Number of video calls completed this calendar month
+ * @returns {number} Remaining video calls needed
+ */
+export function getRemainingVideoCallsForReward(videoCallsThisMonth) {
+  return Math.max(0, MESSAGE_CREDIT_PRICING.MONTHLY_MAINTENANCE_THRESHOLD - videoCallsThisMonth);
 }
 
 /**
