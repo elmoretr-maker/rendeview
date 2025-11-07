@@ -8,6 +8,8 @@ import AppHeader from "@/components/AppHeader";
 import SessionExpired from "@/components/SessionExpired";
 import MatchCelebration from "@/components/MatchCelebration";
 import { RewardStatusBanner } from "@/components/RewardStatusBanner";
+import MatchBadge from "@/components/MatchBadge";
+import { useIsMatched } from "@/hooks/useIsMatched";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { DiscoveryCardSkeleton } from "@/app/components/SkeletonLoader";
@@ -34,6 +36,8 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
   const rotate = useTransform(x, [-200, 0, 200], [-25, 0, 25]);
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
   const [exitX, setExitX] = React.useState(0);
+  
+  const { data: matchStatus } = useIsMatched(profile?.id);
 
   // Calculate mutual interests
   const mutualInterests = React.useMemo(() => {
@@ -176,6 +180,11 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
             
             {/* Special indicators */}
             <Flex flexWrap="wrap" gap={2} mb={2}>
+              {matchStatus?.isMatched && (
+                <Box>
+                  <MatchBadge size="md" />
+                </Box>
+              )}
               {profile.compatibility_score != null && (
                 <Badge 
                   bg="gradient-to-r from-pink.500 to-purple.500"
