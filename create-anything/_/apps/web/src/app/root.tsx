@@ -467,7 +467,7 @@ export default function App() {
     <SafeSessionProvider>
       <ChakraProvider theme={chakraTheme}>
         <QueryClientProvider client={queryClient}>
-          <SessionTimeoutMonitor />
+          <ClientOnly loader={() => <SessionTimeoutMonitor />} />
           <Outlet />
         </QueryClientProvider>
       </ChakraProvider>
