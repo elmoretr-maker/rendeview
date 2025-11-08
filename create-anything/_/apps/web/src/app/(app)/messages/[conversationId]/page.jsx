@@ -302,7 +302,7 @@ function ChatContent() {
       const res = await fetch("/api/video/room/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId }),
+        body: JSON.stringify({ matchId: conversationId }),
       });
       
       if (!res.ok) {
