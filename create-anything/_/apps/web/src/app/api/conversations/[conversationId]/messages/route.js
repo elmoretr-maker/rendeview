@@ -88,9 +88,16 @@ export async function GET(request, { params }) {
       WHERE conversation_id = ${conversationId} AND user_id = ${uid}
     `;
 
+    // Get the matchId (legacy_match_id) for this conversation
+    const [conversationInfo] = await sql`
+      SELECT legacy_match_id FROM conversations WHERE id = ${conversationId}
+    `;
+    const matchId = conversationInfo?.legacy_match_id || conversationId;
+
     return Response.json({ 
       messages: rows,
-      otherUser
+      otherUser,
+      matchId
     });
   } catch (err) {
     console.error(`GET /api/conversations/${params.conversationId}/messages error`, err);

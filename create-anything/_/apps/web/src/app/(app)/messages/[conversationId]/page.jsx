@@ -297,12 +297,15 @@ function ChatContent() {
       return;
     }
     
+    // Use matchId from API response (legacy_match_id), fallback to conversationId
+    const matchId = data?.matchId || conversationId;
+    
     setCreatingVideoCall(true);
     try {
       const res = await fetch("/api/video/room/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchId: conversationId }),
+        body: JSON.stringify({ matchId }),
       });
       
       if (!res.ok) {
@@ -329,11 +332,13 @@ function ChatContent() {
         throw new Error(error.error || "Failed to create video call");
       }
       
-      const data = await res.json();
+      const responseData = await res.json();
       toast.success("Starting video call...");
       setShowVideoCallModal(false);
       
-      navigate(`/video/call?matchId=${conversationId}&minutes=${getCallDuration(user?.membership_tier || 'free')}`);
+      // Use matchId from API response
+      const actualMatchId = data?.matchId || conversationId;
+      navigate(`/video/call?matchId=${actualMatchId}&minutes=${getCallDuration(user?.membership_tier || 'free')}`);
     } catch (error) {
       console.error("Video call error:", error);
       toast.error(error.message || "Could not start video call");
