@@ -36,9 +36,9 @@ import { useSandboxStore } from '../__create/hmr-sandbox-store';
 import type { Route } from './+types/root';
 import { useDevServerHeartbeat } from '../__create/useDevServerHeartbeat';
 import { SessionTimeoutMonitor } from './components/SessionTimeoutMonitor';
-import { auth } from '@/auth';
 
 export async function loader() {
+  const { auth } = await import('@/auth');
   const session = await auth();
   return { session };
 }
