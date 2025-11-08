@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router";
+import { Link } from "react-router";
 import logoImage from "@/assets/logo-centered.png";
 import {
   Box,
@@ -12,8 +12,6 @@ import {
 } from "@chakra-ui/react";
 
 export default function Welcome() {
-  const navigate = useNavigate();
-
   return (
     <Box 
       minH="100vh" 
@@ -98,7 +96,8 @@ export default function Welcome() {
 
           <VStack spacing={4} w="full" pt={4}>
             <Button
-              onClick={() => navigate("/account/signin")}
+              as={Link}
+              to="/account/signin"
               w="full"
               size="lg"
               variant="outline"
@@ -120,7 +119,8 @@ export default function Welcome() {
               Sign In
             </Button>
             <Button
-              onClick={() => navigate("/onboarding/welcome")}
+              as={Link}
+              to="/onboarding/welcome"
               w="full"
               size="lg"
               colorScheme="purple"
