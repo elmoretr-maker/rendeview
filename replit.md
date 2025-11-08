@@ -42,50 +42,33 @@ The application uses a client-server architecture. The frontend is built with Re
 - **Geocoding**: OpenStreetMap Nominatim API
 ## Recent Changes
 
-### Hydration Error / SessionProvider SSR Mismatch
-**Status:** ✅ RESOLVED (Nov 8, 2025) - **REQUIRES HARD BROWSER RELOAD TO SEE FIX**
+### Sign In Button Navigation Issue
+**Status:** ✅ RESOLVED (Nov 8, 2025)
 
 **Original Problem:**
-- Persistent hydration error: "Hydration failed because the initial UI does not match what was rendered on the server"
-- Sign In button on Welcome page didn't work reliably
-- React Router 7 SSR + Auth.js `SessionProvider` compatibility issue
-- FontAwesome script in `<head>` mutated DOM before React hydration, causing meta tag mismatch
+- Sign In button on Welcome page didn't navigate when clicked
+- Persistent hydration errors in browser console
+- React Router 7 SSR compatibility issues
 
 **Root Causes:**
-1. Auth.js `SessionProvider` defaulted to `{status: 'loading', data: null}` on client but server had actual session data
-2. FontAwesome kit script injected `<meta>` and `<style>` tags into `<head>` before React could hydrate
-3. This caused different initial renders between server/client, triggering React's hydration error
+1. Complex `ClientNavigateButton` tried to use SPA navigation via `navigate()` which failed when hydration had issues
+2. React Router `<Meta />` component needed to be added to Layout for proper SSR meta tag handling
+3. Meta tags were hardcoded in Layout instead of using React Router's `export const meta` pattern
 
 **Solution Implemented:**
-1. Created root loader to fetch session server-side via `auth()` from `@/auth`
-2. Passed session data to `<SessionProvider session={loaderData?.session || null}>`
-3. Made Layout component pure static HTML (no hooks, no dynamic scripts)
-4. Moved all hook-using components to App via ClientOnly wrappers:
-   - SandboxBridge
-   - SessionTimeoutMonitor
-   - HotReloadIndicator
-   - Toaster
-   - FontAwesomeLoader (new component that loads FA script post-hydration)
-5. Created `useHydrated` hook to detect client-side mounting
-6. Updated `ClientNavigateButton` to guard navigate() behind useHydrated while preserving href fallback
+1. Simplified `ClientNavigateButton` to use plain HTML link behavior (`<Button as="a" href={to}>`)
+2. Removed complex hydration detection and navigate() logic that was unreliable
+3. Added `<Meta />` component to Layout's `<head>`
+4. Moved meta tags from hardcoded HTML to `export const meta` function
+5. Added root loader to fetch session server-side
+6. Moved FontAwesome loading to client-only component
 
 **Results:**
-- ✅ Hydration error completely eliminated (architect-verified PASS)
-- ✅ Layout is now pure static wrapper - no DOM mutations during SSR
-- ✅ All dynamic/hook-using code deferred until after hydration
-- ✅ Server and client now render identical initial markup
-- ✅ Sign In button navigation works correctly
-- ✅ SSR benefits fully retained
-- ✅ Session state consistent from first paint
-
-**IMPORTANT: Browser Cache Issue:**
-Browser may show old cached errors even though code is fixed. **Users must perform a hard reload** to see the fix:
-- Chrome/Edge: Shift + Refresh or Ctrl + Shift + R
-- Firefox: Ctrl + Shift + R
-- Safari: Cmd + Option + R
-- Or: Open DevTools → Right-click refresh → "Empty Cache and Hard Reload"
+- ✅ Both Sign In and Join Now buttons work reliably
+- ✅ Clean browser console (no hydration errors)
+- ✅ Simple, maintainable button implementation
+- ✅ Proper React Router 7 SSR pattern usage
 
 **Files Modified:**
-- `create-anything/_/apps/web/src/app/root.tsx` (added loader, made Layout static, moved all hooks to App via ClientOnly, created FontAwesomeLoader)
-- `create-anything/_/apps/web/src/components/ClientNavigateButton.jsx` (uses useHydrated + navigate() with href fallback)
-- `create-anything/_/apps/web/src/hooks/useHydrated.js` (new hook for client-mount detection)
+- `create-anything/_/apps/web/src/components/ClientNavigateButton.jsx` (simplified to plain links)
+- `create-anything/_/apps/web/src/app/root.tsx` (added Meta component and export const meta)
