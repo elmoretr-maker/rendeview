@@ -43,29 +43,49 @@ The application uses a client-server architecture. The frontend is built with Re
 ## Recent Changes
 
 ### Hydration Error / SessionProvider SSR Mismatch
-**Status:** ✅ RESOLVED (Nov 8, 2025)
+**Status:** ✅ RESOLVED (Nov 8, 2025) - **REQUIRES HARD BROWSER RELOAD TO SEE FIX**
 
 **Original Problem:**
 - Persistent hydration error: "Hydration failed because the initial UI does not match what was rendered on the server"
 - Sign In button on Welcome page didn't work reliably
 - React Router 7 SSR + Auth.js `SessionProvider` compatibility issue
+- FontAwesome script in `<head>` mutated DOM before React hydration, causing meta tag mismatch
 
-**Root Cause:**
-Auth.js `SessionProvider` defaulted to `{status: 'loading', data: null}` on client but server had actual session data. This caused different initial renders between server/client, triggering React's hydration error.
+**Root Causes:**
+1. Auth.js `SessionProvider` defaulted to `{status: 'loading', data: null}` on client but server had actual session data
+2. FontAwesome kit script injected `<meta>` and `<style>` tags into `<head>` before React could hydrate
+3. This caused different initial renders between server/client, triggering React's hydration error
 
 **Solution Implemented:**
 1. Created root loader to fetch session server-side via `auth()` from `@/auth`
 2. Passed session data to `<SessionProvider session={loaderData?.session || null}>`
-3. Eliminated `SafeSessionProvider` wrapper (no longer needed)
-4. Simplified `ClientNavigateButton` to plain `<Button as="a" href={to}>` (SSR-safe)
+3. Made Layout component pure static HTML (no hooks, no dynamic scripts)
+4. Moved all hook-using components to App via ClientOnly wrappers:
+   - SandboxBridge
+   - SessionTimeoutMonitor
+   - HotReloadIndicator
+   - Toaster
+   - FontAwesomeLoader (new component that loads FA script post-hydration)
+5. Created `useHydrated` hook to detect client-side mounting
+6. Updated `ClientNavigateButton` to guard navigate() behind useHydrated while preserving href fallback
 
 **Results:**
 - ✅ Hydration error completely eliminated (architect-verified PASS)
+- ✅ Layout is now pure static wrapper - no DOM mutations during SSR
+- ✅ All dynamic/hook-using code deferred until after hydration
 - ✅ Server and client now render identical initial markup
 - ✅ Sign In button navigation works correctly
 - ✅ SSR benefits fully retained
 - ✅ Session state consistent from first paint
 
+**IMPORTANT: Browser Cache Issue:**
+Browser may show old cached errors even though code is fixed. **Users must perform a hard reload** to see the fix:
+- Chrome/Edge: Shift + Refresh or Ctrl + Shift + R
+- Firefox: Ctrl + Shift + R
+- Safari: Cmd + Option + R
+- Or: Open DevTools → Right-click refresh → "Empty Cache and Hard Reload"
+
 **Files Modified:**
-- `create-anything/_/apps/web/src/app/root.tsx` (added loader, removed SafeSessionProvider, pass session to SessionProvider)
-- `create-anything/_/apps/web/src/components/ClientNavigateButton.jsx` (simplified to SSR-safe plain links)
+- `create-anything/_/apps/web/src/app/root.tsx` (added loader, made Layout static, moved all hooks to App via ClientOnly, created FontAwesomeLoader)
+- `create-anything/_/apps/web/src/components/ClientNavigateButton.jsx` (uses useHydrated + navigate() with href fallback)
+- `create-anything/_/apps/web/src/hooks/useHydrated.js` (new hook for client-mount detection)

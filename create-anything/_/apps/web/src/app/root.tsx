@@ -440,17 +440,39 @@ export function Layout({ children }: { children: ReactNode }) {
         <link rel="icon" href="/src/__create/favicon.png" />
       </head>
       <body>
-        <ClientOnly loader={() => <SandboxBridge />} />
         {children}
-        <ClientOnly loader={() => <HotReloadIndicator />} />
-        <ClientOnly loader={() => <Toaster position="bottom-right" />} />
         <ScrollRestoration />
         <Scripts />
-        <script src="https://kit.fontawesome.com/2c15cc0cc7.js" crossOrigin="anonymous" async />
       </body>
     </html>
   );
 }
+
+const FontAwesomeLoader: FC = () => {
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    
+    const script = document.createElement('script');
+    script.src = 'https://kit.fontawesome.com/2c15cc0cc7.js';
+    script.crossOrigin = 'anonymous';
+    script.async = true;
+    
+    if (document.body) {
+      document.body.appendChild(script);
+    } else {
+      document.addEventListener('DOMContentLoaded', () => {
+        document.body?.appendChild(script);
+      });
+    }
+    
+    return () => {
+      if (document.body?.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
+  return null;
+};
 
 export default function App({ loaderData }: Route.ComponentProps) {
   const [queryClient] = useState(() => new QueryClient({
@@ -466,7 +488,11 @@ export default function App({ loaderData }: Route.ComponentProps) {
     <SessionProvider session={loaderData?.session || null}>
       <ChakraProvider theme={chakraTheme}>
         <QueryClientProvider client={queryClient}>
+          <ClientOnly loader={() => <SandboxBridge />} />
           <ClientOnly loader={() => <SessionTimeoutMonitor />} />
+          <ClientOnly loader={() => <HotReloadIndicator />} />
+          <ClientOnly loader={() => <Toaster position="bottom-right" />} />
+          <ClientOnly loader={() => <FontAwesomeLoader />} />
           <Outlet />
         </QueryClientProvider>
       </ChakraProvider>
