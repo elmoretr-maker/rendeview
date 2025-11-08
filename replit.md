@@ -42,6 +42,32 @@ The application uses a client-server architecture. The frontend is built with Re
 - **Geocoding**: OpenStreetMap Nominatim API
 ## Recent Changes
 
+### Daily.co Video Calling - Production Ready
+**Status:** ✅ RESOLVED (Nov 8, 2025)
+
+**Issue:**
+- Daily.co API returning "Missing payment method" error
+- Video room creation failing with 403 errors
+- Account configuration showed `allow_plan_free: false`
+
+**Solution:**
+- Added payment method to Daily.co dashboard (https://dashboard.daily.co/)
+- Daily.co requires billing on file even for free tier (10,000 participant-minutes/month)
+- No charges until free tier exceeded
+
+**Testing Results:**
+- ✅ Video calls launching successfully
+- ✅ Daily.co room creation working
+- ✅ Free tier limits enforcing correctly (3 video calls/day during 2-week trial)
+- ✅ Cooldown timer displaying properly
+- ✅ Post-call flow operational
+- ✅ All monetization features active
+
+**Daily.co Configuration:**
+- Domain: `rendeviewapp.daily.co`
+- Free Tier: 10,000 minutes/month (covers ~1,000 video calls for testing)
+- Pricing: Only pay if exceeding free tier (~$0.004-0.005 per participant-minute)
+
 ### Server-Side Code Leaking into Browser Bundle
 **Status:** ✅ RESOLVED (Nov 8, 2025)
 
