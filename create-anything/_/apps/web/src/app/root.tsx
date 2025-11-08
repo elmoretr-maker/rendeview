@@ -1,5 +1,6 @@
 import {
   Links,
+  Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
@@ -429,13 +430,14 @@ export function Layout({ children }: { children: ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
         <title>Rende-VIEW - Find Your Perfect Match</title>
         <meta name="description" content="Rende-VIEW is a modern dating platform featuring video calling, real-time messaging, smart matching, and tiered membership options. Find meaningful connections today." />
         <meta name="keywords" content="dating app, video dating, online dating, match, relationships, video calls" />
         <meta property="og:title" content="Rende-VIEW - Find Your Perfect Match" />
         <meta property="og:description" content="Modern dating platform with video calling, messaging, and smart matching" />
         <meta property="og:type" content="website" />
-        <Links />
         <script type="module" src="/src/__create/dev-error-overlay.js"></script>
         <link rel="icon" href="/src/__create/favicon.png" />
       </head>
@@ -452,6 +454,9 @@ const FontAwesomeLoader: FC = () => {
   useEffect(() => {
     if (typeof document === 'undefined') return;
     
+    const existingScript = document.querySelector('script[src="https://kit.fontawesome.com/2c15cc0cc7.js"]');
+    if (existingScript) return;
+    
     const script = document.createElement('script');
     script.src = 'https://kit.fontawesome.com/2c15cc0cc7.js';
     script.crossOrigin = 'anonymous';
@@ -459,17 +464,7 @@ const FontAwesomeLoader: FC = () => {
     
     if (document.body) {
       document.body.appendChild(script);
-    } else {
-      document.addEventListener('DOMContentLoaded', () => {
-        document.body?.appendChild(script);
-      });
     }
-    
-    return () => {
-      if (document.body?.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
   }, []);
   return null;
 };

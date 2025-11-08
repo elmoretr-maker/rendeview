@@ -26,13 +26,13 @@ args = "Mobile App"
 name = "Web App"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd create-anything/_/apps/web && npm run dev"
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd create-anything/_/apps/web && npm run dev -- --force"
+waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Mobile App"
@@ -48,10 +48,6 @@ args = "cd create-anything/_/apps/mobile && npx --yes expo@latest start --tunnel
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 5001
-externalPort = 3001
 
 [[ports]]
 localPort = 8081
