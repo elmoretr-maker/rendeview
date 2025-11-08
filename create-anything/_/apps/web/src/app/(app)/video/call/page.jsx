@@ -343,13 +343,20 @@ export default function VideoCall() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ state: "ended" }),
         });
+        
+        // Wait for session polling to pick up the "ended" state and show the note modal
+        // The modal's save/skip handlers will navigate to messages
+        queryClient.invalidateQueries({ queryKey: ["video-sessions"] });
+        toast.success("Call ended");
       } catch (e) {
         console.error("Failed to update session state:", e);
+        // If update fails, navigate anyway
+        navigate(`/messages/${matchId}`);
       }
+    } else {
+      // No session, navigate directly
+      navigate(`/messages/${matchId}`);
     }
-    queryClient.invalidateQueries({ queryKey: ["video-sessions"] });
-    toast.success("Call ended");
-    navigate(`/messages/${matchId}`);
   };
 
   const handleBlockAndEnd = async () => {
