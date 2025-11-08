@@ -35,6 +35,12 @@ import { useSandboxStore } from '../__create/hmr-sandbox-store';
 import type { Route } from './+types/root';
 import { useDevServerHeartbeat } from '../__create/useDevServerHeartbeat';
 import { SessionTimeoutMonitor } from './components/SessionTimeoutMonitor';
+import { auth } from '@/auth';
+
+export async function loader() {
+  const session = await auth();
+  return { session };
+}
 
 const chakraTheme = extendTheme({
   colors: {
@@ -446,14 +452,7 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
-const SafeSessionProvider = ({ children }: { children: ReactNode }) => {
-  if (typeof window === 'undefined') {
-    return <>{children}</>;
-  }
-  return <SessionProvider>{children}</SessionProvider>;
-};
-
-export default function App() {
+export default function App({ loaderData }: Route.ComponentProps) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
@@ -464,13 +463,13 @@ export default function App() {
   }));
 
   return (
-    <SafeSessionProvider>
+    <SessionProvider session={loaderData?.session || null}>
       <ChakraProvider theme={chakraTheme}>
         <QueryClientProvider client={queryClient}>
           <ClientOnly loader={() => <SessionTimeoutMonitor />} />
           <Outlet />
         </QueryClientProvider>
       </ChakraProvider>
-    </SafeSessionProvider>
+    </SessionProvider>
   );
 }
