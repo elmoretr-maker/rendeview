@@ -30,8 +30,6 @@ import { serializeError } from 'serialize-error';
 import { Toaster } from 'sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
-// @ts-ignore
-import { LoadFonts } from 'virtual:load-fonts.jsx';
 import { HotReloadIndicator } from '../__create/HotReload';
 import { useSandboxStore } from '../__create/hmr-sandbox-store';
 import type { Route } from './+types/root';
@@ -438,8 +436,8 @@ export function Layout({ children }: { children: ReactNode }) {
       <body suppressHydrationWarning>
         <ClientOnly loader={() => <SandboxBridge />} />
         {children}
-        <HotReloadIndicator />
-        <Toaster position="bottom-right" />
+        <ClientOnly loader={() => <HotReloadIndicator />} />
+        <ClientOnly loader={() => <Toaster position="bottom-right" />} />
         <ScrollRestoration />
         <Scripts />
         <script src="https://kit.fontawesome.com/2c15cc0cc7.js" crossOrigin="anonymous" async />
