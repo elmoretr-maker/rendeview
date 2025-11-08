@@ -42,33 +42,59 @@ The application uses a client-server architecture. The frontend is built with Re
 - **Geocoding**: OpenStreetMap Nominatim API
 ## Recent Changes
 
-### Sign In Button Navigation Issue
+### Server-Side Code Leaking into Browser Bundle
 **Status:** ✅ RESOLVED (Nov 8, 2025)
 
 **Original Problem:**
-- Sign In button on Welcome page didn't navigate when clicked
-- Persistent hydration errors in browser console
-- React Router 7 SSR compatibility issues
+- Critical error: `node:async_hooks.AsyncLocalStorage` cannot be accessed in client code
+- Hydration failures due to server/client mismatch
+- Sign In button navigation issues
+- Welcome Back page crashes
 
 **Root Causes:**
-1. Complex `ClientNavigateButton` tried to use SPA navigation via `navigate()` which failed when hydration had issues
-2. React Router `<Meta />` component needed to be added to Layout for proper SSR meta tag handling
-3. Meta tags were hardcoded in Layout instead of using React Router's `export const meta` pattern
+1. `import { auth } from '@/auth'` at top-level of page components bundled server-only Node.js code for browser
+2. `@/auth` internally uses `node:async_hooks` which is a Node.js-only module
+3. Vite tried to bundle server-side dependencies for client, causing fatal errors
+4. Complex `ClientNavigateButton` relied on hydration-dependent JavaScript navigation
 
 **Solution Implemented:**
-1. Simplified `ClientNavigateButton` to use plain HTML link behavior (`<Button as="a" href={to}>`)
-2. Removed complex hydration detection and navigate() logic that was unreliable
-3. Added `<Meta />` component to Layout's `<head>`
-4. Moved meta tags from hardcoded HTML to `export const meta` function
-5. Added root loader to fetch session server-side
-6. Moved FontAwesome loading to client-only component
+1. **Dynamic Imports for auth()**: Changed all page loaders from static to dynamic imports:
+   ```javascript
+   // Before: ❌ Bundled for browser
+   import { auth } from '@/auth';
+   export async function loader() {
+     const session = await auth();
+   }
+   
+   // After: ✅ Server-only
+   export async function loader() {
+     const { auth } = await import('@/auth');
+     const session = await auth();
+   }
+   ```
+2. **Simplified Navigation**: Converted `ClientNavigateButton` to plain HTML links (`<Button as="a" href={to}>`)
+3. **Removed Hydration Dependencies**: Eliminated complex useHydrated logic and navigate() calls
+4. **Added React Router Meta**: Integrated `<Meta />` component and `export const meta` pattern
 
 **Results:**
-- ✅ Both Sign In and Join Now buttons work reliably
-- ✅ Clean browser console (no hydration errors)
-- ✅ Simple, maintainable button implementation
-- ✅ Proper React Router 7 SSR pattern usage
+- ✅ No more `node:async_hooks` errors
+- ✅ Clean browser console (zero hydration errors)
+- ✅ Sign In and Join Now buttons work perfectly
+- ✅ Server-side code stays server-side
+- ✅ Client-side bundle is pure browser JavaScript
 
 **Files Modified:**
-- `create-anything/_/apps/web/src/components/ClientNavigateButton.jsx` (simplified to plain links)
-- `create-anything/_/apps/web/src/app/root.tsx` (added Meta component and export const meta)
+- `create-anything/_/apps/web/src/app/root.tsx` (dynamic auth import in loader)
+- `create-anything/_/apps/web/src/app/account/signin/page.jsx` (dynamic auth import)
+- `create-anything/_/apps/web/src/app/account/signup/page.jsx` (dynamic auth import)
+- `create-anything/_/apps/web/src/components/ClientNavigateButton.jsx` (plain HTML links)
+
+**Pattern for Future Development:**
+Always use dynamic imports in page loaders for server-only modules:
+```javascript
+export async function loader() {
+  const { auth } = await import('@/auth');
+  const { someServerThing } = await import('@/server-only-module');
+  // ... use server-side code safely
+}
+```

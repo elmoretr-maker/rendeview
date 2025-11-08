@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { redirect } from "react-router";
 import useAuth from "@/utils/useAuth";
-import { auth } from "@/auth";
 import sql from "@/app/api/utils/sql";
 
 export async function loader({ request }) {
+  const { auth } = await import("@/auth");
   const session = await auth();
   
   if (session?.user?.id) {
