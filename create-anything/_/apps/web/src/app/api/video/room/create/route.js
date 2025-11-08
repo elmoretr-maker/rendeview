@@ -129,11 +129,20 @@ export async function POST(request) {
       [matchId],
     );
     const match = matchRows?.[0];
+    console.log('[VIDEO ROOM CREATE] Match lookup:', { matchId, match, userId: session.user.id });
     if (!match) {
       return Response.json({ error: "Match not found" }, { status: 404 });
     }
     const me = Number(session.user.id);
+    console.log('[VIDEO ROOM CREATE] Permission check:', { 
+      me, 
+      user_a_id: match.user_a_id, 
+      user_b_id: match.user_b_id,
+      matchesA: me === Number(match.user_a_id),
+      matchesB: me === Number(match.user_b_id)
+    });
     if (me !== Number(match.user_a_id) && me !== Number(match.user_b_id)) {
+      console.error('[VIDEO ROOM CREATE] Permission denied - user not in match');
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
     const otherId =
