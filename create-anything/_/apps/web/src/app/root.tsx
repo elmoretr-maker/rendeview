@@ -419,8 +419,8 @@ const SandboxBridge: FC = () => {
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head suppressHydrationWarning>
+    <html lang="en">
+      <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Rende-VIEW - Find Your Perfect Match</title>
@@ -433,7 +433,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <script type="module" src="/src/__create/dev-error-overlay.js"></script>
         <link rel="icon" href="/src/__create/favicon.png" />
       </head>
-      <body suppressHydrationWarning>
+      <body>
         <ClientOnly loader={() => <SandboxBridge />} />
         {children}
         <ClientOnly loader={() => <HotReloadIndicator />} />
@@ -446,6 +446,13 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
+const SafeSessionProvider = ({ children }: { children: ReactNode }) => {
+  if (typeof window === 'undefined') {
+    return <>{children}</>;
+  }
+  return <SessionProvider>{children}</SessionProvider>;
+};
+
 export default function App() {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
@@ -457,13 +464,13 @@ export default function App() {
   }));
 
   return (
-    <SessionProvider>
+    <SafeSessionProvider>
       <ChakraProvider theme={chakraTheme}>
         <QueryClientProvider client={queryClient}>
           <SessionTimeoutMonitor />
           <Outlet />
         </QueryClientProvider>
       </ChakraProvider>
-    </SessionProvider>
+    </SafeSessionProvider>
   );
 }

@@ -2,7 +2,8 @@ import * as React from 'react';
 import { useSession } from "@auth/create/react";
 
 const useUser = () => {
-  const { data: session, status } = useSession();
+  const sessionData = useSession();
+  const { data: session, status } = sessionData || { data: null, status: 'loading' };
   const id = session?.user?.id
 
   const [user, setUser] = React.useState(session?.user ?? null);
