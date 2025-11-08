@@ -43,6 +43,17 @@ export async function loader() {
   return { session };
 }
 
+export const meta = () => [
+  { charSet: "utf-8" },
+  { name: "viewport", content: "width=device-width, initial-scale=1" },
+  { title: "Rende-VIEW - Find Your Perfect Match" },
+  { name: "description", content: "Rende-VIEW is a modern dating platform featuring video calling, real-time messaging, smart matching, and tiered membership options. Find meaningful connections today." },
+  { name: "keywords", content: "dating app, video dating, online dating, match, relationships, video calls" },
+  { property: "og:title", content: "Rende-VIEW - Find Your Perfect Match" },
+  { property: "og:description", content: "Modern dating platform with video calling, messaging, and smart matching" },
+  { property: "og:type", content: "website" },
+];
+
 const chakraTheme = extendTheme({
   colors: {
     brand: {
@@ -428,16 +439,8 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
-        <title>Rende-VIEW - Find Your Perfect Match</title>
-        <meta name="description" content="Rende-VIEW is a modern dating platform featuring video calling, real-time messaging, smart matching, and tiered membership options. Find meaningful connections today." />
-        <meta name="keywords" content="dating app, video dating, online dating, match, relationships, video calls" />
-        <meta property="og:title" content="Rende-VIEW - Find Your Perfect Match" />
-        <meta property="og:description" content="Modern dating platform with video calling, messaging, and smart matching" />
-        <meta property="og:type" content="website" />
         <script type="module" src="/src/__create/dev-error-overlay.js"></script>
         <link rel="icon" href="/src/__create/favicon.png" />
       </head>
