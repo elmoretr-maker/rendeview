@@ -333,7 +333,7 @@ function ChatContent() {
       toast.success("Starting video call...");
       setShowVideoCallModal(false);
       
-      navigate(`/video/call?conversationId=${conversationId}&minutes=${getCallDuration(user?.membership_tier || 'free')}`);
+      navigate(`/video/call?matchId=${conversationId}&minutes=${getCallDuration(user?.membership_tier || 'free')}`);
     } catch (error) {
       console.error("Video call error:", error);
       toast.error(error.message || "Could not start video call");
