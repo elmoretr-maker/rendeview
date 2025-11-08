@@ -1,9 +1,52 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useState } from "react";
+import { redirect } from "react-router";
 import useAuth from "@/utils/useAuth";
+import { auth } from "@/auth";
+import sql from "@/app/api/utils/sql";
+
+export async function loader({ request }) {
+  const session = await auth();
+  
+  if (session?.user?.id) {
+    const url = new URL(request.url);
+    const callbackUrl = url.searchParams.get('callbackUrl');
+    
+    if (callbackUrl) {
+      if (callbackUrl.startsWith('/') && !callbackUrl.startsWith('//')) {
+        return redirect(callbackUrl);
+      }
+    }
+    
+    const userId = Number(session.user.id);
+    
+    const [profileData] = await sql`
+      SELECT 
+        profile_completed,
+        data_consent_given,
+        membership_tier
+      FROM auth_users 
+      WHERE id = ${userId}
+    `;
+    
+    if (!profileData) {
+      return null;
+    }
+    
+    if (!profileData.data_consent_given) {
+      return redirect("/onboarding/data-consent-required");
+    }
+    
+    if (!profileData.profile_completed) {
+      return redirect("/onboarding/profile");
+    }
+    
+    return redirect("/discovery");
+  }
+  
+  return null;
+}
 
 export default function SignInPage() {
-  const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
