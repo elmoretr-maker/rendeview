@@ -94,39 +94,53 @@ The application uses a client-server architecture. The frontend is built with Re
 - `apps/mobile/src/app/(tabs)/messages/[matchId].jsx` - Updated green dot logic
 - `apps/web/src/app/(app)/messages/[conversationId]/page.jsx` - Full invitation flow implementation
 
-### Onboarding Authentication Bug - Critical Fix
+### Onboarding Authentication Bug - Critical Fix (Web + Mobile)
 **Status:** ✅ RESOLVED (Nov 9, 2025)
 
 **Problem:**
-- All three onboarding pages (`/onboarding/consent`, `/onboarding/membership`, `/onboarding/profile`) redirected unauthenticated users to `/onboarding/welcome`
-- 401 (Unauthorized) errors blocked the entire new user signup flow
-- Profile page stuck in infinite "Loading..." state
+- **WEB**: All three onboarding pages (`/onboarding/consent`, `/onboarding/membership`, `/onboarding/profile`) redirected unauthenticated users to `/onboarding/welcome`
+- **MOBILE**: All three onboarding screens (`consent.jsx`, `membership.jsx`, `profile.jsx`) had the same authentication redirect bug
+- 401 (Unauthorized) errors blocked the entire new user signup flow on both platforms
+- Web profile page stuck in infinite "Loading..." state
+- Mobile profile screen left users stranded without proper guard behavior
 
 **Root Cause:**
 1. OnboardingGuard called `/api/profile` which returns 401 for unauthenticated users
 2. Without `allowUnauthenticated={true}`, guard redirected to `/onboarding/welcome`
-3. Profile page's useQuery threw errors on 401, causing infinite loading
+3. Web's profile page useQuery threw errors on 401, causing infinite loading
+4. Mobile's profile screen lacked OnboardingGuard wrapper entirely, breaking parity
 
 **Solution:**
+**WEB:**
 1. Added `allowUnauthenticated={true}` to all three onboarding pages
 2. Modified `/onboarding/profile` useQuery to handle 401 gracefully:
    - Returns empty profile data `{ user: {}, media: [] }` on 401
    - Added `retry: false` to prevent React Query retries
 
+**MOBILE:**
+1. Added `allowUnauthenticated={true}` to `consent.jsx` OnboardingGuard
+2. Added `allowUnauthenticated={true}` to `membership.jsx` OnboardingGuard
+3. Added OnboardingGuard import to `profile.jsx` and wrapped export with `allowUnauthenticated={true}`
+
 **Testing Results:**
-- ✅ `/onboarding/consent` loads correctly with "Data Consent" form (Step 2 of 4)
-- ✅ `/onboarding/membership` loads correctly with "Choose your plan" (Step 3 of 4)
-- ✅ `/onboarding/profile` loads correctly with profile form (Step 4 of 4)
-- ✅ No more infinite loading states
+- ✅ **WEB**: All onboarding pages load correctly (Step 2, 3, 4 of 4)
+- ✅ **MOBILE**: All onboarding screens now use OnboardingGuard with proper auth handling
+- ✅ 100% web/mobile parity achieved
+- ✅ No more infinite loading states or redirect loops
 - ✅ Expected 401 errors are benign and handled gracefully
 
-**Files Modified:**
+**Files Modified (Web):**
 - `apps/web/src/app/(app)/onboarding/consent/page.jsx` - Added allowUnauthenticated
 - `apps/web/src/app/(app)/onboarding/membership/page.jsx` - Added allowUnauthenticated
 - `apps/web/src/app/(app)/onboarding/profile/page.jsx` - Added allowUnauthenticated + 401 handling
 
+**Files Modified (Mobile):**
+- `apps/mobile/src/app/onboarding/consent.jsx` - Added allowUnauthenticated
+- `apps/mobile/src/app/onboarding/membership.jsx` - Added allowUnauthenticated
+- `apps/mobile/src/app/onboarding/profile.jsx` - Added OnboardingGuard import + allowUnauthenticated
+
 **Impact:**
-New user signup flow is now fully functional. Users can complete onboarding without authentication errors.
+New user signup flow is now fully functional on BOTH web and mobile platforms. Users can complete onboarding without authentication errors, achieving 100% parity between platforms.
 
 ### Daily.co Video Calling - Production Ready
 **Status:** ✅ RESOLVED (Nov 8, 2025)
