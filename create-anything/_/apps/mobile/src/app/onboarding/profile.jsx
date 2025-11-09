@@ -25,6 +25,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import LocationSettings from "@/components/LocationSettings";
 import { containsExternalContact, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
+import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import {
   useFonts,
   Inter_400Regular,
@@ -1223,5 +1224,9 @@ function ConsolidatedProfileOnboardingContent() {
 }
 
 export default function ConsolidatedProfileOnboarding() {
-  return <ConsolidatedProfileOnboardingContent />;
+  return (
+    <OnboardingGuard allowUnauthenticated={true}>
+      <ConsolidatedProfileOnboardingContent />
+    </OnboardingGuard>
+  );
 }
