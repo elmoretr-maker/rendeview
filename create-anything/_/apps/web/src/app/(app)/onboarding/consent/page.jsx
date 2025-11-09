@@ -124,7 +124,7 @@ function ConsentContent() {
 
 export default function Consent() {
   return (
-    <OnboardingGuard>
+    <OnboardingGuard allowUnauthenticated={true}>
       <ConsentContent />
     </OnboardingGuard>
   );

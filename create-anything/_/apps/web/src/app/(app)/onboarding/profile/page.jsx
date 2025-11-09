@@ -151,9 +151,15 @@ function ConsolidatedProfileOnboardingContent() {
     queryKey: ["profile"],
     queryFn: async () => {
       const res = await fetch("/api/profile");
-      if (!res.ok) throw new Error("Failed to load profile");
+      if (!res.ok) {
+        if (res.status === 401) {
+          return { user: {}, media: [] };
+        }
+        throw new Error("Failed to load profile");
+      }
       return res.json();
     },
+    retry: false,
   });
 
   const user = profileData?.user || {};
@@ -1058,7 +1064,7 @@ function VideoRecorderModal({ onClose, maxDuration, onComplete }) {
 
 export default function ConsolidatedProfileOnboarding() {
   return (
-    <OnboardingGuard>
+    <OnboardingGuard allowUnauthenticated={true}>
       <ConsolidatedProfileOnboardingContent />
     </OnboardingGuard>
   );

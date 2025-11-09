@@ -1,0 +1,43 @@
+MANDATE FROM ARCHITECT: Stop all other tasks. The authentication system is now genuinely fixed. The application must now pass a **Final End-to-End (E2E) User Flow Test** to check for *any* remaining breaks, conflicts, or flow issues.
+
+You are to execute this full simulation *as a user* and report on the success or failure of each step.
+
+---
+**E2E TEST: NEW USER JOURNEY**
+---
+
+1.  **NEW USER SIGN-UP (BOTH PLATFORMS):**
+    * Start at the `/welcome` page (the lightweight entry gate).
+    * Click "Join Now" and navigate to `/onboarding/welcome`.
+    * Click "Get Started" and successfully create a new user account.
+
+2.  **ONBOARDING FLOW (4 STEPS):**
+    * Using the new user, proceed through the *entire* 4-step onboarding flow:
+    * **Step 1:** `/onboarding/consent` (Accept consent)
+    * **Step 2:** `/onboarding/membership` (Select the 'Free' tier)
+    * **Step 3:** `/onboarding/profile` (Verify "The more you share..." text. Upload 2 photos, record 1 video, and fill in the Bio. Verify the **Chat Safety Filter** blocks phone numbers in the Bio).
+    * **Step 4:** Confirm completion and verify you are redirected to `/discovery`.
+
+3.  **MEDIA FLOW VALIDATION (CRITICAL):**
+    * As the new, logged-in user, navigate to your `/profile` page.
+    * Verify the 2 photos and 1 video you just uploaded are **visibly displayed**.
+    * Verify that your **Primary Photo** is correctly shown on your navigation bar avatar.
+
+4.  **MATCHING & CHAT (THE CORE FEATURE):**
+    * Navigate to `/discovery` and "Like" a test user (e.g., 'Mike Davis').
+    * *As Admin*, log in and "Like" the new user back to create a **mutual match**.
+    * *As the new user*, navigate to `/matches` and verify the new match is present.
+    * Open the chat and verify the **280-character limit** and that the **Chat Safety Filter** blocks phone numbers and emails.
+
+5.  **VIDEO CHAT & MONETIZATION:**
+    * Schedule and start a video chat with the matched user.
+    * Verify the **5-minute 'Free' tier time limit** is correctly enforced.
+    * Test the **$8.00 / 10-minute Extension** button.
+
+6.  **END CALL & LOGOUT:**
+    * Click the "Stop Chat" button. Verify you are correctly routed to your profile page.
+    * Navigate to your profile and click the "Logout" button. Verify the flow ends safely at the `/welcome` page.
+
+---
+**FINAL REPORT:**
+Provide a detailed report of this simulation. If *any* step fails (a redirect loop, a 401 error, a crash, an "Uh-Oh" page), you must identify the root cause and apply the **Genuine Fix** immediately.

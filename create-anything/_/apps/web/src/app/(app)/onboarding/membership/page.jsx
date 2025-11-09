@@ -222,7 +222,7 @@ function MembershipScreenContent() {
 
 export default function MembershipScreen() {
   return (
-    <OnboardingGuard>
+    <OnboardingGuard allowUnauthenticated={true}>
       <MembershipScreenContent />
     </OnboardingGuard>
   );
