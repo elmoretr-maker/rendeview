@@ -26,6 +26,8 @@ The application uses a client-server architecture. The frontend is built with Re
 - **Admin Dashboard**: Provides user safety management, revenue overview, and dynamic pricing settings.
 - **Deployment**: Mobile application uses EAS for production-ready cloud builds.
 - **Mobile Feature Parity**: Achieves 100% video chat feature parity with web, including Schedule Proposal Screen, Blocked Users Management, and enhanced Profile Organization.
+- **Video History Requirement**: Instant video calling (green dot) requires users to have completed at least one video call together. First-time callers must schedule via the scheduling system. Enforced with database validation and composite index for performance.
+- **Invitation-Based Calling**: Both web and mobile use invitation flow with caller/callee handshake. Caller sees "Waiting for Response..." UI, callee receives modal with Accept/Decline. Polling every 3s for real-time updates.
 
 ## External Dependencies
 - **Database**: PostgreSQL (Neon serverless)
@@ -41,6 +43,56 @@ The application uses a client-server architecture. The frontend is built with Re
 - **Mobile UI Components**: @react-native-community/slider, @expo-google-fonts/inter, react-native-maps, expo-location
 - **Geocoding**: OpenStreetMap Nominatim API
 ## Recent Changes
+
+### Video History Requirement & Invitation Flow - Web/Mobile Parity
+**Status:** ✅ COMPLETE (Nov 9, 2025)
+
+**Feature:**
+- Instant video calling now requires completed video history between users
+- First video call must be scheduled through the scheduling system
+- Invitation-based calling with caller/callee handshake replaces direct room creation
+
+**Implementation:**
+1. **Backend Validation**:
+   - Messages API returns `hasVideoHistory: true/false` for each conversation
+   - Create invitation API validates video history, returns 403 if none exists
+   - Database query: `SELECT FROM video_sessions WHERE state='ended' AND ended_at IS NOT NULL`
+   - Added composite index: `idx_video_sessions_history_check` on (state, ended_at, caller_id, callee_id)
+
+2. **Mobile UI**:
+   - Green dot (clickable) only shows if user is online AND hasVideoHistory
+   - If online but no history: Shows "Online • Schedule first call • Profile"
+   - If offline: Shows "Offline • Tap to view profile"
+
+3. **Web UI** (100% Parity with Mobile):
+   - Same green/gray status dot logic as mobile
+   - Replaced direct `/api/video/room/create` with invitation flow
+   - Added invitation polling (React Query, 3s intervals, scoped queryKey)
+   - Created IncomingCallModal component (Chakra UI)
+   - Modal states: Confirmation → Waiting → Accepted/Declined
+   - `outgoingInvitationPolled` flag prevents modal flicker during polling gap
+
+4. **Invitation Flow**:
+   - Caller taps green dot → confirmation modal → creates invitation → waiting state
+   - Polling returns invitation → callee sees incoming modal with Accept/Decline
+   - Accept: both navigate to `/video/call`
+   - Decline: caller sees toast with reason
+   - Cancel: caller can cancel pending invitation
+   - Expire: auto-cleanup after timeout
+
+**Error Handling**:
+- If user tries instant call without history: navigates to schedule page after toast
+- Hydration on page refresh: reopens modal with waiting state
+- Stale invitation cleanup: clears when poll reports cancellation
+
+**Database Changes**:
+- Index: `CREATE INDEX idx_video_sessions_history_check ON video_sessions(state, ended_at, caller_id, callee_id)`
+
+**Files Modified**:
+- `apps/web/src/app/api/messages/[matchId]/route.js` - Added hasVideoHistory field
+- `apps/web/src/app/api/video/invitations/create/route.js` - Added video history validation
+- `apps/mobile/src/app/(tabs)/messages/[matchId].jsx` - Updated green dot logic
+- `apps/web/src/app/(app)/messages/[conversationId]/page.jsx` - Full invitation flow implementation
 
 ### Daily.co Video Calling - Production Ready
 **Status:** ✅ RESOLVED (Nov 8, 2025)
