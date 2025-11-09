@@ -17,6 +17,7 @@ import KeyboardAvoidingAnimatedView from "@/components/KeyboardAvoidingAnimatedV
 import AuthenticatedImage from "@/components/AuthenticatedImage";
 import { useAuth } from "@/utils/auth/useAuth";
 import { containsExternalContact, PHONE_NUMBER_SECURITY_MESSAGE } from "@/utils/safetyFilters";
+import Modal from "react-native/Libraries/Modal/Modal";
 import {
   LongMessagePrompt,
   VideoSchedulingNudge,
@@ -25,11 +26,12 @@ import {
   RewardWarningPrompt,
 } from "@/components/SmartPrompts";
 import { VideoMessageRecorder } from "@/components/VideoMessageRecorder";
+import { getTierLimits } from "@/utils/membershipTiers";
 import {
   useFonts,
   Inter_400Regular,
   Inter_600SemiBold,
-} from "@expo-google-fonts/inter";
+} from "@expo/google-fonts/inter";
 
 const COLORS = {
   primary: "#5B3BAF",
@@ -56,6 +58,17 @@ export default function Chat() {
   const [showLimitPrompt, setShowLimitPrompt] = useState(false);
   const [showRewardWarning, setShowRewardWarning] = useState(false);
   const [showVideoRecorder, setShowVideoRecorder] = useState(false);
+  
+  // Video call state
+  const [showVideoCallModal, setShowVideoCallModal] = useState(false);
+  const [creatingVideoCall, setCreatingVideoCall] = useState(false);
+  const [videoCooldown, setVideoCooldown] = useState(null);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  
+  // Incoming call state
+  const [incomingCall, setIncomingCall] = useState(null);
+  const [declineReason, setDeclineReason] = useState("");
+  const [respondingToCall, setRespondingToCall] = useState(false);
   
   // Track if prompts have been dismissed (persist dismissal)
   const longMessageDismissed = useRef(false);
@@ -211,6 +224,222 @@ export default function Chat() {
     Keyboard.dismiss();
   }, [text, sendMutation]);
 
+  // Poll for incoming call invitations (3 second interval)
+  const { data: invitationData } = useQuery({
+    queryKey: ["callInvitations"],
+    queryFn: async () => {
+      const res = await fetch("/api/video/invitations/poll");
+      if (!res.ok) return { incomingInvitation: null, outgoingInvitation: null };
+      return res.json();
+    },
+    refetchInterval: 3000,
+    enabled: !!matchId && !incomingCall,
+  });
+
+  // Show incoming call modal when invitation arrives
+  useEffect(() => {
+    if (invitationData?.incomingInvitation && !incomingCall) {
+      setIncomingCall(invitationData.incomingInvitation);
+    }
+  }, [invitationData, incomingCall]);
+
+  // Handle outgoing invitation responses (caller-side)
+  useEffect(() => {
+    const outgoing = invitationData?.outgoingInvitation;
+    if (!outgoing) return;
+
+    if (outgoing.status === "accepted") {
+      // Callee accepted - navigate to video room!
+      Alert.alert(
+        "Call Accepted!",
+        `${outgoing.callee_name} accepted your call. Starting video...`,
+        [{ text: "OK", onPress: () => router.push(`/video/call?matchId=${outgoing.match_id}`) }],
+        { cancelable: false }
+      );
+    } else if (outgoing.status === "declined") {
+      // Callee declined - show reason
+      Alert.alert(
+        "Call Declined",
+        `${outgoing.callee_name} declined your call.\nReason: ${outgoing.decline_reason || "Not available"}`,
+        [{ text: "OK" }]
+      );
+    }
+  }, [invitationData?.outgoingInvitation, router]);
+
+  // Helper functions
+  const getCallDuration = (tier) => {
+    const limits = getTierLimits(tier);
+    return limits.chatMinutes || 5;
+  };
+
+  const getTierDisplay = (tier) => {
+    const tierMap = { free: 'Free', casual: 'Casual', dating: 'Dating', business: 'Business' };
+    return tierMap[tier?.toLowerCase()] || 'Free';
+  };
+
+  const formatCooldownTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m ${secs}s`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${secs}s`;
+    } else {
+      return `${secs}s`;
+    }
+  };
+
+  // Start video call handler
+  const handleStartVideoCall = async () => {
+    if (!matchId) {
+      Alert.alert("Error", "Unable to start video call");
+      return;
+    }
+
+    setCreatingVideoCall(true);
+    try {
+      const res = await fetch("/api/video/invitations/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ matchId: Number(matchId) }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        
+        if (error.isLimitExceeded && error.secondsUntilAvailable !== undefined) {
+          setVideoCooldown({
+            nextAvailableAt: error.nextAvailableAt,
+            currentMeetings: error.currentMeetings,
+            maxMeetings: error.maxMeetings
+          });
+          setCooldownSeconds(error.secondsUntilAvailable);
+          setShowVideoCallModal(false);
+          Alert.alert("Daily Limit Reached", error.error);
+          return;
+        }
+        
+        if (error.upgradeRequired) {
+          Alert.alert("Upgrade Required", error.error || "Please upgrade to start video calls", [
+            { text: "Cancel", style: "cancel" },
+            { text: "Upgrade", onPress: () => router.push("/settings/subscription") }
+          ]);
+          setShowVideoCallModal(false);
+          return;
+        }
+        throw new Error(error.error || "Failed to create invitation");
+      }
+
+      const invitationResponse = await res.json();
+      setShowVideoCallModal(false);
+      
+      Alert.alert(
+        "Call Invitation Sent",
+        `Waiting for ${otherUser?.name || "user"} to accept...`,
+        [
+          {
+            text: "Cancel",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                await fetch(`/api/video/invitations/${invitationResponse.invitation.id}/cancel`, {
+                  method: "POST",
+                });
+              } catch (e) {
+                console.error("Failed to cancel invitation", e);
+              }
+            }
+          }
+        ]
+      );
+      
+    } catch (error) {
+      console.error("Video call error:", error);
+      Alert.alert("Error", error.message || "Could not start video call");
+    } finally {
+      setCreatingVideoCall(false);
+    }
+  };
+
+  // Accept incoming call
+  const handleAcceptCall = async () => {
+    if (!incomingCall) return;
+
+    setRespondingToCall(true);
+    try {
+      const res = await fetch(`/api/video/invitations/${incomingCall.id}/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "accept" }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to accept call");
+      }
+
+      const { matchId: callMatchId } = await res.json();
+      setIncomingCall(null);
+      router.push(`/video/call?matchId=${callMatchId}`);
+    } catch (error) {
+      console.error("Accept call error:", error);
+      Alert.alert("Error", error.message || "Could not accept call");
+      setIncomingCall(null);
+    } finally {
+      setRespondingToCall(false);
+    }
+  };
+
+  // Decline incoming call
+  const handleDeclineCall = async () => {
+    if (!incomingCall) return;
+
+    setRespondingToCall(true);
+    try {
+      const res = await fetch(`/api/video/invitations/${incomingCall.id}/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          action: "decline",
+          declineReason: declineReason.trim() || "Not available right now"
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to decline call");
+      }
+
+      Alert.alert("Call Declined", "The caller has been notified");
+      setIncomingCall(null);
+      setDeclineReason("");
+    } catch (error) {
+      console.error("Decline call error:", error);
+      Alert.alert("Error", error.message || "Could not decline call");
+      setIncomingCall(null);
+    } finally {
+      setRespondingToCall(false);
+    }
+  };
+
+  // Cooldown timer effect
+  useEffect(() => {
+    if (cooldownSeconds > 0) {
+      const timer = setInterval(() => {
+        setCooldownSeconds((prev) => {
+          if (prev <= 1) {
+            setVideoCooldown(null);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [cooldownSeconds]);
+
   const msgs = data?.messages || [];
   const otherUser = data?.otherUser;
 
@@ -298,6 +527,34 @@ export default function Chat() {
               </Text>
             </View>
           </TouchableOpacity>
+          
+          {/* Video Call Button or Cooldown Timer */}
+          {videoCooldown ? (
+            <View style={{ padding: 8, backgroundColor: "#FEE2E2", borderRadius: 8 }}>
+              <Text style={{ fontSize: 10, color: "#991B1B", fontWeight: "600", textAlign: "center" }}>
+                Next call in
+              </Text>
+              <Text style={{ fontSize: 12, color: "#B91C1C", fontWeight: "700", textAlign: "center" }}>
+                {formatCooldownTime(cooldownSeconds)}
+              </Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              onPress={() => setShowVideoCallModal(true)}
+              style={{
+                backgroundColor: COLORS.secondary,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                borderRadius: 8,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <Ionicons name="videocam" size={20} color="white" />
+              <Text style={{ color: "white", fontWeight: "700", fontSize: 12 }}>Call</Text>
+            </TouchableOpacity>
+          )}
         </View>
         {isLoading ? (
           <View
@@ -518,6 +775,173 @@ export default function Chat() {
           refetchQuota();
         }}
       />
+
+      {/* Video Call Confirmation Modal */}
+      <Modal visible={showVideoCallModal} transparent animationType="fade">
+        <View style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.7)",
+          justifyContent: "center",
+          padding: 24,
+        }}>
+          <View style={{ backgroundColor: "#fff", borderRadius: 12, padding: 20 }}>
+            <Text style={{ fontSize: 20, fontWeight: "700", marginBottom: 12 }}>
+              Start Video Call?
+            </Text>
+            <Text style={{ color: "#374151", marginBottom: 16 }}>
+              Call duration: <Text style={{ fontWeight: "700" }}>Free tier (5 minutes)</Text>
+            </Text>
+            <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 16 }}>
+              💡 Upgrade to Casual ($9.99/mo) for 15-minute calls
+            </Text>
+            
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <TouchableOpacity
+                onPress={() => setShowVideoCallModal(false)}
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: "#D1D5DB",
+                }}
+                disabled={creatingVideoCall}
+              >
+                <Text style={{ textAlign: "center", fontWeight: "600", color: "#374151" }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={handleStartVideoCall}
+                style={{
+                  flex: 1,
+                  padding: 12,
+                  borderRadius: 8,
+                  backgroundColor: COLORS.secondary,
+                }}
+                disabled={creatingVideoCall}
+              >
+                {creatingVideoCall ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={{ textAlign: "center", fontWeight: "700", color: "#fff" }}>
+                    Start Call
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Incoming Call Modal */}
+      <Modal visible={!!incomingCall} transparent animationType="fade">
+        <View style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.8)",
+          justifyContent: "center",
+          padding: 24,
+        }}>
+          <View style={{ backgroundColor: "#fff", borderRadius: 16, padding: 24, alignItems: "center" }}>
+            {incomingCall?.caller_photo ? (
+              <AuthenticatedImage
+                source={{ uri: incomingCall.caller_photo }}
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  marginBottom: 16,
+                }}
+              />
+            ) : (
+              <View style={{
+                width: 80,
+                height: 80,
+                borderRadius: 40,
+                backgroundColor: COLORS.primary,
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 16,
+              }}>
+                <Text style={{ fontSize: 32, fontWeight: "700", color: "#fff" }}>
+                  {incomingCall?.caller_name?.charAt(0).toUpperCase() || "?"}
+                </Text>
+              </View>
+            )}
+            
+            <Text style={{ fontSize: 24, fontWeight: "700", marginBottom: 8 }}>
+              Incoming Video Call
+            </Text>
+            <Text style={{ fontSize: 16, color: "#374151", marginBottom: 4 }}>
+              {incomingCall?.caller_name || "Someone"}
+            </Text>
+            <Text style={{ fontSize: 12, color: "#6B7280", marginBottom: 20 }}>
+              {incomingCall?.secondsRemaining}s to respond
+            </Text>
+            
+            <View style={{ width: "100%", gap: 12 }}>
+              <TouchableOpacity
+                onPress={handleAcceptCall}
+                style={{
+                  backgroundColor: "#10B981",
+                  padding: 16,
+                  borderRadius: 12,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+                disabled={respondingToCall}
+              >
+                {respondingToCall ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <>
+                    <Ionicons name="videocam" size={24} color="white" />
+                    <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+                      Accept
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+              
+              <TextInput
+                placeholder="Reason for declining (optional)"
+                value={declineReason}
+                onChangeText={setDeclineReason}
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#E5E7EB",
+                  borderRadius: 8,
+                  padding: 12,
+                  marginBottom: 8,
+                }}
+                maxLength={100}
+              />
+              
+              <TouchableOpacity
+                onPress={handleDeclineCall}
+                style={{
+                  backgroundColor: "#DC2626",
+                  padding: 16,
+                  borderRadius: 12,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+                disabled={respondingToCall}
+              >
+                <Ionicons name="close-circle" size={24} color="white" />
+                <Text style={{ color: "#fff", fontWeight: "700", fontSize: 16 }}>
+                  Decline
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingAnimatedView>
   );
 }
