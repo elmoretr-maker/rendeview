@@ -1,4 +1,4 @@
-import { sql } from "@/server/storage.ts";
+import sql from "@/app/api/utils/sql";
 
 export async function POST(req, { params }) {
   try {
