@@ -109,7 +109,7 @@ export async function GET(request, { params: { matchId } }) {
     const otherId = matchInfo[0].user_a_id === uid ? matchInfo[0].user_b_id : matchInfo[0].user_a_id;
     
     const otherUserRows = await sql`
-      SELECT id, name, primary_photo_url, membership_tier, video_call_available
+      SELECT id, name, primary_photo_url, membership_tier, video_call_available, immediate_available, availability_override
       FROM auth_users WHERE id = ${otherId}
     `;
     

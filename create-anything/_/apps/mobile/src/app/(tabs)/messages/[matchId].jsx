@@ -506,16 +506,48 @@ export default function Chat() {
               </View>
             )}
             <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: "700",
-                  color: COLORS.text,
-                  fontFamily: "Inter_600SemiBold",
-                }}
-              >
-                {otherUser?.name || "Chat"}
-              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "700",
+                    color: COLORS.text,
+                    fontFamily: "Inter_600SemiBold",
+                  }}
+                >
+                  {otherUser?.name || "Chat"}
+                </Text>
+                
+                {/* Online/Offline Status Dot - clickable for video call when online */}
+                {otherUser?.immediate_available && !otherUser?.availability_override && otherUser?.video_call_available !== false ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (videoCooldown) {
+                        Alert.alert("On Cooldown", `Next call available in ${formatCooldownTime(cooldownSeconds)}`);
+                      } else {
+                        setShowVideoCallModal(true);
+                      }
+                    }}
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
+                      backgroundColor: COLORS.secondary,
+                      marginLeft: 8,
+                    }}
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
+                      backgroundColor: "#9CA3AF",
+                      marginLeft: 8,
+                    }}
+                  />
+                )}
+              </View>
               <Text
                 style={{
                   fontSize: 12,
@@ -523,38 +555,12 @@ export default function Chat() {
                   fontFamily: "Inter_400Regular",
                 }}
               >
-                Tap to view profile
+                {otherUser?.immediate_available && !otherUser?.availability_override 
+                  ? "Tap dot to call • Profile" 
+                  : "Offline • Tap to view profile"}
               </Text>
             </View>
           </TouchableOpacity>
-          
-          {/* Video Call Button or Cooldown Timer */}
-          {videoCooldown ? (
-            <View style={{ padding: 8, backgroundColor: "#FEE2E2", borderRadius: 8 }}>
-              <Text style={{ fontSize: 10, color: "#991B1B", fontWeight: "600", textAlign: "center" }}>
-                Next call in
-              </Text>
-              <Text style={{ fontSize: 12, color: "#B91C1C", fontWeight: "700", textAlign: "center" }}>
-                {formatCooldownTime(cooldownSeconds)}
-              </Text>
-            </View>
-          ) : (
-            <TouchableOpacity
-              onPress={() => setShowVideoCallModal(true)}
-              style={{
-                backgroundColor: COLORS.secondary,
-                paddingHorizontal: 12,
-                paddingVertical: 10,
-                borderRadius: 8,
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
-              <Ionicons name="videocam" size={20} color="white" />
-              <Text style={{ color: "white", fontWeight: "700", fontSize: 12 }}>Call</Text>
-            </TouchableOpacity>
-          )}
         </View>
         {isLoading ? (
           <View
