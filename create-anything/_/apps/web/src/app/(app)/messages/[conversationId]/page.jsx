@@ -67,6 +67,15 @@ function ChatContent() {
   const [videoCooldown, setVideoCooldown] = useState(null);
   const [cooldownSeconds, setCooldownSeconds] = useState(0);
   
+  // Incoming call state
+  const [incomingCall, setIncomingCall] = useState(null);
+  const [declineReason, setDeclineReason] = useState("");
+  const [respondingToCall, setRespondingToCall] = useState(false);
+  
+  // Outgoing invitation state
+  const [outgoingInvitation, setOutgoingInvitation] = useState(null);
+  const [outgoingInvitationPolled, setOutgoingInvitationPolled] = useState(false);
+  
   // Smart prompts state
   const [showLongMessagePrompt, setShowLongMessagePrompt] = useState(false);
   const [showVideoNudge, setShowVideoNudge] = useState(false);
@@ -136,6 +145,84 @@ function ChatContent() {
     refetchInterval: 10000,
     retry: false, // Don't retry quota fetches
   });
+  
+  // Poll for incoming video call invitations
+  const { data: invitationData } = useQuery({
+    queryKey: ["callInvitations", user?.id],
+    queryFn: async () => {
+      const res = await fetch("/api/video/invitations/poll");
+      if (!res.ok) return { incomingInvitation: null, outgoingInvitation: null };
+      return res.json();
+    },
+    refetchInterval: 3000,
+    enabled: !!conversationId && !!user?.id,
+    retry: false,
+  });
+
+  // Handle incoming call invitation
+  useEffect(() => {
+    if (invitationData?.incomingInvitation && !incomingCall) {
+      setIncomingCall(invitationData.incomingInvitation);
+    }
+    // Clear stale incoming call if poll no longer returns it (caller canceled)
+    if (!invitationData?.incomingInvitation && incomingCall) {
+      setIncomingCall(null);
+    }
+  }, [invitationData, incomingCall]);
+
+  // Handle outgoing invitation responses (caller-side)
+  useEffect(() => {
+    const outgoing = invitationData?.outgoingInvitation;
+    
+    // Track if poll has confirmed our invitation
+    if (outgoing && outgoing.id === outgoingInvitation?.id) {
+      setOutgoingInvitationPolled(true);
+    }
+    
+    // Hydrate outgoing invitation from poll if it exists (handles page refresh)
+    if (outgoing && !outgoingInvitation) {
+      setOutgoingInvitation(outgoing);
+      setOutgoingInvitationPolled(true);
+      setShowVideoCallModal(true); // Reopen modal to show waiting state
+    }
+    
+    // Clear outgoing invitation ONLY if poll previously confirmed it and now it's gone
+    // This prevents clearing immediately after creation before poll catches up
+    if (!outgoing && outgoingInvitation && outgoingInvitationPolled) {
+      setOutgoingInvitation(null);
+      setOutgoingInvitationPolled(false);
+      setShowVideoCallModal(false);
+    }
+    
+    // Process outgoing invitation status changes
+    if (outgoing) {
+      // Update local state if poll returns updated status
+      if (outgoing.id === outgoingInvitation?.id && outgoing.status !== outgoingInvitation?.status) {
+        setOutgoingInvitation(outgoing);
+      }
+      
+      if (outgoing.status === 'accepted') {
+        // Callee accepted! Navigate to call
+        setOutgoingInvitation(null);
+        setOutgoingInvitationPolled(false);
+        setShowVideoCallModal(false);
+        const actualMatchId = data?.matchId || conversationId;
+        navigate(`/video/call?matchId=${actualMatchId}&minutes=${getCallDuration(user?.membership_tier || 'free')}`);
+      } else if (outgoing.status === 'declined') {
+        // Callee declined
+        toast.error(`Call declined: ${outgoing.decline_reason || "Not available right now"}`);
+        setOutgoingInvitation(null);
+        setOutgoingInvitationPolled(false);
+        setShowVideoCallModal(false);
+      } else if (outgoing.status === 'expired') {
+        // Invitation expired
+        toast.error("Call invitation expired");
+        setOutgoingInvitation(null);
+        setOutgoingInvitationPolled(false);
+        setShowVideoCallModal(false);
+      }
+    }
+  }, [invitationData, outgoingInvitation, outgoingInvitationPolled, data, conversationId, user, navigate]);
   
   // Monitor text length for long message prompt (280+ characters)
   useEffect(() => {
@@ -302,10 +389,10 @@ function ChatContent() {
     
     setCreatingVideoCall(true);
     try {
-      const res = await fetch("/api/video/room/create", {
+      const res = await fetch("/api/video/invitations/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ matchId }),
+        body: JSON.stringify({ matchId: Number(matchId) }),
       });
       
       if (!res.ok) {
@@ -323,6 +410,16 @@ function ChatContent() {
           return;
         }
         
+        if (error.requiresSchedule) {
+          toast.error(error.error || "Please schedule your first video call");
+          setShowVideoCallModal(false);
+          // Optionally navigate to schedule page
+          setTimeout(() => {
+            navigate(`/schedule/propose/${data.otherUser.id}`);
+          }, 1500);
+          return;
+        }
+        
         if (error.upgradeRequired) {
           toast.error(error.error || "Please upgrade to start video calls");
           setShowVideoCallModal(false);
@@ -332,16 +429,18 @@ function ChatContent() {
         throw new Error(error.error || "Failed to create video call");
       }
       
-      const responseData = await res.json();
-      toast.success("Starting video call...");
-      setShowVideoCallModal(false);
+      const invitationResponse = await res.json();
       
-      // Use matchId from API response
-      const actualMatchId = data?.matchId || conversationId;
-      navigate(`/video/call?matchId=${actualMatchId}&minutes=${getCallDuration(user?.membership_tier || 'free')}`);
+      // Store the invitation and wait for callee's response
+      setOutgoingInvitation(invitationResponse.invitation);
+      toast.success("Call invitation sent! Waiting for response...");
+      
+      // Modal stays open showing "Waiting for response" UI
+      // Navigation happens in useEffect when invitation is accepted
     } catch (error) {
       console.error("Video call error:", error);
       toast.error(error.message || "Could not start video call");
+      setShowVideoCallModal(false);
     } finally {
       setCreatingVideoCall(false);
     }
@@ -368,6 +467,63 @@ function ChatContent() {
       return `${minutes}m ${secs}s`;
     } else {
       return `${secs}s`;
+    }
+  };
+
+  const acceptIncomingCall = async () => {
+    if (!incomingCall) return;
+    
+    setRespondingToCall(true);
+    try {
+      const res = await fetch(`/api/video/invitations/${incomingCall.id}/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "accept" }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to accept call");
+      }
+
+      const { matchId: callMatchId } = await res.json();
+      setIncomingCall(null);
+      navigate(`/video/call?matchId=${callMatchId}&minutes=${getCallDuration(user?.membership_tier || 'free')}`);
+    } catch (error) {
+      console.error("Accept call error:", error);
+      toast.error(error.message || "Failed to accept call");
+    } finally {
+      setRespondingToCall(false);
+    }
+  };
+
+  const declineIncomingCall = async () => {
+    if (!incomingCall) return;
+    
+    setRespondingToCall(true);
+    try {
+      const res = await fetch(`/api/video/invitations/${incomingCall.id}/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          action: "decline",
+          declineReason: declineReason.trim() || "Not available right now"
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to decline call");
+      }
+
+      toast.success("Call declined");
+      setIncomingCall(null);
+      setDeclineReason("");
+    } catch (error) {
+      console.error("Decline call error:", error);
+      toast.error(error.message || "Failed to decline call");
+    } finally {
+      setRespondingToCall(false);
     }
   };
 
@@ -534,11 +690,46 @@ function ChatContent() {
             )}
           </Box>
           <VStack align="start" spacing={0} flex={1}>
-            <Heading size="lg" color="gray.800">
-              {otherUser?.name || 'User'}
-            </Heading>
+            <HStack align="center" spacing={2}>
+              <Heading size="lg" color="gray.800">
+                {otherUser?.name || 'User'}
+              </Heading>
+              {/* Online/Offline Status Dot - clickable for instant call ONLY if users have video history */}
+              {otherUser?.immediate_available && !otherUser?.availability_override && otherUser?.video_call_available !== false && otherUser?.hasVideoHistory ? (
+                <Box
+                  as="button"
+                  onClick={() => {
+                    if (videoCooldown) {
+                      toast.error(`On Cooldown - Next call available in ${formatCooldownTime(cooldownSeconds)}`);
+                    } else {
+                      setShowVideoCallModal(true);
+                    }
+                  }}
+                  w="12px"
+                  h="12px"
+                  borderRadius="full"
+                  bg="green.500"
+                  cursor="pointer"
+                  _hover={{ transform: "scale(1.2)", bg: "green.600" }}
+                  transition="all 0.2s"
+                  aria-label="Online - tap to call"
+                />
+              ) : (
+                <Box
+                  w="12px"
+                  h="12px"
+                  borderRadius="full"
+                  bg="gray.400"
+                  aria-label="Offline"
+                />
+              )}
+            </HStack>
             <Text fontSize="sm" color="gray.500">
-              Click photo to view profile
+              {otherUser?.immediate_available && !otherUser?.availability_override && otherUser?.hasVideoHistory
+                ? "Tap dot to call • Click photo for profile" 
+                : otherUser?.immediate_available && !otherUser?.availability_override && !otherUser?.hasVideoHistory
+                ? "Online • Schedule first call • Click photo for profile"
+                : "Offline • Click photo to view profile"}
             </Text>
           </VStack>
           {videoCooldown ? (
@@ -873,23 +1064,58 @@ function ChatContent() {
               <Flex
                 p={3}
                 borderRadius="full"
-                bg="teal.50"
+                bg={outgoingInvitation ? "purple.50" : "teal.50"}
               >
-                <Video size={28} color="#00BFA6" />
+                <Video size={28} color={outgoingInvitation ? "#7c3aed" : "#00BFA6"} />
               </Flex>
               <VStack align="start" spacing={0}>
                 <Heading size="lg" color="gray.800">
-                  Start Video Call?
+                  {outgoingInvitation ? "Waiting for Response..." : "Start Video Call?"}
                 </Heading>
                 <Text fontSize="sm" color="gray.500" fontWeight="normal">
-                  Connect with {otherUser?.name || 'this user'}
+                  {outgoingInvitation ? `Calling ${otherUser?.name || 'this user'}...` : `Connect with ${otherUser?.name || 'this user'}`}
                 </Text>
               </VStack>
             </HStack>
           </ModalHeader>
-          <ModalCloseButton isDisabled={creatingVideoCall} />
+          <ModalCloseButton isDisabled={creatingVideoCall || outgoingInvitation} />
           
           <ModalBody pb={6}>
+            {outgoingInvitation ? (
+              // Waiting State
+              <VStack spacing={4} py={6}>
+                <Spinner size="xl" color="purple.500" thickness="4px" />
+                <VStack spacing={2} textAlign="center">
+                  <Text fontSize="lg" fontWeight="semibold" color="gray.800">
+                    Invitation Sent
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    {otherUser?.name || 'The other user'} will receive a notification. Please wait...
+                  </Text>
+                </VStack>
+                <Button
+                  onClick={async () => {
+                    try {
+                      await fetch(`/api/video/invitations/${outgoingInvitation.id}/cancel`, {
+                        method: "POST",
+                      });
+                      setOutgoingInvitation(null);
+                      setShowVideoCallModal(false);
+                      toast.info("Call invitation canceled");
+                    } catch (error) {
+                      console.error("Failed to cancel invitation", error);
+                    }
+                  }}
+                  size="sm"
+                  variant="outline"
+                  colorScheme="gray"
+                >
+                  Cancel Invitation
+                </Button>
+              </VStack>
+            ) : (
+              // Confirmation State
+              <>
             {/* Call Details */}
             <Card mb={6} bg="gray.50">
               <CardBody p={4}>
@@ -986,9 +1212,85 @@ function ChatContent() {
                 Start Call
               </Button>
             </HStack>
+            </>
+            )}
           </ModalBody>
         </ModalContent>
       </Modal>
+      
+      {/* Incoming Call Modal */}
+      {incomingCall && (
+        <Modal 
+          isOpen={!!incomingCall} 
+          onClose={() => !respondingToCall && setIncomingCall(null)}
+          size="md"
+          isCentered
+        >
+          <ModalOverlay bg="blackAlpha.700" backdropFilter="blur(4px)" />
+          <ModalContent borderRadius="2xl" shadow="2xl">
+            <ModalHeader>
+              <VStack spacing={3} align="center" pt={4}>
+                <Flex
+                  p={4}
+                  borderRadius="full"
+                  bg="green.50"
+                  animation="pulse 2s infinite"
+                >
+                  <Video size={36} color="#00BFA6" />
+                </Flex>
+                <VStack spacing={1}>
+                  <Heading size="lg" color="gray.800">
+                    Incoming Video Call
+                  </Heading>
+                  <Text fontSize="md" color="gray.600">
+                    {incomingCall.caller_name || 'Someone'} is calling you
+                  </Text>
+                </VStack>
+              </VStack>
+            </ModalHeader>
+            
+            <ModalBody pb={6}>
+              <VStack spacing={4}>
+                {/* Avatar Section */}
+                <Box>
+                  <Avatar 
+                    src={incomingCall.caller_photo ? getAbsoluteUrl(incomingCall.caller_photo) : undefined}
+                    name={incomingCall.caller_name || 'User'}
+                    size="xl"
+                  />
+                </Box>
+                
+                {/* Action Buttons */}
+                <HStack spacing={3} w="full">
+                  <Button
+                    onClick={declineIncomingCall}
+                    isDisabled={respondingToCall}
+                    flex={1}
+                    size="lg"
+                    colorScheme="red"
+                    variant="outline"
+                  >
+                    Decline
+                  </Button>
+                  <Button
+                    onClick={acceptIncomingCall}
+                    isDisabled={respondingToCall}
+                    isLoading={respondingToCall}
+                    loadingText="Joining..."
+                    flex={1}
+                    size="lg"
+                    colorScheme="green"
+                    shadow="md"
+                    _hover={{ shadow: "lg" }}
+                  >
+                    Accept
+                  </Button>
+                </HStack>
+              </VStack>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
       
       {/* Smart Prompts for Progressive Video Unlock */}
       {showLongMessagePrompt && (
