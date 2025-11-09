@@ -518,8 +518,8 @@ export default function Chat() {
                   {otherUser?.name || "Chat"}
                 </Text>
                 
-                {/* Online/Offline Status Dot - clickable for video call when online */}
-                {otherUser?.immediate_available && !otherUser?.availability_override && otherUser?.video_call_available !== false ? (
+                {/* Online/Offline Status Dot - clickable for instant call ONLY if users have video history */}
+                {otherUser?.immediate_available && !otherUser?.availability_override && otherUser?.video_call_available !== false && otherUser?.hasVideoHistory ? (
                   <TouchableOpacity
                     onPress={() => {
                       if (videoCooldown) {
@@ -555,8 +555,10 @@ export default function Chat() {
                   fontFamily: "Inter_400Regular",
                 }}
               >
-                {otherUser?.immediate_available && !otherUser?.availability_override 
+                {otherUser?.immediate_available && !otherUser?.availability_override && otherUser?.hasVideoHistory
                   ? "Tap dot to call • Profile" 
+                  : otherUser?.immediate_available && !otherUser?.availability_override && !otherUser?.hasVideoHistory
+                  ? "Online • Schedule first call • Profile"
                   : "Offline • Tap to view profile"}
               </Text>
             </View>

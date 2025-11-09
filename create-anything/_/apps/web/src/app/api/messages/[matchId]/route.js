@@ -113,6 +113,16 @@ export async function GET(request, { params: { matchId } }) {
       FROM auth_users WHERE id = ${otherId}
     `;
     
+    // Check if users have completed a video call together (for instant calling eligibility)
+    const videoHistoryRows = await sql`
+      SELECT id FROM video_sessions
+      WHERE state = 'ended'
+        AND ended_at IS NOT NULL
+        AND ((caller_id = ${uid} AND callee_id = ${otherId}) OR (caller_id = ${otherId} AND callee_id = ${uid}))
+      LIMIT 1
+    `;
+    const hasVideoHistory = videoHistoryRows.length > 0;
+    
     // Get other user with photo fallback
     let otherUser = otherUserRows[0] || null;
     if (otherUser) {
@@ -130,7 +140,7 @@ export async function GET(request, { params: { matchId } }) {
         photo = `/api${photo}`;
       }
       
-      otherUser = { ...otherUser, photo };
+      otherUser = { ...otherUser, photo, hasVideoHistory };
     }
 
     return Response.json({ 

@@ -34,6 +34,26 @@ export async function POST(req) {
       return Response.json({ error: "Not authorized for this match" }, { status: 403 });
     }
 
+    // ✨ NEW: Check video history - only allow instant calls if users have completed a video call before
+    const [videoHistory] = await sql`
+      SELECT id FROM video_sessions
+      WHERE state = 'ended'
+        AND ended_at IS NOT NULL
+        AND ((caller_id = ${callerId} AND callee_id = ${calleeId}) OR (caller_id = ${calleeId} AND callee_id = ${callerId}))
+      LIMIT 1
+    `;
+
+    if (!videoHistory) {
+      return Response.json(
+        { 
+          error: "Please schedule your first video call before using instant calling",
+          requiresSchedule: true,
+          calleeId: calleeId
+        },
+        { status: 403 }
+      );
+    }
+
     // Check for existing pending invitation
     const [existing] = await sql`
       SELECT id FROM call_invitations
