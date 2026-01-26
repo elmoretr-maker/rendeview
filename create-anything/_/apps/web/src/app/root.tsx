@@ -44,8 +44,6 @@ export async function loader() {
 }
 
 export const meta = () => [
-  { charSet: "utf-8" },
-  { name: "viewport", content: "width=device-width, initial-scale=1" },
   { title: "Rende-VIEW - Find Your Perfect Match" },
   { name: "description", content: "Rende-VIEW is a modern dating platform featuring video calling, real-time messaging, smart matching, and tiered membership options. Find meaningful connections today." },
   { name: "keywords", content: "dating app, video dating, online dating, match, relationships, video calls" },
@@ -437,14 +435,15 @@ const SandboxBridge: FC = () => {
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <Meta />
+    <html lang="en" suppressHydrationWarning>
+      <head suppressHydrationWarning>
+        <meta charSet="utf-8" suppressHydrationWarning />
+        <meta name="viewport" content="width=device-width, initial-scale=1" suppressHydrationWarning />
         <Links />
         <script type="module" src="/src/__create/dev-error-overlay.js"></script>
         <link rel="icon" href="/src/__create/favicon.png" />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <ScrollRestoration />
         <Scripts />
