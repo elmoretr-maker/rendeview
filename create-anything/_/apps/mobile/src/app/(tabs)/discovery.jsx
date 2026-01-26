@@ -14,6 +14,8 @@ import { useRouter } from "expo-router";
 import { useAuth } from "@/utils/auth/useAuth";
 import { apiFetch, getAbsoluteUrl } from "@/utils/api/apiFetch";
 import AuthenticatedImage from "@/components/AuthenticatedImage";
+import MatchBadge from "@/components/MatchBadge";
+import { useIsMatched } from "@/hooks/useIsMatched";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
@@ -554,6 +556,7 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, onDismiss, c
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const router = useRouter();
+  const { data: matchStatus } = useIsMatched(profile.id);
 
   // Reset animation values when a new profile loads
   useEffect(() => {
@@ -763,8 +766,15 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, onDismiss, c
               </View>
             )}
             
+            {/* Match Badge - Gold Star */}
+            {matchStatus?.isMatched && (
+              <View style={{ position: "absolute", top: 12, left: 12 }}>
+                <MatchBadge size="md" />
+              </View>
+            )}
+            
             {/* Liked You Badge */}
-            {profile.liked_you && (
+            {profile.liked_you && !matchStatus?.isMatched && (
               <View
                 style={{
                   position: "absolute",
