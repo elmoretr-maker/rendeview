@@ -1,8 +1,7 @@
-import React, { useCallback, useState } from "react";
-import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
+import React, { useCallback } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
@@ -40,8 +39,6 @@ export default function Consent() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
-  const [saving, setSaving] = useState(false);
-  const queryClient = useQueryClient();
 
   const returnTo =
     typeof params.returnTo === "string" && params.returnTo.length > 0
@@ -51,35 +48,11 @@ export default function Consent() {
   const totalSteps = 3;
   const stepIndex = 1;
 
-  const accept = useCallback(async () => {
-    try {
-      setSaving(true);
-      const res = await fetch("/api/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ consent_accepted: true }),
-      });
-      if (!res.ok) {
-        const status = res.status;
-        if (status === 401) {
-          Alert.alert("Sign In Required", "Please sign in to continue");
-          return;
-        }
-        throw new Error(`Response: [${res.status}] ${res.statusText}`);
-      }
-      try {
-        await queryClient.invalidateQueries({ queryKey: ["profile-consent"] });
-      } catch (e) {
-        console.error("Failed to invalidate profile-consent query", e);
-      }
-      router.replace(returnTo);
-    } catch (e) {
-      console.error(e);
-      Alert.alert("Error", "Could not save consent");
-    } finally {
-      setSaving(false);
-    }
-  }, [router, returnTo, queryClient]);
+  const accept = useCallback(() => {
+    // Navigate directly to membership for unauthenticated flow
+    // Consent will be persisted after account creation
+    router.replace(returnTo);
+  }, [router, returnTo]);
 
   const decline = useCallback(() => {
     router.replace("/welcome");

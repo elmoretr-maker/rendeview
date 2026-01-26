@@ -22,7 +22,9 @@ The following features are production-ready and require no immediate work:
 | **Browser Tab Metadata** | `meta()` exports provide "Page Name \| Rende-View" titles |
 | **Navbar Navigation** | About, Safety, Success Stories links functional on web and mobile |
 | **Inline Style Architecture** | SSR-reliable styles that persist without CSS dependencies |
-| **Data Consent Page** | Step 1 of 3, purple gradient, 60px logo, functional Accept/Decline buttons |
+| **Data Consent Page** | Step 1 of 3, purple gradient, 60px logo, navigates directly to membership |
+| **Membership Page** | Step 2 of 3, tier cards functional, navigates to signin with tier param |
+| **Sign In Page** | Step 3 of 3, purple gradient, 60px logo, Rende-View branded styling |
 
 ### YELLOW (Functional - Content Complete)
 These pages are now fully populated with approved content:
@@ -40,7 +42,7 @@ These areas require end-to-end functional testing before production deployment:
 
 | Area | Risk | Testing Required |
 |------|------|------------------|
-| **Join Now → Discovery Flow** | Critical path partially verified | Consent page buttons functional; Accept → /onboarding/membership (requires auth), Decline → /welcome |
+| **Join Now → Discovery Flow** | Critical path verified for guest users | Consent → Membership → Sign In works without auth wall; post-signin flows need testing |
 | **Sign In Authentication** | Session persistence untested | Verify `/account/signin` creates valid session and redirects to `/discovery` |
 | **Video Call Session Validation** | Real-time features | Test Daily.co integration, tier-based duration limits, and meeting caps |
 | **Stripe Payment Integration** | Revenue-critical | Verify membership upgrades and video call extensions process correctly |

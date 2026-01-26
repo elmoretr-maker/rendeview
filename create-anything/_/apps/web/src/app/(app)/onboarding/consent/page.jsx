@@ -1,7 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { ArrowLeft, Shield, MapPin, Heart } from "lucide-react";
-import { toast } from "sonner";
 import logoImage from "@/assets/logo-centered.png";
 
 export function meta() {
@@ -32,37 +31,17 @@ const consentPoints = [
 function ConsentContent() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [saving, setSaving] = useState(false);
   
   const returnTo = searchParams.get("returnTo");
 
   const totalSteps = 3;
   const stepIndex = 1;
 
-  const accept = useCallback(async () => {
-    try {
-      setSaving(true);
-      const res = await fetch("/api/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ consent_accepted: true }),
-      });
-      if (!res.ok) {
-        const status = res.status;
-        if (status === 401) {
-          toast.error("Please sign in to continue");
-          navigate("/account/signin?returnTo=/onboarding/consent", { replace: true });
-          return;
-        }
-        throw new Error("Failed to save consent");
-      }
-      navigate(returnTo || "/onboarding/membership", { replace: true });
-    } catch (e) {
-      console.error(e);
-      toast.error("Could not save consent");
-    } finally {
-      setSaving(false);
-    }
+  const accept = useCallback(() => {
+    // Store consent acceptance in sessionStorage for unauthenticated flow
+    // Will be persisted to database after account creation
+    sessionStorage.setItem("consent_accepted", "true");
+    navigate(returnTo || "/onboarding/membership", { replace: true });
   }, [navigate, returnTo]);
 
   const decline = useCallback(() => {
@@ -212,7 +191,6 @@ function ConsentContent() {
               e.stopPropagation();
               accept();
             }}
-            disabled={saving}
             style={{
               width: '100%',
               padding: '16px 24px',
@@ -222,13 +200,12 @@ function ConsentContent() {
               backgroundColor: '#9333ea',
               border: 'none',
               borderRadius: '12px',
-              cursor: saving ? 'not-allowed' : 'pointer',
-              opacity: saving ? 0.6 : 1,
+              cursor: 'pointer',
               transition: 'all 0.2s ease',
               boxShadow: '0 4px 6px -1px rgba(147, 51, 234, 0.3)',
             }}
           >
-            {saving ? "Saving..." : "Accept & Continue"}
+            Accept & Continue
           </button>
 
           <button

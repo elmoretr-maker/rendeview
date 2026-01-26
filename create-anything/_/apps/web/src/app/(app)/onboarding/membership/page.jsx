@@ -25,8 +25,8 @@ function MembershipScreenContent() {
   const [loadingPricing, setLoadingPricing] = useState(true);
   const [error, setError] = useState(null);
 
-  const totalSteps = 4;
-  const stepIndex = 3;
+  const totalSteps = 3;
+  const stepIndex = 2;
   const progressPct = (stepIndex / totalSteps) * 100;
 
   useEffect(() => {
@@ -60,36 +60,19 @@ function MembershipScreenContent() {
       try {
         setLoading(true);
         setError(null);
+        
+        // Store selected tier in sessionStorage for unauthenticated flow
+        sessionStorage.setItem("selected_tier", key);
+        
         if (key === "free") {
-          const res = await fetch("/api/profile", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ membership_tier: "free" }),
-          });
-          if (!res.ok) throw new Error("Failed to set tier");
-          navigate("/onboarding/profile");
+          // Navigate to sign in/sign up with tier param
+          navigate(`/account/signin?tier=${key}`);
           return;
         }
-        const redirectURL = window.location.origin;
-        const res = await fetch("/api/payments/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            kind: "subscription",
-            tier: key,
-            redirectURL,
-          }),
-        });
-        if (!res.ok) {
-          const t = await res.json().catch(() => ({}));
-          throw new Error(t?.error || "Could not start checkout");
-        }
-        const { url } = await res.json();
-        if (url) {
-          navigate("/stripe", { state: { checkoutUrl: url } });
-        } else {
-          throw new Error("Missing checkout url");
-        }
+        
+        // For paid tiers, also navigate to sign in first
+        // Stripe checkout requires authenticated user
+        navigate(`/account/signin?tier=${key}`);
       } catch (e) {
         console.error(e);
         setError(e.message);
