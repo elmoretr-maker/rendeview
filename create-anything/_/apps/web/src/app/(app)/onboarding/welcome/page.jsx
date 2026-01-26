@@ -2,75 +2,150 @@ import React from "react";
 import { useNavigate } from "react-router";
 import logoImage from "@/assets/logo-centered.png";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
-import { Button } from "@lshay/ui/components/default/button";
 
 function WelcomeContent() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 via-white to-blue-50 px-6 py-12">
-      <div className="flex flex-col items-center space-y-8 max-w-md w-full">
-        {/* Logo */}
-        <div className="bg-white rounded-2xl p-4 shadow-md">
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
+        padding: '24px',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '32px',
+          maxWidth: '400px',
+          width: '100%',
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            padding: '16px',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+          }}
+        >
           <img
             src={logoImage}
             alt="Rende-View Logo"
-            className="object-contain"
-            style={{ width: '60px', height: '60px' }}
+            style={{ width: '60px', height: '60px', objectFit: 'contain' }}
           />
         </div>
 
-        {/* Title */}
-        <div className="text-center space-y-2">
-          <h1 
-            className="text-4xl font-bold text-purple-600"
-            style={{ fontFamily: "'Playfair Display', serif" }}
+        <div style={{ textAlign: 'center' }}>
+          <h1
+            style={{
+              fontSize: '2.5rem',
+              fontWeight: 'bold',
+              color: '#9333ea',
+              fontFamily: "'Playfair Display', serif",
+              margin: 0,
+            }}
           >
             Rende-View
           </h1>
-          <p className="text-sm font-semibold tracking-widest text-purple-500 uppercase">
+          <p
+            style={{
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              letterSpacing: '0.1em',
+              color: '#a855f7',
+              textTransform: 'uppercase',
+              marginTop: '8px',
+            }}
+          >
             Video-First Dating
           </p>
         </div>
 
-        {/* Buttons */}
-        <div className="flex flex-col items-center gap-4 w-full mt-8">
-          <Button
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '16px',
+            width: '100%',
+            marginTop: '16px',
+          }}
+        >
+          <button
             onClick={() => navigate("/account/signin")}
-            variant="outline"
-            className="w-full max-w-xs py-6 rounded-full border-2 border-purple-400 text-purple-600 font-semibold text-lg hover:bg-purple-50 transition-all"
-            size="lg"
+            style={{
+              width: '100%',
+              maxWidth: '320px',
+              padding: '18px 32px',
+              borderRadius: '9999px',
+              border: '2px solid #c084fc',
+              backgroundColor: 'transparent',
+              color: '#9333ea',
+              fontSize: '1.125rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = '#faf5ff'}
+            onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
           >
             Sign In
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={() => navigate("/onboarding/consent")}
-            className="w-full max-w-xs py-6 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-semibold text-lg shadow-lg transition-all"
-            size="lg"
+            style={{
+              width: '100%',
+              maxWidth: '320px',
+              padding: '18px 32px',
+              borderRadius: '9999px',
+              border: 'none',
+              background: 'linear-gradient(to right, #a855f7, #9333ea)',
+              color: '#ffffff',
+              fontSize: '1.125rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+              transition: 'opacity 0.2s',
+            }}
+            onMouseOver={(e) => e.target.style.opacity = '0.9'}
+            onMouseOut={(e) => e.target.style.opacity = '1'}
           >
             Join Now
-          </Button>
+          </button>
         </div>
 
-        {/* Terms */}
-        <p className="text-xs text-center text-gray-500 mt-8">
+        <p
+          style={{
+            fontSize: '0.75rem',
+            textAlign: 'center',
+            color: '#6b7280',
+            marginTop: '16px',
+          }}
+        >
           By continuing, you agree to our{" "}
-          <span 
-            className="text-purple-600 underline cursor-pointer hover:text-purple-700"
+          <span
+            style={{ color: '#9333ea', textDecoration: 'underline', cursor: 'pointer' }}
             onClick={() => navigate("/terms")}
           >
             Terms of Service
           </span>{" "}
           and{" "}
-          <span 
-            className="text-purple-600 underline cursor-pointer hover:text-purple-700"
+          <span
+            style={{ color: '#9333ea', textDecoration: 'underline', cursor: 'pointer' }}
             onClick={() => navigate("/privacy")}
           >
             Privacy Policy
           </span>.
         </p>
 
-        {/* Clear session (dev helper) */}
         <button
           onClick={() => {
             document.cookie.split(";").forEach((c) => {
@@ -80,7 +155,14 @@ function WelcomeContent() {
             sessionStorage.clear();
             window.location.reload();
           }}
-          className="text-xs text-gray-300 hover:text-gray-400 mt-4"
+          style={{
+            fontSize: '0.75rem',
+            color: '#d1d5db',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            marginTop: '8px',
+          }}
         >
           Clear session
         </button>
