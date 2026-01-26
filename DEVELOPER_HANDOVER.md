@@ -22,6 +22,7 @@ The following features are production-ready and require no immediate work:
 | **Browser Tab Metadata** | `meta()` exports provide "Page Name \| Rende-View" titles |
 | **Navbar Navigation** | About, Safety, Success Stories links functional on web and mobile |
 | **Inline Style Architecture** | SSR-reliable styles that persist without CSS dependencies |
+| **Data Consent Page** | Step 1 of 3, purple gradient, 60px logo, functional Accept/Decline buttons |
 
 ### YELLOW (Functional - Content Complete)
 These pages are now fully populated with approved content:
@@ -39,7 +40,7 @@ These areas require end-to-end functional testing before production deployment:
 
 | Area | Risk | Testing Required |
 |------|------|------------------|
-| **Join Now → Discovery Flow** | Critical path not verified | Test complete flow: Join Now → Consent → Membership → Profile → Discovery |
+| **Join Now → Discovery Flow** | Critical path partially verified | Consent page buttons functional; Accept → /onboarding/membership (requires auth), Decline → /welcome |
 | **Sign In Authentication** | Session persistence untested | Verify `/account/signin` creates valid session and redirects to `/discovery` |
 | **Video Call Session Validation** | Real-time features | Test Daily.co integration, tier-based duration limits, and meeting caps |
 | **Stripe Payment Integration** | Revenue-critical | Verify membership upgrades and video call extensions process correctly |

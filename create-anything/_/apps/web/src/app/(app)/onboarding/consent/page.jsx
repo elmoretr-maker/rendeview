@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { ArrowLeft, Shield, MapPin, Heart } from "lucide-react";
 import { toast } from "sonner";
@@ -33,19 +33,13 @@ function ConsentContent() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [saving, setSaving] = useState(false);
-  const [mounted, setMounted] = useState(false);
   
   const returnTo = searchParams.get("returnTo");
 
   const totalSteps = 3;
   const stepIndex = 1;
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const accept = useCallback(async () => {
-    if (!mounted) return;
     try {
       setSaving(true);
       const res = await fetch("/api/profile", {
@@ -54,6 +48,12 @@ function ConsentContent() {
         body: JSON.stringify({ consent_accepted: true }),
       });
       if (!res.ok) {
+        const status = res.status;
+        if (status === 401) {
+          toast.error("Please sign in to continue");
+          navigate("/account/signin?returnTo=/onboarding/consent", { replace: true });
+          return;
+        }
         throw new Error("Failed to save consent");
       }
       navigate(returnTo || "/onboarding/membership", { replace: true });
@@ -63,12 +63,11 @@ function ConsentContent() {
     } finally {
       setSaving(false);
     }
-  }, [navigate, returnTo, mounted]);
+  }, [navigate, returnTo]);
 
   const decline = useCallback(() => {
-    if (!mounted) return;
     navigate("/welcome", { replace: true });
-  }, [navigate, mounted]);
+  }, [navigate]);
 
   return (
     <div
@@ -207,8 +206,13 @@ function ConsentContent() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <button
-            onClick={accept}
-            disabled={saving || !mounted}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              accept();
+            }}
+            disabled={saving}
             style={{
               width: '100%',
               padding: '16px 24px',
@@ -218,8 +222,8 @@ function ConsentContent() {
               backgroundColor: '#9333ea',
               border: 'none',
               borderRadius: '12px',
-              cursor: saving || !mounted ? 'not-allowed' : 'pointer',
-              opacity: saving || !mounted ? 0.6 : 1,
+              cursor: saving ? 'not-allowed' : 'pointer',
+              opacity: saving ? 0.6 : 1,
               transition: 'all 0.2s ease',
               boxShadow: '0 4px 6px -1px rgba(147, 51, 234, 0.3)',
             }}
@@ -228,8 +232,12 @@ function ConsentContent() {
           </button>
 
           <button
-            onClick={decline}
-            disabled={!mounted}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              decline();
+            }}
             style={{
               width: '100%',
               padding: '16px 24px',
@@ -239,7 +247,7 @@ function ConsentContent() {
               backgroundColor: 'transparent',
               border: '2px solid #e5e7eb',
               borderRadius: '12px',
-              cursor: !mounted ? 'not-allowed' : 'pointer',
+              cursor: 'pointer',
               transition: 'all 0.2s ease',
             }}
           >

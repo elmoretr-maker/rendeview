@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState } from "react";
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -41,7 +41,6 @@ export default function Consent() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const [saving, setSaving] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const queryClient = useQueryClient();
 
   const returnTo =
@@ -52,12 +51,7 @@ export default function Consent() {
   const totalSteps = 3;
   const stepIndex = 1;
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const accept = useCallback(async () => {
-    if (!mounted) return;
     try {
       setSaving(true);
       const res = await fetch("/api/profile", {
@@ -66,6 +60,11 @@ export default function Consent() {
         body: JSON.stringify({ consent_accepted: true }),
       });
       if (!res.ok) {
+        const status = res.status;
+        if (status === 401) {
+          Alert.alert("Sign In Required", "Please sign in to continue");
+          return;
+        }
         throw new Error(`Response: [${res.status}] ${res.statusText}`);
       }
       try {
@@ -80,12 +79,11 @@ export default function Consent() {
     } finally {
       setSaving(false);
     }
-  }, [router, returnTo, queryClient, mounted]);
+  }, [router, returnTo, queryClient]);
 
   const decline = useCallback(() => {
-    if (!mounted) return;
     router.replace("/welcome");
-  }, [router, mounted]);
+  }, [router]);
 
   return (
     <LinearGradient
