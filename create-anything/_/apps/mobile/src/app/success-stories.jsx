@@ -17,21 +17,24 @@ const COLORS = {
   gradientEnd: "#dbeafe",
 };
 
-const stories = [
+const successHighlights = [
   {
-    names: "Sarah & Michael",
-    location: "New York, NY",
-    story: "We matched on Rende-View and had our first video call that same night. The conversation flowed so naturally - we talked for 3 hours! Now we're engaged.",
+    icon: "time",
+    title: "The 5-Minute Spark",
+    description: "Users frequently report that a single 5-minute video session on Rende-View is more valuable than two weeks of texting on traditional apps.",
+    iconColor: COLORS.primary,
   },
   {
-    names: "Emma & James",
-    location: "Los Angeles, CA",
-    story: "After years of disappointing first dates, Rende-View was a game-changer. Seeing James on video before meeting in person gave me so much confidence. Best decision ever!",
+    icon: "star",
+    title: "Quality over Quantity",
+    description: "We celebrate users who found their 'last first date' by prioritizing quality matches over endless swiping.",
+    iconColor: COLORS.primary,
   },
   {
-    names: "David & Lisa",
-    location: "Chicago, IL",
-    story: "The video-first approach eliminated all the awkwardness. We knew we had chemistry before we even met for coffee. Two years later, we're still going strong.",
+    icon: "heart",
+    title: "Beyond the Screen",
+    description: "Real stories from couples who found genuine connections because they didn't have to guess what the other person was really like.",
+    iconColor: COLORS.pink,
   },
 ];
 
@@ -63,21 +66,17 @@ export default function SuccessStories() {
             style={styles.logo}
             contentFit="contain"
           />
-          <Text style={styles.subtitle}>Real couples who found love on Rende-View</Text>
         </View>
 
-        <View style={styles.storiesList}>
-          {stories.map((story, index) => (
-            <View key={index} style={styles.storyCard}>
-              <View style={styles.storyHeader}>
-                <Ionicons name="heart" size={20} color={COLORS.pink} />
-                <Text style={styles.storyNames}>{story.names}</Text>
-              </View>
-              <Text style={styles.storyLocation}>{story.location}</Text>
-              <Text style={styles.storyText}>"{story.story}"</Text>
+        {successHighlights.map((highlight, index) => (
+          <View key={index} style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Ionicons name={highlight.icon} size={28} color={highlight.iconColor} />
+              <Text style={styles.cardTitle}>{highlight.title}</Text>
             </View>
-          ))}
-        </View>
+            <Text style={styles.cardText}>{highlight.description}</Text>
+          </View>
+        ))}
       </ScrollView>
     </LinearGradient>
   );
@@ -120,44 +119,31 @@ const styles = StyleSheet.create({
     height: 60,
     marginBottom: 16,
   },
-  subtitle: {
-    fontSize: 14,
-    color: COLORS.text,
-    marginTop: 8,
-  },
-  storiesList: {
-    gap: 20,
-  },
-  storyCard: {
+  card: {
     backgroundColor: "rgba(255, 255, 255, 0.9)",
     borderRadius: 16,
     padding: 20,
+    marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  storyHeader: {
+  cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginBottom: 4,
+    gap: 12,
+    marginBottom: 12,
   },
-  storyNames: {
-    fontSize: 16,
+  cardTitle: {
+    fontSize: 18,
     fontWeight: "600",
     color: COLORS.textDark,
   },
-  storyLocation: {
-    fontSize: 12,
-    color: COLORS.primary,
-    marginBottom: 12,
-  },
-  storyText: {
+  cardText: {
     fontSize: 14,
     color: COLORS.text,
     lineHeight: 22,
-    fontStyle: "italic",
   },
 });

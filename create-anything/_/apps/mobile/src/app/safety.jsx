@@ -18,24 +18,19 @@ const COLORS = {
 
 const safetyFeatures = [
   {
-    icon: "shield-checkmark",
-    title: "Advanced Verification",
-    description: "Multi-step verification process ensures all users are who they claim to be.",
-  },
-  {
-    icon: "eye",
-    title: "Video-First Approach",
-    description: "See your match in real-time before meeting in person, eliminating catfishing.",
-  },
-  {
     icon: "person-circle",
-    title: "Profile Review",
-    description: "Our team reviews profiles to ensure community guidelines are followed.",
+    title: "Identity Verification",
+    description: "Multi-factor checks to ensure every user is who they say they are.",
+  },
+  {
+    icon: "lock-closed",
+    title: "Secure Conversations",
+    description: "High-fidelity video sessions protected by industry-standard encryption.",
   },
   {
     icon: "warning",
-    title: "Report & Block",
-    description: "Easy-to-use reporting and blocking features to keep you safe.",
+    title: "Community Reporting",
+    description: "A zero-tolerance policy for harassment or deceptive behavior.",
   },
 ];
 
@@ -67,13 +62,33 @@ export default function Safety() {
             style={styles.logo}
             contentFit="contain"
           />
-          <Text style={styles.subtitle}>We take your security seriously</Text>
         </View>
 
-        <View style={styles.featuresList}>
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="shield-checkmark" size={28} color={COLORS.primary} />
+            <Text style={styles.sectionTitle}>Our Promise</Text>
+          </View>
+          <Text style={styles.cardText}>
+            'Safety First' isn't just a slogan; it's our technical foundation. We use advanced verification to protect your time and emotional well-being.
+          </Text>
+        </View>
+
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="videocam" size={28} color={COLORS.primary} />
+            <Text style={styles.sectionTitle}>Anti-Catfishing</Text>
+          </View>
+          <Text style={styles.cardText}>
+            Our video-first requirement naturally eliminates deception. You see the person you are talking to before you ever meet in person.
+          </Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Safety Features</Text>
           {safetyFeatures.map((feature, index) => (
-            <View key={index} style={styles.featureCard}>
-              <Ionicons name={feature.icon} size={28} color={COLORS.primary} />
+            <View key={index} style={styles.featureItem}>
+              <Ionicons name={feature.icon} size={24} color={COLORS.primary} />
               <View style={styles.featureContent}>
                 <Text style={styles.featureTitle}>{feature.title}</Text>
                 <Text style={styles.featureDescription}>{feature.description}</Text>
@@ -123,26 +138,38 @@ const styles = StyleSheet.create({
     height: 60,
     marginBottom: 16,
   },
-  subtitle: {
+  card: {
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+  cardText: {
     fontSize: 14,
     color: COLORS.text,
-    marginTop: 8,
+    lineHeight: 22,
   },
-  featuresList: {
-    gap: 16,
-  },
-  featureCard: {
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-    borderRadius: 12,
-    padding: 16,
+  featureItem: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 2,
-    elevation: 2,
+    gap: 12,
+    marginTop: 12,
   },
   featureContent: {
     flex: 1,

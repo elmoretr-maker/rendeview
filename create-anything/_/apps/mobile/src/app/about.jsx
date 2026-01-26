@@ -16,6 +16,24 @@ const COLORS = {
   gradientEnd: "#dbeafe",
 };
 
+const corePillars = [
+  {
+    icon: "checkmark-circle",
+    title: "Authenticity",
+    description: "Built-in verification through mandatory video introductions.",
+  },
+  {
+    icon: "people",
+    title: "Inclusivity",
+    description: "A welcoming community for all types of authentic relationships.",
+  },
+  {
+    icon: "flash",
+    title: "Efficiency",
+    description: "Skip weeks of 'small talk' and get straight to a real connection.",
+  },
+];
+
 export default function About() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -47,21 +65,30 @@ export default function About() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Video-First Dating</Text>
+          <Text style={styles.sectionTitle}>Our Mission</Text>
           <Text style={styles.cardText}>
-            Rende-View is the premier video-first dating platform designed to help you make authentic connections. 
-            We believe that real chemistry can only be discovered face-to-face, which is why we prioritize video 
-            interactions over endless text messaging.
+            Redefining modern dating by replacing static profiles with real human energy. Our mission is to end 'swipe fatigue' through authentic, video-first interactions.
           </Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>The Vision</Text>
           <Text style={styles.cardText}>
-            Our mission is simple: help you date smarter, not harder. No more catfishing, no more wasted time 
-            on people who look nothing like their photos. With Rende-View, you know exactly who you're meeting 
-            before you ever leave your home.
+            Rende-View was built for users who value their time. We believe you can't feel a 'spark' from a text box; you feel it through a look, a laugh, and a real-time conversation.
           </Text>
-          <Text style={styles.cardText}>
-            Join thousands of singles who are tired of the traditional dating app experience and are ready 
-            for something more authentic.
-          </Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Core Pillars</Text>
+          {corePillars.map((pillar, index) => (
+            <View key={index} style={styles.pillarItem}>
+              <Ionicons name={pillar.icon} size={24} color={COLORS.primary} />
+              <View style={styles.pillarContent}>
+                <Text style={styles.pillarTitle}>{pillar.title}</Text>
+                <Text style={styles.pillarDescription}>{pillar.description}</Text>
+              </View>
+            </View>
+          ))}
         </View>
       </ScrollView>
     </LinearGradient>
@@ -109,22 +136,42 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.9)",
     borderRadius: 16,
     padding: 20,
+    marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  cardTitle: {
+  sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.textDark,
+    color: COLORS.primary,
     marginBottom: 12,
   },
   cardText: {
     fontSize: 14,
     color: COLORS.text,
     lineHeight: 22,
-    marginBottom: 12,
+  },
+  pillarItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    marginTop: 12,
+  },
+  pillarContent: {
+    flex: 1,
+  },
+  pillarTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: COLORS.textDark,
+    marginBottom: 4,
+  },
+  pillarDescription: {
+    fontSize: 13,
+    color: COLORS.text,
+    lineHeight: 18,
   },
 });

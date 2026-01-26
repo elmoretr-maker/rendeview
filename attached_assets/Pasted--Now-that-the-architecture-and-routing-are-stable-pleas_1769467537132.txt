@@ -1,0 +1,47 @@
+"Now that the architecture and routing are stable, please populate the informational pages with the following high-fidelity content. You must maintain the 60px centered logo, purple brand gradient, and the navigation bar on every page for a consistent user experience.
+
+1. Update About Page
+File Path: apps/web/src/app/(app)/about/page.jsx Content:
+
+Mission: Redefining modern dating by replacing static profiles with real human energy. Our mission is to end 'swipe fatigue' through authentic, video-first interactions.
+
+The Vision: Rende-View was built for users who value their time. We believe you can't feel a 'spark' from a text box; you feel it through a look, a laugh, and a real-time conversation.
+
+Core Pillars:
+
+Authenticity: Built-in verification through mandatory video introductions.
+
+Inclusivity: A welcoming community for all types of authentic relationships.
+
+Efficiency: Skip weeks of 'small talk' and get straight to a real connection.
+
+2. Update Safety Page
+File Path: apps/web/src/app/(app)/safety/page.jsx Content:
+
+Our Promise: 'Safety First' isn't just a slogan; it's our technical foundation. We use advanced verification to protect your time and emotional well-being.
+
+Anti-Catfishing: Our video-first requirement naturally eliminates deception. You see the person you are talking to before you ever meet in person.
+
+Safety Features:
+
+Identity Verification: Multi-factor checks to ensure every user is who they say they are.
+
+Secure Conversations: High-fidelity video sessions protected by industry-standard encryption.
+
+Community Reporting: A zero-tolerance policy for harassment or deceptive behavior.
+
+3. Update Success Stories Page
+File Path: apps/web/src/app/(app)/success-stories/page.jsx Content:
+
+The 5-Minute Spark: Users frequently report that a single 5-minute video session on Rende-View is more valuable than two weeks of texting on traditional apps.
+
+Quality over Quantity: We celebrate users who found their 'last first date' by prioritizing quality matches over endless swiping.
+
+Beyond the Screen: Real stories from couples who found genuine connections because they didn't have to guess what the other person was really like.
+
+Final Requirements:
+Mobile Sync: Replicate this exact content in the corresponding screens within apps/mobile to ensure 100% platform parity.
+
+Meta Titles: Ensure each page has a professional meta title (e.g., 'About | Rende-View') so the browser tab is branded correctly.
+
+Verification: Once completed, physically click each link in the Preview to confirm the content is visible and the layout is persistent."
