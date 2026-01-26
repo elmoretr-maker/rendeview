@@ -1,91 +1,63 @@
-import React, { useCallback, useState } from "react";
-import { View, Text, TouchableOpacity, Alert, Platform } from "react-native";
+import React, { useCallback, useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
-import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
-import {
-  useFonts,
-  Inter_400Regular,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from "@expo-google-fonts/inter";
+import { LinearGradient } from "expo-linear-gradient";
+import { Image } from "expo-image";
 
 const COLORS = {
-  primary: "#7c3aed",
-  teal: "#00BFA6",
-  white: "#FFFFFF",
-  gray50: "#F9F9F9",
-  gray600: "#6B7280",
-  text: "#2C3E50",
+  primary: "#9333ea",
+  white: "#ffffff",
+  text: "#374151",
+  textMuted: "#6b7280",
+  gradientStart: "#f3e8ff",
+  gradientMid: "#ffffff",
+  gradientEnd: "#dbeafe",
+  progressBg: "#e5e7eb",
 };
 
-const STYLES = {
-  card: {
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+const consentPoints = [
+  {
+    icon: "location",
+    title: "Location Services",
+    description: "Find matches near you for real meetups.",
   },
-  button: {
-    backgroundColor: COLORS.teal,
-    borderRadius: 10,
-    padding: 16,
-    alignItems: "center",
-    ...Platform.select({
-      ios: {
-        shadowColor: COLORS.teal,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
+  {
+    icon: "heart",
+    title: "Interest Matching",
+    description: "Connect with people who share your passions.",
   },
-  buttonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: "600",
-    fontFamily: "Inter_600SemiBold",
+  {
+    icon: "shield-checkmark",
+    title: "Privacy Protected",
+    description: "Your data is encrypted and never sold.",
   },
-};
+];
 
-function ConsentContent() {
+export default function Consent() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const [saving, setSaving] = useState(false);
-  const [loaded, errorFont] = useFonts({
-    Inter_400Regular,
-    Inter_600SemiBold,
-    Inter_700Bold,
-  });
+  const [mounted, setMounted] = useState(false);
+  const queryClient = useQueryClient();
+
   const returnTo =
     typeof params.returnTo === "string" && params.returnTo.length > 0
       ? decodeURIComponent(params.returnTo)
       : "/onboarding/membership";
 
-  const totalSteps = 4;
-  const stepIndex = 2;
-  const progressPct = `${(stepIndex / totalSteps) * 100}%`;
+  const totalSteps = 3;
+  const stepIndex = 1;
 
-  const queryClient = useQueryClient();
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const accept = useCallback(async () => {
+    if (!mounted) return;
     try {
       setSaving(true);
       const res = await fetch("/api/profile", {
@@ -94,9 +66,7 @@ function ConsentContent() {
         body: JSON.stringify({ consent_accepted: true }),
       });
       if (!res.ok) {
-        throw new Error(
-          `When updating consent, the response was [${res.status}] ${res.statusText}`,
-        );
+        throw new Error(`Response: [${res.status}] ${res.statusText}`);
       }
       try {
         await queryClient.invalidateQueries({ queryKey: ["profile-consent"] });
@@ -110,119 +80,210 @@ function ConsentContent() {
     } finally {
       setSaving(false);
     }
-  }, [router, returnTo, queryClient]);
+  }, [router, returnTo, queryClient, mounted]);
 
   const decline = useCallback(() => {
-    router.push(
-      `/onboarding/data-consent-required?returnTo=${encodeURIComponent(returnTo)}`,
-    );
-  }, [router, returnTo]);
+    if (!mounted) return;
+    router.replace("/welcome");
+  }, [router, mounted]);
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: COLORS.gray50,
-        paddingTop: insets.top,
-        paddingHorizontal: 24,
-        justifyContent: "center",
-      }}
+    <LinearGradient
+      colors={[COLORS.gradientStart, COLORS.gradientMid, COLORS.gradientEnd]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[styles.container, { paddingTop: insets.top }]}
     >
-      {/* Progress bar */}
-      <View
-        style={{
-          position: "absolute",
-          top: insets.top + 8,
-          left: 24,
-          right: 24,
-        }}
-      >
-        <View
-          style={{ height: 6, backgroundColor: "#E5E7EB", borderRadius: 999 }}
-        >
+      <View style={styles.progressContainer}>
+        <View style={styles.progressBg}>
           <View
-            style={{
-              height: 6,
-              width: progressPct,
-              backgroundColor: COLORS.primary,
-              borderRadius: 999,
-            }}
+            style={[
+              styles.progressFill,
+              { width: `${(stepIndex / totalSteps) * 100}%` },
+            ]}
           />
         </View>
-        <Text style={{ marginTop: 6, color: COLORS.text, opacity: 0.7, fontFamily: "Inter_400Regular" }}>
-          Step {stepIndex} of {totalSteps}
-        </Text>
+        <Text style={styles.stepText}>Step {stepIndex} of {totalSteps}</Text>
       </View>
 
-      {/* Back button */}
       <TouchableOpacity
-        onPress={() => router.push("/onboarding/welcome")}
-        style={{
-          position: "absolute",
-          top: insets.top + 50,
-          left: 24,
-          flexDirection: "row",
-          alignItems: "center",
-        }}
+        style={styles.backButton}
+        onPress={() => router.push("/welcome")}
       >
-        <Ionicons name="arrow-back" size={24} color={COLORS.gray600} />
-        <Text style={{ marginLeft: 8, color: COLORS.gray600, fontSize: 16, fontFamily: "Inter_400Regular" }}>Back</Text>
+        <Ionicons name="arrow-back" size={18} color={COLORS.primary} />
+        <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
 
-      {/* Card Container */}
-      <View style={STYLES.card}>
-        <Text style={{ fontSize: 22, fontWeight: "700", marginBottom: 12, color: COLORS.text, fontFamily: "Inter_700Bold" }}>
-          Data Consent
-        </Text>
-        <Text style={{ color: COLORS.gray600, marginBottom: 24, lineHeight: 22, fontFamily: "Inter_400Regular" }}>
-          We use your location and interests to ensure perfect matches and
-          reliable scheduling. By consenting, you unlock all features for a
-          superior dating experience.
-        </Text>
+      <Text style={styles.pageHeader}>Data Consent</Text>
+
+      <View style={styles.content}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={{ uri: "https://ucarecdn.com/7e6175a0-5279-4da8-8e24-c6a129f1821f/-/format/auto/" }}
+            style={styles.logo}
+            contentFit="contain"
+          />
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.description}>
+            We use your location and interests to ensure perfect matches and reliable scheduling. By consenting, you unlock all features for a superior dating experience.
+          </Text>
+
+          {consentPoints.map((point, index) => (
+            <View key={index} style={styles.pointItem}>
+              <Ionicons name={point.icon} size={24} color={COLORS.primary} />
+              <View style={styles.pointContent}>
+                <Text style={styles.pointTitle}>{point.title}</Text>
+                <Text style={styles.pointDescription}>{point.description}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
 
         <TouchableOpacity
           onPress={accept}
-          disabled={saving}
-          style={[
-            STYLES.button,
-            { marginBottom: 12 },
-            saving && { opacity: 0.6 }
-          ]}
+          disabled={saving || !mounted}
+          style={[styles.acceptButton, (saving || !mounted) && { opacity: 0.6 }]}
         >
-          <Text style={STYLES.buttonText}>
+          <Text style={styles.acceptButtonText}>
             {saving ? "Saving..." : "Accept & Continue"}
           </Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity
           onPress={decline}
-          style={{
-            backgroundColor: "#F3F4F6",
-            paddingVertical: 14,
-            borderRadius: 12,
-          }}
+          disabled={!mounted}
+          style={styles.declineButton}
         >
-          <Text
-            style={{
-              textAlign: "center",
-              color: "#111827",
-              fontWeight: "600",
-              fontSize: 16,
-              fontFamily: "Inter_600SemiBold",
-            }}
-          >
-            Decline
-          </Text>
+          <Text style={styles.declineButtonText}>Decline</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
-export default function Consent() {
-  return (
-    <OnboardingGuard allowUnauthenticated={true}>
-      <ConsentContent />
-    </OnboardingGuard>
-  );
-}
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  progressContainer: {
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  progressBg: {
+    height: 6,
+    backgroundColor: COLORS.progressBg,
+    borderRadius: 999,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: 6,
+    backgroundColor: COLORS.primary,
+    borderRadius: 999,
+  },
+  stepText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: COLORS.textMuted,
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  backText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+  pageHeader: {
+    fontFamily: "serif",
+    fontSize: 24,
+    fontWeight: "bold",
+    color: COLORS.primary,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  content: {
+    flex: 1,
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  logo: {
+    width: 60,
+    height: 60,
+  },
+  card: {
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  description: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    lineHeight: 22,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  pointItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    marginBottom: 16,
+  },
+  pointContent: {
+    flex: 1,
+  },
+  pointTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: 2,
+  },
+  pointDescription: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    lineHeight: 18,
+  },
+  acceptButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+    marginBottom: 12,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  acceptButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  declineButton: {
+    borderWidth: 2,
+    borderColor: COLORS.progressBg,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  declineButtonText: {
+    color: COLORS.textMuted,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+});
