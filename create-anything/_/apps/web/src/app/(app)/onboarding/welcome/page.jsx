@@ -44,6 +44,21 @@ function WelcomeContent() {
       }}
     >
       <WelcomeNavbar />
+      
+      <h1
+        style={{
+          fontSize: '1.75rem',
+          fontWeight: 'bold',
+          color: '#9333ea',
+          fontFamily: "'Playfair Display', serif",
+          textAlign: 'center',
+          marginTop: '24px',
+          marginBottom: '8px',
+        }}
+      >
+        Welcome to Rende-View
+      </h1>
+      
       <div
         style={{
           display: 'flex',
@@ -52,7 +67,7 @@ function WelcomeContent() {
           gap: '24px',
           maxWidth: '600px',
           width: '100%',
-          marginTop: '40px',
+          marginTop: '16px',
         }}
       >
         <div
@@ -71,7 +86,7 @@ function WelcomeContent() {
         </div>
 
         <div style={{ textAlign: 'center' }}>
-          <h1
+          <h2
             style={{
               fontSize: '2.5rem',
               fontWeight: 'bold',
@@ -81,7 +96,7 @@ function WelcomeContent() {
             }}
           >
             Rende-View
-          </h1>
+          </h2>
           <p
             style={{
               fontSize: '0.875rem',

@@ -54,6 +54,8 @@ export default function SuccessStories() {
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
 
+      <Text style={styles.pageHeader}>Success Stories</Text>
+
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Image
@@ -61,7 +63,6 @@ export default function SuccessStories() {
             style={styles.logo}
             contentFit="contain"
           />
-          <Text style={styles.title}>Success Stories</Text>
           <Text style={styles.subtitle}>Real couples who found love on Rende-View</Text>
         </View>
 
@@ -91,12 +92,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingVertical: 12,
   },
   backText: {
     fontSize: 14,
     fontWeight: "600",
     color: COLORS.primary,
+  },
+  pageHeader: {
+    fontFamily: "serif",
+    fontSize: 22,
+    fontWeight: "bold",
+    color: COLORS.primary,
+    textAlign: "center",
+    marginBottom: 16,
   },
   content: {
     paddingHorizontal: 24,
@@ -110,13 +119,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     marginBottom: 16,
-  },
-  title: {
-    fontFamily: "serif",
-    fontSize: 28,
-    fontWeight: "bold",
-    color: COLORS.primary,
-    textAlign: "center",
   },
   subtitle: {
     fontSize: 14,

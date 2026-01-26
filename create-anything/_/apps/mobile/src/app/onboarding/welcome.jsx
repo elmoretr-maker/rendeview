@@ -107,8 +107,11 @@ function WelcomeContent() {
         </View>
       </View>
 
+      {/* Primary Header */}
+      <Text style={styles.pageHeader}>Welcome to Rende-View</Text>
+
       {/* Main Content */}
-      <View style={styles.content}>
+      <ScrollView style={styles.scrollContent} contentContainerStyle={styles.content}>
         {/* Logo Card */}
         <View style={styles.logoCard}>
           <Image
@@ -183,13 +186,25 @@ function WelcomeContent() {
             Privacy Policy
           </Text>.
         </Text>
-      </View>
+      </ScrollView>
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  pageHeader: {
+    fontFamily: "serif",
+    fontSize: 22,
+    fontWeight: "bold",
+    color: COLORS.primary,
+    textAlign: "center",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  scrollContent: {
     flex: 1,
   },
   navbar: {

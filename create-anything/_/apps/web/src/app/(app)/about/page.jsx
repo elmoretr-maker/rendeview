@@ -28,12 +28,25 @@ export default function About() {
           fontSize: '0.875rem',
           fontWeight: '600',
           cursor: 'pointer',
-          marginBottom: '32px',
+          marginBottom: '16px',
         }}
       >
         <ArrowLeft size={18} />
         Back
       </button>
+
+      <h1
+        style={{
+          fontSize: '1.75rem',
+          fontWeight: 'bold',
+          color: '#9333ea',
+          fontFamily: "'Playfair Display', serif",
+          textAlign: 'center',
+          marginBottom: '24px',
+        }}
+      >
+        About
+      </h1>
 
       <div
         style={{
@@ -48,17 +61,6 @@ export default function About() {
             alt="Rende-View Logo"
             style={{ width: '60px', height: '60px', objectFit: 'contain', margin: '0 auto 16px' }}
           />
-          <h1
-            style={{
-              fontSize: '2rem',
-              fontWeight: 'bold',
-              color: '#9333ea',
-              fontFamily: "'Playfair Display', serif",
-              margin: 0,
-            }}
-          >
-            About Rende-View
-          </h1>
         </div>
 
         <div

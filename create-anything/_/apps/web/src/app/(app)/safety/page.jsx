@@ -51,12 +51,25 @@ export default function Safety() {
           fontSize: '0.875rem',
           fontWeight: '600',
           cursor: 'pointer',
-          marginBottom: '32px',
+          marginBottom: '16px',
         }}
       >
         <ArrowLeft size={18} />
         Back
       </button>
+
+      <h1
+        style={{
+          fontSize: '1.75rem',
+          fontWeight: 'bold',
+          color: '#9333ea',
+          fontFamily: "'Playfair Display', serif",
+          textAlign: 'center',
+          marginBottom: '24px',
+        }}
+      >
+        Safety
+      </h1>
 
       <div
         style={{
@@ -71,7 +84,7 @@ export default function Safety() {
             alt="Rende-View Logo"
             style={{ width: '60px', height: '60px', objectFit: 'contain', margin: '0 auto 16px' }}
           />
-          <h1
+          <h2
             style={{
               fontSize: '2rem',
               fontWeight: 'bold',
@@ -81,7 +94,7 @@ export default function Safety() {
             }}
           >
             Your Safety Matters
-          </h1>
+          </h2>
           <p style={{ color: '#6b7280', marginTop: '8px' }}>
             We take your security seriously
           </p>

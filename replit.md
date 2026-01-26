@@ -104,3 +104,30 @@ The application uses a client-server architecture. The frontend is built with Re
 - Purple gradient background (#f3e8ff → #ffffff → #dbeafe)
 - All inline styles for SSR reliability
 - Join Now → /onboarding/consent routing verified
+
+### Page Identity Headers
+**Status:** ✅ COMPLETE (Jan 26, 2026)
+
+**Pattern:** All public pages now have primary h1 identity headers matching navbar link text:
+- Welcome page: "Welcome to Rende-View" (purple, Playfair Display font)
+- About page: "About" (purple, centered)
+- Safety page: "Safety" (purple, centered)
+- Success Stories page: "Success Stories" (purple, centered)
+
+**Technical Details:**
+- Web: h1 headers with inline styles, positioned after Back button, before logo
+- Mobile: Text component with pageHeader style, positioned after back button
+- All headers use #9333ea purple color and serif/Playfair Display font
+- Removed duplicate h1 elements from content sections to prevent redundancy
+- Routes.ts updated with welcome-alias ID to prevent duplicate route ID errors
+
+**Files Modified:**
+- `apps/web/src/app/(app)/onboarding/welcome/page.jsx` - Added "Welcome to Rende-View" h1
+- `apps/web/src/app/(app)/about/page.jsx` - Added "About" h1, removed duplicate
+- `apps/web/src/app/(app)/safety/page.jsx` - Added "Safety" h1
+- `apps/web/src/app/(app)/success-stories/page.jsx` - Added "Success Stories" h1, removed duplicate
+- `apps/mobile/src/app/onboarding/welcome.jsx` - Added pageHeader with ScrollView
+- `apps/mobile/src/app/about.jsx` - Added pageHeader style
+- `apps/mobile/src/app/safety.jsx` - Added pageHeader style
+- `apps/mobile/src/app/success-stories.jsx` - Added pageHeader style
+- `apps/web/src/app/routes.ts` - Fixed with welcome-alias route ID
