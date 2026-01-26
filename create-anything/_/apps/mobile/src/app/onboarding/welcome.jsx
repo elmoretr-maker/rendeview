@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -12,11 +13,13 @@ import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
+import { Ionicons } from "@expo/vector-icons";
 
 const COLORS = {
   primary: "#9333ea",
   primaryLight: "#a855f7",
   text: "#6b7280",
+  textDark: "#374151",
   white: "#ffffff",
   gradientStart: "#f3e8ff",
   gradientMid: "#ffffff",
@@ -27,6 +30,29 @@ const navLinks = [
   { label: "About", path: "/about" },
   { label: "Safety", path: "/safety" },
   { label: "Success Stories", path: "/success-stories" },
+];
+
+const valueProps = [
+  {
+    icon: "checkmark-circle",
+    title: "Video-First Dating",
+    description: "The only dating app where you see who you're really meeting. Built for authentic introductions and real-time conversations.",
+  },
+  {
+    icon: "shield-checkmark",
+    title: "Safety First",
+    description: "Advanced verification and safety features to protect your time and ensure a secure experience.",
+  },
+  {
+    icon: "heart",
+    title: "Meaningful Connections",
+    description: "Quality matches based on compatibility and genuine connections.",
+  },
+  {
+    icon: "people",
+    title: "Inclusive Community",
+    description: "A welcoming space for everyone to find authentic relationships.",
+  },
 ];
 
 function WelcomeContent() {
@@ -95,6 +121,32 @@ function WelcomeContent() {
         {/* Title */}
         <Text style={styles.title}>Rende-View</Text>
         <Text style={styles.subtitle}>VIDEO-FIRST DATING</Text>
+
+        {/* Tagline */}
+        <View style={styles.taglineContainer}>
+          <Text style={styles.taglineTitle}>Date Smarter, Not Harder</Text>
+          <Text style={styles.taglineText}>
+            No Catfishing. Know who they are before you meet. Your time is valuable—only pay for connections that matter.
+          </Text>
+        </View>
+
+        {/* Value Props */}
+        <View style={styles.valuePropsContainer}>
+          {valueProps.map((prop, index) => (
+            <View key={index} style={styles.valuePropItem}>
+              <Ionicons
+                name={prop.icon}
+                size={22}
+                color={COLORS.primary}
+                style={styles.valuePropIcon}
+              />
+              <View style={styles.valuePropContent}>
+                <Text style={styles.valuePropTitle}>{prop.title}</Text>
+                <Text style={styles.valuePropDescription}>{prop.description}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
 
         {/* Buttons */}
         <View style={styles.buttonsContainer}>
@@ -209,7 +261,55 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     color: COLORS.primaryLight,
     textTransform: "uppercase",
-    marginBottom: 32,
+    marginBottom: 16,
+  },
+  taglineContainer: {
+    alignItems: "center",
+    marginBottom: 16,
+    paddingHorizontal: 16,
+  },
+  taglineTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: COLORS.textDark,
+    marginBottom: 6,
+    textAlign: "center",
+  },
+  taglineText: {
+    fontSize: 13,
+    color: COLORS.text,
+    textAlign: "center",
+    lineHeight: 18,
+  },
+  valuePropsContainer: {
+    width: "100%",
+    gap: 10,
+    marginBottom: 20,
+  },
+  valuePropItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    padding: 10,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    borderRadius: 10,
+  },
+  valuePropIcon: {
+    marginTop: 2,
+  },
+  valuePropContent: {
+    flex: 1,
+  },
+  valuePropTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.textDark,
+    marginBottom: 2,
+  },
+  valuePropDescription: {
+    fontSize: 12,
+    color: COLORS.text,
+    lineHeight: 16,
   },
   buttonsContainer: {
     width: "100%",

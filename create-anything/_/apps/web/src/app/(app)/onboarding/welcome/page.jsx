@@ -1,8 +1,32 @@
 import React from "react";
 import { useNavigate } from "react-router";
+import { CheckCircle, Shield, Heart, Users } from "lucide-react";
 import logoImage from "@/assets/logo-centered.png";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import WelcomeNavbar from "@/components/WelcomeNavbar";
+
+const valueProps = [
+  {
+    Icon: CheckCircle,
+    title: "Video-First Dating",
+    description: "The only dating app where you see who you're really meeting. Built for authentic introductions and real-time conversations.",
+  },
+  {
+    Icon: Shield,
+    title: "Safety First",
+    description: "Advanced verification and safety features to protect your time and ensure a secure experience.",
+  },
+  {
+    Icon: Heart,
+    title: "Meaningful Connections",
+    description: "Quality matches based on compatibility and genuine connections.",
+  },
+  {
+    Icon: Users,
+    title: "Inclusive Community",
+    description: "A welcoming space for everyone to find authentic relationships.",
+  },
+];
 
 function WelcomeContent() {
   const navigate = useNavigate();
@@ -14,7 +38,6 @@ function WelcomeContent() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
         background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
         padding: '24px',
         position: 'relative',
@@ -26,9 +49,10 @@ function WelcomeContent() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '32px',
-          maxWidth: '400px',
+          gap: '24px',
+          maxWidth: '600px',
           width: '100%',
+          marginTop: '40px',
         }}
       >
         <div
@@ -70,6 +94,86 @@ function WelcomeContent() {
           >
             Video-First Dating
           </p>
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: '8px' }}>
+          <h2
+            style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              color: '#374151',
+              margin: 0,
+            }}
+          >
+            Date Smarter, Not Harder
+          </h2>
+          <p
+            style={{
+              fontSize: '0.95rem',
+              color: '#6b7280',
+              marginTop: '8px',
+              lineHeight: '1.5',
+            }}
+          >
+            No Catfishing. Know who they are before you meet. Your time is valuable—only pay for connections that matter.
+          </p>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            width: '100%',
+            marginTop: '16px',
+          }}
+        >
+          {valueProps.map((prop, index) => (
+            <div
+              key={index}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '12px',
+                padding: '12px 16px',
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                borderRadius: '12px',
+              }}
+            >
+              <prop.Icon
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  color: '#9333ea',
+                  flexShrink: 0,
+                  marginTop: '2px',
+                }}
+              />
+              <div>
+                <h3
+                  style={{
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    color: '#374151',
+                    margin: 0,
+                  }}
+                >
+                  {prop.title}
+                </h3>
+                <p
+                  style={{
+                    fontSize: '0.875rem',
+                    color: '#6b7280',
+                    margin: 0,
+                    marginTop: '4px',
+                    lineHeight: '1.4',
+                  }}
+                >
+                  {prop.description}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
 
         <div
