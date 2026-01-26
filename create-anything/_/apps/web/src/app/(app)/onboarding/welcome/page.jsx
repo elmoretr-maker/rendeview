@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router";
-import { CheckCircle, Shield, Heart, Users, ArrowLeft } from "lucide-react";
+import { CheckCircle, Shield, Heart, Users } from "lucide-react";
 import logoImage from "@/assets/logo-centered.png";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import {
@@ -48,19 +48,6 @@ function WelcomeContent() {
     <Box minH="100vh" display="flex" flexDirection="column" bg="gray.50">
       <Container maxW="4xl" px={8} py={12} flex={1}>
         <VStack spacing={12} mb={12}>
-          <HStack w="full" justifyContent="flex-start" mb={-6}>
-            <Button
-              onClick={() => navigate("/welcome")}
-              leftIcon={<ArrowLeft size={18} />}
-              variant="ghost"
-              colorScheme="purple"
-              size="sm"
-              fontWeight="semibold"
-            >
-              Back to Welcome
-            </Button>
-          </HStack>
-          
           <VStack textAlign="center" spacing={3}>
             <Image
               src={logoImage}
@@ -100,7 +87,7 @@ function WelcomeContent() {
 
           <VStack spacing={4} textAlign="center" mb={6}>
             <Button
-              onClick={() => navigate("/account/signup")}
+              onClick={() => navigate("/onboarding/consent")}
               px={10}
               py={6}
               borderRadius="full"
