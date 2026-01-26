@@ -74,3 +74,33 @@ The application uses a client-server architecture. The frontend is built with Re
 - `apps/mobile/src/app/onboarding/welcome.jsx` - Complete redesign for web parity
 - `apps/web/src/app/routes.ts` - Root URL serves onboarding/welcome
 - `apps/mobile/src/app/_layout.jsx` - Auth guard redirects to /onboarding/welcome
+
+### Introduction Content Restoration
+**Status:** ✅ COMPLETE (Jan 26, 2026)
+
+**Restored Content:**
+1. **Headline:** "Date Smarter, Not Harder"
+2. **Tagline:** "No Catfishing. Know who they are before you meet. Your time is valuable—only pay for connections that matter."
+3. **Value Props (with icons):**
+   - Video-First Dating (CheckCircle)
+   - Safety First (Shield)
+   - Meaningful Connections (Heart)
+   - Inclusive Community (Users)
+
+**Created Stub Pages:**
+- Web: `/about`, `/safety`, `/success-stories`
+- Mobile: `/about.jsx`, `/safety.jsx`, `/success-stories.jsx`
+
+**Files Created:**
+- `apps/web/src/app/(app)/about/page.jsx`
+- `apps/web/src/app/(app)/safety/page.jsx`
+- `apps/web/src/app/(app)/success-stories/page.jsx`
+- `apps/mobile/src/app/about.jsx`
+- `apps/mobile/src/app/safety.jsx`
+- `apps/mobile/src/app/success-stories.jsx`
+
+**Preserved:**
+- 60px logo in white card
+- Purple gradient background (#f3e8ff → #ffffff → #dbeafe)
+- All inline styles for SSR reliability
+- Join Now → /onboarding/consent routing verified
