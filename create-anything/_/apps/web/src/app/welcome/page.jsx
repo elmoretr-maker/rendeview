@@ -1,198 +1,85 @@
 import React from "react";
 import logoImage from "@/assets/logo-centered.png";
-import {
-  Box,
-  Container,
-  VStack,
-  Heading,
-  Text,
-  Image
-} from "@chakra-ui/react";
-import { ClientNavigateButton } from "@/components/ClientNavigateButton";
+import { Button } from "@lshay/ui/components/default/button";
 
 export default function Welcome() {
-
   return (
-    <Box 
-      minH="100vh" 
-      display="flex" 
-      flexDirection="column" 
-      bgGradient="linear(to-br, purple.50, blue.50, pink.50)"
-      position="relative"
-      overflow="hidden"
-    >
-      <Box
-        position="absolute"
-        top="-10%"
-        right="-5%"
-        width="400px"
-        height="400px"
-        bg="purple.200"
-        opacity={0.2}
-        borderRadius="full"
-        filter="blur(60px)"
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 relative overflow-hidden">
+      <div
+        className="absolute -top-[10%] -right-[5%] w-[400px] h-[400px] bg-purple-200 opacity-20 rounded-full"
+        style={{ filter: "blur(60px)" }}
       />
-      <Box
-        position="absolute"
-        bottom="-10%"
-        left="-5%"
-        width="300px"
-        height="300px"
-        bg="blue.200"
-        opacity={0.2}
-        borderRadius="full"
-        filter="blur(60px)"
+      <div
+        className="absolute -bottom-[10%] -left-[5%] w-[300px] h-[300px] bg-blue-200 opacity-20 rounded-full"
+        style={{ filter: "blur(60px)" }}
       />
 
-      <Container 
-        maxW="md" 
-        px={8} 
-        py={20} 
-        flex={1} 
-        display="flex" 
-        alignItems="center"
-        position="relative"
-        zIndex={1}
-      >
-        <VStack spacing={10} w="full" textAlign="center">
-          <VStack spacing={6}>
-            <Box
-              p={4}
-              bg="white"
-              borderRadius="2xl"
-              shadow="xl"
-              transition="all 0.3s"
-              _hover={{ transform: "scale(1.05)", shadow: "2xl" }}
-            >
-              <Image
+      <div className="max-w-md mx-auto px-8 py-20 flex-1 flex items-center relative z-10">
+        <div className="w-full text-center space-y-10">
+          <div className="space-y-6">
+            <div className="p-4 bg-white rounded-2xl shadow-xl inline-block mx-auto hover:scale-105 transition-all duration-300 hover:shadow-2xl">
+              <img
                 src={logoImage}
                 alt="Rende-View Logo"
-                w="24"
-                h="24"
-                objectFit="contain"
+                className="object-contain"
+                style={{ width: "60px", height: "60px" }}
               />
-            </Box>
-            <VStack spacing={2}>
-              <Heading
-                size="2xl"
-                fontFamily="'Playfair Display', serif"
-                fontWeight="bold"
-                color="purple.700"
-                letterSpacing="tight"
+            </div>
+            <div className="space-y-2">
+              <h1
+                className="text-4xl font-bold text-purple-700 tracking-tight"
+                style={{ fontFamily: "'Playfair Display', serif" }}
               >
                 Rende-View
-              </Heading>
-              <Text 
-                fontSize="md" 
-                fontWeight="medium" 
-                color="purple.600"
-                letterSpacing="wide"
-                textTransform="uppercase"
-              >
+              </h1>
+              <p className="text-md font-medium text-purple-600 tracking-wide uppercase">
                 Video-First Dating
-              </Text>
-            </VStack>
-          </VStack>
+              </p>
+            </div>
+          </div>
 
-          <VStack spacing={4} w="full" pt={4}>
-            <ClientNavigateButton
-              to="/account/signin"
-              w="full"
-              size="lg"
+          <div className="space-y-4 w-full pt-4">
+            <Button
+              asChild
               variant="outline"
-              colorScheme="purple"
-              borderWidth={2}
-              borderRadius="full"
-              fontSize="md"
-              fontWeight="bold"
-              py={7}
-              shadow="md"
-              bg="white"
-              _hover={{ 
-                transform: "translateY(-2px)", 
-                shadow: "lg",
-                bg: "purple.50"
-              }}
-              transition="all 0.2s"
+              className="w-full py-7 text-md font-bold rounded-full border-2 border-purple-500 text-purple-600 bg-white shadow-md hover:bg-purple-50 hover:-translate-y-0.5 hover:shadow-lg transition-all"
             >
-              Sign In
-            </ClientNavigateButton>
-            <ClientNavigateButton
-              to="/onboarding/welcome"
-              w="full"
-              size="lg"
-              colorScheme="purple"
-              borderRadius="full"
-              fontSize="md"
-              fontWeight="bold"
-              py={7}
-              shadow="lg"
-              bgGradient="linear(to-r, purple.500, purple.600)"
-              _hover={{ 
-                bgGradient: "linear(to-r, purple.600, purple.700)",
-                transform: "translateY(-2px)", 
-                shadow: "xl"
-              }}
-              transition="all 0.2s"
+              <a href="/account/signin">Sign In</a>
+            </Button>
+            <Button
+              asChild
+              className="w-full py-7 text-md font-bold rounded-full bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg hover:from-purple-600 hover:to-purple-700 hover:-translate-y-0.5 hover:shadow-xl transition-all"
             >
-              Join Now
-            </ClientNavigateButton>
-          </VStack>
+              <a href="/onboarding/welcome">Join Now</a>
+            </Button>
+          </div>
 
-          <Box pt={6}>
-            <Text 
-              fontSize="xs" 
-              textAlign="center" 
-              color="gray.600" 
-              lineHeight="tall"
-              maxW="sm"
-            >
+          <div className="pt-6">
+            <p className="text-xs text-center text-gray-600 leading-relaxed max-w-sm mx-auto">
               By continuing, you agree to our{" "}
-              <Text 
-                as="span" 
-                color="purple.600" 
-                fontWeight="semibold"
-                textDecoration="underline" 
-                cursor="pointer"
-                _hover={{ color: "purple.700" }}
-              >
+              <span className="text-purple-600 font-semibold underline cursor-pointer hover:text-purple-700">
                 Terms of Service
-              </Text>{" "}
+              </span>{" "}
               and{" "}
-              <Text 
-                as="span" 
-                color="purple.600" 
-                fontWeight="semibold"
-                textDecoration="underline" 
-                cursor="pointer"
-                _hover={{ color: "purple.700" }}
-              >
+              <span className="text-purple-600 font-semibold underline cursor-pointer hover:text-purple-700">
                 Privacy Policy
-              </Text>
+              </span>
               .
-            </Text>
-          </Box>
+            </p>
+          </div>
 
-          <Box pt={8}>
-            <Text 
-              fontSize="10px" 
-              textAlign="center" 
-              color="gray.400"
-              opacity={0.6}
-            >
-              <Text 
-                as="a" 
+          <div className="pt-8">
+            <p className="text-[10px] text-center text-gray-400 opacity-60">
+              <a
                 href="/account/logout"
-                color="gray.400"
-                textDecoration="none"
-                _hover={{ color: "gray.500", textDecoration: "underline" }}
+                className="text-gray-400 no-underline hover:text-gray-500 hover:underline"
               >
                 Clear session
-              </Text>
-            </Text>
-          </Box>
-        </VStack>
-      </Container>
-    </Box>
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
