@@ -209,10 +209,11 @@ These are not part of the 29 audited user-facing pages but exist in the codebase
 
 **Root URL Routing Architecture:**
 ```
-GET / → index-redirect.jsx (loader) → HTTP 302 → /welcome
+GET / → index-redirect.jsx (component) → useNavigate("/welcome", { replace: true })
 ```
 - The `rootRedirect` route is defined FIRST in `routes.ts` array
-- All requests to `/` match `index-redirect.jsx` which performs HTTP 302 redirect
+- Client-side navigation (NOT server-side 302) ensures the URL bar updates to `/welcome`
+- This is intentional for branding: users see `/welcome` in their address bar
 - `page.jsx` exists but is NOT registered as the index route in `routes.ts`
 
 ### Mobile Application Pages (31 files)
@@ -415,8 +416,10 @@ const chakraTheme = extendTheme({
 ### Root URL Behavior (Canonical)
 
 **Route Owner:** `apps/web/src/app/(app)/index-redirect.jsx`
-- ALL requests to `/` → HTTP 302 redirect to `/welcome`
-- This is enforced by `routes.ts` where `rootRedirect` is the first route
+- ALL requests to `/` → Client-side navigation to `/welcome` via `useNavigate`
+- Uses `{ replace: true }` so back button doesn't return to `/`
+- This ensures the browser address bar shows `/welcome` (branding requirement)
+- Enforced by `routes.ts` where `rootRedirect` is the first route
 
 ### Mobile Authentication Guard
 
