@@ -3,288 +3,262 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
-  ScrollView,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/utils/auth/useAuth";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import {
-  useFonts,
-  Inter_400Regular,
-  Inter_600SemiBold,
-  Inter_700Bold,
-} from "@expo-google-fonts/inter";
+import { LinearGradient } from "expo-linear-gradient";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 
 const COLORS = {
-  primary: "#5B3BAF",
-  secondary: "#00BFA6",
-  text: "#2C3E50",
-  lightGray: "#F3F4F6",
-  bg: "#F9F9F9",
-  white: "#FFFFFF",
-  error: "#E74C3C",
+  primary: "#9333ea",
+  primaryLight: "#a855f7",
+  text: "#6b7280",
+  white: "#ffffff",
+  gradientStart: "#f3e8ff",
+  gradientMid: "#ffffff",
+  gradientEnd: "#dbeafe",
 };
-const FONT_SIZES = {
-  title: 32,
-  subtitle: 18,
-  body: 14,
-};
+
+const navLinks = [
+  { label: "About", path: "/about" },
+  { label: "Safety", path: "/safety" },
+  { label: "Success Stories", path: "/success-stories" },
+];
 
 function WelcomeContent() {
   const insets = useSafeAreaInsets();
   const { signIn, signUp, isReady, auth } = useAuth();
   const router = useRouter();
-  const [loaded, error] = useFonts({
-    Inter_400Regular,
-    Inter_600SemiBold,
-    Inter_700Bold,
-  });
 
   useEffect(() => {
     if (!isReady) return;
     if (auth) {
-      // Let index gate decide next step (consent/membership/profile/tabs)
       router.replace("/");
     }
   }, [isReady, auth, router]);
 
-  if (!loaded && !error) {
-    return null;
-  }
+  const handleSignIn = () => {
+    signIn();
+  };
 
-  const valueProps = [
-    {
-      icon: "videocam-outline",
-      title: "Video-First Dating",
-      description:
-        "The only dating app where you see who you're really meeting. Built for authentic introductions and real-time conversations.",
-    },
-    {
-      icon: "shield-checkmark-outline",
-      title: "Safety First",
-      description:
-        "Advanced verification and safety features to protect your time and ensure a secure experience.",
-    },
-    {
-      icon: "heart-outline",
-      title: "Meaningful Connections",
-      description:
-        "Quality matches based on compatibility and genuine connections.",
-    },
-    {
-      icon: "people-outline",
-      title: "Inclusive Community",
-      description:
-        "A welcoming space for everyone to find authentic relationships.",
-    },
-  ];
-
-  const isAuthed = Boolean(isReady && auth);
-  const primaryCtaLabel = isAuthed ? "Continue" : "Get Started";
-  const onPrimaryPress = () => {
-    if (isAuthed) {
-      router.replace("/onboarding/consent");
-    } else {
-      signUp();
-    }
+  const handleJoinNow = () => {
+    router.push("/onboarding/consent");
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
+    <LinearGradient
+      colors={[COLORS.gradientStart, COLORS.gradientMid, COLORS.gradientEnd]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={[styles.container, { paddingTop: insets.top }]}
+    >
       <StatusBar style="dark" />
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Header/Title Section */}
-        <View style={styles.header}>
+      
+      {/* Navbar */}
+      <View style={styles.navbar}>
+        <View style={styles.navLogo}>
           <Image
-            source={{
-              uri: "https://ucarecdn.com/7e6175a0-5279-4da8-8e24-c6a129f1821f/-/format/auto/",
-            }}
-            style={styles.logo}
+            source={{ uri: "https://ucarecdn.com/7e6175a0-5279-4da8-8e24-c6a129f1821f/-/format/auto/" }}
+            style={styles.navLogoImage}
             contentFit="contain"
-            transition={150}
           />
-          <Text style={[styles.appLogo, { fontFamily: "Inter_700Bold" }]}>
-            Rende-View
-          </Text>
-          <Text style={[styles.tagline, { fontFamily: "Inter_400Regular" }]}>
-            Rende-View: Date Smarter, Not Harder. No Catfishing. Know who they
-            are before you meet. Your time is valuable—only pay for connections
-            that matter.
-          </Text>
+          <Text style={styles.navLogoText}>Rende-View</Text>
         </View>
-
-        {/* Value Propositions Section */}
-        <View style={styles.propsContainer}>
-          {valueProps.map((prop, index) => (
-            <View key={index} style={styles.propItem}>
-              <Ionicons
-                name={prop.icon}
-                size={28}
-                color={COLORS.primary}
-                style={styles.propIcon}
-              />
-              <View style={styles.propTextContent}>
-                <Text
-                  style={[
-                    styles.propTitle,
-                    { fontFamily: "Inter_600SemiBold" },
-                  ]}
-                >
-                  {prop.title}
-                </Text>
-                <Text
-                  style={[
-                    styles.propDescription,
-                    { fontFamily: "Inter_400Regular" },
-                  ]}
-                >
-                  {prop.description}
-                </Text>
-              </View>
-            </View>
+        <View style={styles.navLinks}>
+          {navLinks.map((link) => (
+            <TouchableOpacity
+              key={link.path}
+              onPress={() => router.push(link.path)}
+              style={styles.navLinkButton}
+            >
+              <Text style={styles.navLinkText}>{link.label}</Text>
+            </TouchableOpacity>
           ))}
         </View>
+      </View>
 
-        {/* Buttons Section */}
+      {/* Main Content */}
+      <View style={styles.content}>
+        {/* Logo Card */}
+        <View style={styles.logoCard}>
+          <Image
+            source={{ uri: "https://ucarecdn.com/7e6175a0-5279-4da8-8e24-c6a129f1821f/-/format/auto/" }}
+            style={styles.logo}
+            contentFit="contain"
+          />
+        </View>
+
+        {/* Title */}
+        <Text style={styles.title}>Rende-View</Text>
+        <Text style={styles.subtitle}>VIDEO-FIRST DATING</Text>
+
+        {/* Buttons */}
         <View style={styles.buttonsContainer}>
           <TouchableOpacity
-            style={styles.getStartedButton}
-            onPress={onPrimaryPress}
-            accessibilityLabel="Get Started"
+            style={styles.signInButton}
+            onPress={handleSignIn}
           >
-            <Text
-              style={[
-                styles.getStartedText,
-                { fontFamily: "Inter_600SemiBold" },
-              ]}
-            >
-              {primaryCtaLabel}
-            </Text>
+            <Text style={styles.signInButtonText}>Sign In</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
-            onPress={() => signIn()}
-            accessibilityLabel="Sign In"
+            style={styles.joinNowButton}
+            onPress={handleJoinNow}
           >
-            <Text
-              style={[styles.loginText, { fontFamily: "Inter_600SemiBold" }]}
+            <LinearGradient
+              colors={[COLORS.primaryLight, COLORS.primary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.joinNowGradient}
             >
-              I Already Have an Account
-            </Text>
+              <Text style={styles.joinNowButtonText}>Join Now</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
-        {/* Footer/Legal Text */}
-        <Text style={[styles.footerText, { fontFamily: "Inter_400Regular" }]}>
+        {/* Terms */}
+        <Text style={styles.termsText}>
           By continuing, you agree to our{" "}
-          <Text style={styles.footerLink}>Terms of Service</Text> and{" "}
-          <Text style={styles.footerLink}>Privacy Policy.</Text>
+          <Text style={styles.termsLink} onPress={() => router.push("/terms")}>
+            Terms of Service
+          </Text>{" "}
+          and{" "}
+          <Text style={styles.termsLink} onPress={() => router.push("/privacy")}>
+            Privacy Policy
+          </Text>.
         </Text>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-  },
   container: {
-    paddingHorizontal: 30,
-    paddingTop: 50,
-    paddingBottom: 20,
-    flexGrow: 1,
-    justifyContent: "space-between",
+    flex: 1,
   },
-  header: {
-    marginBottom: 40,
+  navbar: {
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  navLogo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  navLogoImage: {
+    width: 28,
+    height: 28,
+  },
+  navLogoText: {
+    fontFamily: "serif",
+    fontSize: 16,
+    fontWeight: "bold",
+    color: COLORS.primary,
+  },
+  navLinks: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  navLinkButton: {
+    paddingVertical: 8,
+  },
+  navLinkText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: COLORS.text,
+  },
+  content: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+  },
+  logoCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginBottom: 24,
   },
   logo: {
-    width: 140,
-    height: 140,
-    marginBottom: 10,
-    borderRadius: 16,
-    backgroundColor: COLORS.white,
+    width: 60,
+    height: 60,
   },
-  appLogo: {
-    fontSize: FONT_SIZES.title,
-    fontWeight: "700",
+  title: {
+    fontFamily: "serif",
+    fontSize: 36,
+    fontWeight: "bold",
     color: COLORS.primary,
-    marginBottom: 5,
+    marginBottom: 8,
   },
-  tagline: {
-    fontSize: FONT_SIZES.subtitle,
-    color: COLORS.text,
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  propsContainer: {
-    marginBottom: 40,
-  },
-  propItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 20,
-  },
-  propIcon: {
-    marginRight: 15,
-    marginTop: 2,
-  },
-  propTextContent: {
-    flex: 1,
-  },
-  propTitle: {
-    fontSize: 16,
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  propDescription: {
-    fontSize: FONT_SIZES.body,
-    color: COLORS.text,
-    opacity: 0.7,
+  subtitle: {
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 2,
+    color: COLORS.primaryLight,
+    textTransform: "uppercase",
+    marginBottom: 32,
   },
   buttonsContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  getStartedButton: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 30,
     width: "100%",
+    maxWidth: 320,
+    gap: 16,
+    marginBottom: 24,
+  },
+  signInButton: {
+    width: "100%",
+    paddingVertical: 16,
+    borderRadius: 9999,
+    borderWidth: 2,
+    borderColor: "#c084fc",
+    backgroundColor: "transparent",
     alignItems: "center",
-    marginBottom: 20,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 6,
   },
-  getStartedText: {
-    color: COLORS.white,
-    fontSize: 18,
-  },
-  loginText: {
-    color: COLORS.text,
-    fontSize: FONT_SIZES.body,
-  },
-  footerText: {
-    fontSize: 12,
-    color: COLORS.text,
-    textAlign: "center",
-    opacity: 0.6,
-  },
-  footerLink: {
-    textDecorationLine: "underline",
+  signInButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
     color: COLORS.primary,
+  },
+  joinNowButton: {
+    width: "100%",
+    borderRadius: 9999,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  joinNowGradient: {
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  joinNowButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.white,
+  },
+  termsText: {
+    fontSize: 11,
+    textAlign: "center",
+    color: COLORS.text,
+    paddingHorizontal: 20,
+  },
+  termsLink: {
+    color: COLORS.primary,
+    textDecorationLine: "underline",
   },
 });
 

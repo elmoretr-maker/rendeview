@@ -42,3 +42,35 @@ The application uses a client-server architecture. The frontend is built with Re
 - **Backend Framework**: Hono (Node.js)
 - **Mobile UI Components**: @react-native-community/slider, @expo-google-fonts/inter, react-native-maps, expo-location
 - **Geocoding**: OpenStreetMap Nominatim API
+
+## Recent Changes
+
+### Cross-Platform Navigation & Flow Audit
+**Status:** ✅ COMPLETE (Jan 26, 2026)
+
+**Changes:**
+1. **Welcome Page Consolidation:**
+   - Deleted duplicate `/welcome/page.jsx` (web) and `/welcome.jsx` (mobile)
+   - Root URL (/) now serves `/onboarding/welcome` as single source of truth
+   - 100% inline styles for purple gradient background and 60px logo
+
+2. **Navbar Restoration:**
+   - Created `WelcomeNavbar.jsx` component with About, Safety, Success Stories links
+   - Navbar appears on web onboarding/welcome page
+   - Mobile welcome page updated with matching navbar for 100% parity
+
+3. **Functional Routing:**
+   - Web: Join Now → `/onboarding/consent`, Sign In → `/account/signin`
+   - Mobile: Join Now → `/onboarding/consent`, Sign In → auth modal
+   - All onboarding pages (consent, membership, profile) verified active and styled
+
+4. **Mobile UI Parity:**
+   - Redesigned mobile welcome to match web: purple gradient, 60px logo, buttons
+   - LinearGradient background, matching color scheme (#9333ea purple)
+
+**Files Modified:**
+- `apps/web/src/components/WelcomeNavbar.jsx` - NEW: Landing page navbar
+- `apps/web/src/app/(app)/onboarding/welcome/page.jsx` - Added navbar, inline styles
+- `apps/mobile/src/app/onboarding/welcome.jsx` - Complete redesign for web parity
+- `apps/web/src/app/routes.ts` - Root URL serves onboarding/welcome
+- `apps/mobile/src/app/_layout.jsx` - Auth guard redirects to /onboarding/welcome

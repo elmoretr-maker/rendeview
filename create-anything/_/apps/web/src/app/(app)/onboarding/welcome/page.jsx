@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router";
 import logoImage from "@/assets/logo-centered.png";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
+import WelcomeNavbar from "@/components/WelcomeNavbar";
 
 function WelcomeContent() {
   const navigate = useNavigate();
@@ -16,8 +17,10 @@ function WelcomeContent() {
         justifyContent: 'center',
         background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
         padding: '24px',
+        position: 'relative',
       }}
     >
+      <WelcomeNavbar />
       <div
         style={{
           display: 'flex',
