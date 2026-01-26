@@ -5,6 +5,13 @@ import logoImage from "@/assets/logo-centered.png";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import WelcomeNavbar from "@/components/WelcomeNavbar";
 
+export function meta() {
+  return [
+    { title: "Welcome | Rende-View" },
+    { name: "description", content: "Date Smarter, Not Harder. Video-first dating for authentic connections." },
+  ];
+}
+
 const valueProps = [
   {
     Icon: CheckCircle,

@@ -3,6 +3,13 @@ import { useNavigate } from "react-router";
 import { ArrowLeft, Shield, Eye, UserCheck, AlertTriangle } from "lucide-react";
 import logoImage from "@/assets/logo-centered.png";
 
+export function meta() {
+  return [
+    { title: "Safety | Rende-View" },
+    { name: "description", content: "Your safety matters. Learn about our verification and security features." },
+  ];
+}
+
 const safetyFeatures = [
   {
     Icon: Shield,

@@ -65,6 +65,9 @@ function RootGate() {
       'onboarding/data-consent-required',
       'onboarding/membership',
       'onboarding/profile',
+      'about',
+      'safety',
+      'success-stories',
     ];
 
     // Build current path from segments for comparison
@@ -122,6 +125,9 @@ function RootGate() {
         <Stack.Screen name="onboarding/consent" />
         <Stack.Screen name="onboarding/data-consent-required" />
         <Stack.Screen name="onboarding/membership" />
+        <Stack.Screen name="about" />
+        <Stack.Screen name="safety" />
+        <Stack.Screen name="success-stories" />
 
         {/* Protected routes */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

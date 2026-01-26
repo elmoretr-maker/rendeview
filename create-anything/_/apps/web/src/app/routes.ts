@@ -120,15 +120,16 @@ if (import.meta.env.DEV) {
 const tree = buildRouteTree(__dirname);
 const notFound = route('*?', './__create/not-found.tsx');
 const welcomePage = './(app)/onboarding/welcome/page.jsx';
-const rootRedirect = index(welcomePage);
+const indexRedirectPage = './(app)/index-redirect.jsx';
 const generatedRoutes = generateRoutes(tree).filter(r => {
-        // Filter out index routes (path === undefined) and the onboarding/welcome route (it's now the index)
+        // Filter out index routes (path === undefined) and the onboarding/welcome route (handled separately)
         if (r.path === undefined) return false;
         if (r.path === 'onboarding/welcome') return false;
         return true;
 });
-// Add /welcome as an alias route with unique ID
-const welcomeAliasRoute = route('welcome', welcomePage, { id: 'welcome-alias' });
-const routes = [rootRedirect, welcomeAliasRoute, ...generatedRoutes, notFound];
+// /welcome is the canonical route; root redirects to /welcome for explicit URL identity
+const welcomeRoute = route('welcome', welcomePage, { id: 'welcome-canonical' });
+const rootRedirect = index(indexRedirectPage, { id: 'root-redirect' });
+const routes = [rootRedirect, welcomeRoute, ...generatedRoutes, notFound];
 
 export default routes;

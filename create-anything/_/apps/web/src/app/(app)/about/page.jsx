@@ -3,6 +3,13 @@ import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import logoImage from "@/assets/logo-centered.png";
 
+export function meta() {
+  return [
+    { title: "About | Rende-View" },
+    { name: "description", content: "Learn about Rende-View, the premier video-first dating platform." },
+  ];
+}
+
 export default function About() {
   const navigate = useNavigate();
 

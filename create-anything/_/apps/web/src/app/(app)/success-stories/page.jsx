@@ -3,6 +3,13 @@ import { useNavigate } from "react-router";
 import { ArrowLeft, Heart, Quote } from "lucide-react";
 import logoImage from "@/assets/logo-centered.png";
 
+export function meta() {
+  return [
+    { title: "Success Stories | Rende-View" },
+    { name: "description", content: "Real couples who found love on Rende-View." },
+  ];
+}
+
 const stories = [
   {
     names: "Sarah & Michael",

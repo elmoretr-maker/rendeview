@@ -130,4 +130,28 @@ The application uses a client-server architecture. The frontend is built with Re
 - `apps/mobile/src/app/about.jsx` - Added pageHeader style
 - `apps/mobile/src/app/safety.jsx` - Added pageHeader style
 - `apps/mobile/src/app/success-stories.jsx` - Added pageHeader style
-- `apps/web/src/app/routes.ts` - Fixed with welcome-alias route ID
+- `apps/web/src/app/routes.ts` - Fixed with welcome-canonical route ID
+
+### Browser Tab & Address Bar Identity
+**Status:** ✅ COMPLETE (Jan 26, 2026)
+
+**Metadata Implementation:**
+- Added `meta()` function exports to all public pages for browser tab titles
+- Welcome: "Welcome | Rende-View"
+- About: "About | Rende-View"
+- Safety: "Safety | Rende-View"
+- Success Stories: "Success Stories | Rende-View"
+
+**Canonical Routing:**
+- Root `/` redirects to `/welcome` via loader-based redirect component
+- `/welcome` is the canonical URL for the landing page
+- Created `index-redirect.jsx` component to handle root → /welcome redirect
+
+**Files Modified:**
+- `apps/web/src/app/(app)/onboarding/welcome/page.jsx` - Added meta() export
+- `apps/web/src/app/(app)/about/page.jsx` - Added meta() export
+- `apps/web/src/app/(app)/safety/page.jsx` - Added meta() export
+- `apps/web/src/app/(app)/success-stories/page.jsx` - Added meta() export
+- `apps/web/src/app/(app)/index-redirect.jsx` - NEW: Redirect component for root
+- `apps/web/src/app/routes.ts` - Updated with canonical routing
+- `apps/mobile/src/app/_layout.jsx` - Added public routes for About, Safety, Success Stories
