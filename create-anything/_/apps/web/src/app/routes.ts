@@ -119,6 +119,13 @@ if (import.meta.env.DEV) {
 }
 const tree = buildRouteTree(__dirname);
 const notFound = route('*?', './__create/not-found.tsx');
-const routes = [...generateRoutes(tree), notFound];
+const rootRedirect = index('./(app)/onboarding/welcome/page.jsx');
+const generatedRoutes = generateRoutes(tree).filter(r => {
+        // Filter out index routes (path === undefined) and the onboarding/welcome route (it's now the index)
+        if (r.path === undefined) return false;
+        if (r.path === 'onboarding/welcome') return false;
+        return true;
+});
+const routes = [rootRedirect, ...generatedRoutes, notFound];
 
 export default routes;

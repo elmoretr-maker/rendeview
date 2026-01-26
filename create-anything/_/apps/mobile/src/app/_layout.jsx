@@ -60,7 +60,6 @@ function RootGate() {
 
     // Define PUBLIC routes (accessible without authentication)
     const PUBLIC_ROUTES = [
-      'welcome',
       'onboarding/welcome',
       'onboarding/consent',
       'onboarding/data-consent-required',
@@ -90,8 +89,8 @@ function RootGate() {
     // EXCEPT index route, which performs its own backend authentication check
     if (!isAuthenticated && !isPublicRoute && !isIndexRoute) {
       console.log("[GLOBAL AUTH GUARD] ❌ BLOCKED: Unauthenticated user on protected route");
-      console.log("[GLOBAL AUTH GUARD] → Redirecting to /welcome");
-      router.replace("/welcome");
+      console.log("[GLOBAL AUTH GUARD] → Redirecting to /onboarding/welcome");
+      router.replace("/onboarding/welcome");
       return;
     }
 
