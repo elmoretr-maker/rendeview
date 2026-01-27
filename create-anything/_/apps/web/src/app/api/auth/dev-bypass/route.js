@@ -31,8 +31,8 @@ export async function GET(request) {
     let user;
     if (userResult.rowCount === 0) {
       const createResult = await pool.query(
-        `INSERT INTO auth_users (email, name, "emailVerified", role, profile_completed, data_consent_given)
-         VALUES ($1, $2, NOW(), 'admin', true, true)
+        `INSERT INTO auth_users (email, name, "emailVerified", role, consent_accepted, consent_at)
+         VALUES ($1, $2, NOW(), 'admin', true, NOW())
          RETURNING *`,
         [STAFF_EMAIL, STAFF_NAME]
       );
