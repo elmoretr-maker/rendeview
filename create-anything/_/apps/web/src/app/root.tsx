@@ -1,9 +1,6 @@
 import {
-  Links,
-  Meta,
   Outlet,
   Scripts,
-  ScrollRestoration,
   useAsyncError,
   useLocation,
   useRouteError,
@@ -437,15 +434,22 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head suppressHydrationWarning>
-        <meta charSet="utf-8" suppressHydrationWarning />
-        <meta name="viewport" content="width=device-width, initial-scale=1" suppressHydrationWarning />
-        <Links />
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Rende-VIEW is a modern dating platform featuring video calling, real-time messaging, smart matching, and tiered membership options." />
+        <title>Rende-VIEW - Find Your Perfect Match</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <script type="module" src="/src/__create/dev-error-overlay.js"></script>
         <link rel="icon" href="/src/__create/favicon.png" />
+        <style dangerouslySetInnerHTML={{ __html: `
+          html, body { margin: 0; padding: 0; }
+          body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        `}} />
       </head>
       <body suppressHydrationWarning>
         {children}
-        <ScrollRestoration />
         <Scripts />
       </body>
     </html>
@@ -471,7 +475,7 @@ const FontAwesomeLoader: FC = () => {
   return null;
 };
 
-export default function App({ loaderData }: Route.ComponentProps) {
+function AppContent({ loaderData }: { loaderData: Route.ComponentProps['loaderData'] }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
@@ -495,4 +499,43 @@ export default function App({ loaderData }: Route.ComponentProps) {
       </ChakraProvider>
     </SessionProvider>
   );
+}
+
+export default function App({ loaderData }: Route.ComponentProps) {
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  if (!isHydrated) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ 
+            width: 60, 
+            height: 60, 
+            borderRadius: 12, 
+            background: '#9333ea',
+            margin: '0 auto 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: 24
+          }}>R</div>
+          <p style={{ color: '#9333ea', fontWeight: 500 }}>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <AppContent loaderData={loaderData} />;
 }
