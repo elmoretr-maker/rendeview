@@ -117,21 +117,35 @@ export async function GET(request) {
     // Combine demo profiles first (for easy testing), then real candidates
     const allCandidates = [...demoProfiles, ...candidates];
 
-    // Attach primary photo and calculate compatibility scores
+    // Attach primary photo, video URL, and calculate compatibility scores
     const result = [];
     for (const c of allCandidates) {
       let photo = c.primary_photo_url || null;
+      let video_url = null;
+      
+      // Fetch photo if not set, and always fetch intro video
+      const mediaQuery = await sql(
+        "SELECT url, type FROM profile_media WHERE user_id = $1 ORDER BY type DESC, sort_order ASC",
+        [c.id],
+      );
+      
       if (!photo) {
-        const media = await sql(
-          "SELECT url FROM profile_media WHERE user_id = $1 AND type = 'photo' ORDER BY sort_order ASC LIMIT 1",
-          [c.id],
-        );
-        photo = media?.[0]?.url || null;
+        const photoMedia = mediaQuery.find(m => m.type === 'photo');
+        photo = photoMedia?.url || null;
       }
+      
+      // Get intro video URL
+      const videoMedia = mediaQuery.find(m => m.type === 'video');
+      video_url = videoMedia?.url || null;
       
       // Transform photo URL: /objects/... -> /api/objects/...
       if (photo && photo.startsWith('/objects/')) {
         photo = `/api${photo}`;
+      }
+      
+      // Transform video URL: /objects/... -> /api/objects/...
+      if (video_url && video_url.startsWith('/objects/')) {
+        video_url = `/api${video_url}`;
       }
       
       // Calculate compatibility score
@@ -167,6 +181,7 @@ export async function GET(request) {
         membership_tier: c.membership_tier,
         bio: c.bio,
         photo,
+        video_url,
         liked_you: c.liked_you === 1,
         interests: candidateInterests,
         mutual_interests: mutualInterests,

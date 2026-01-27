@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Heart, RotateCcw, Video, ChevronLeft, ChevronRight, Star, AlertTriangle, Sparkles, MapPin } from "lucide-react";
+import { X, Heart, RotateCcw, Video, ChevronLeft, ChevronRight, Star, AlertTriangle, Sparkles, MapPin, Play } from "lucide-react";
 import { useNavigate } from "react-router";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
@@ -125,6 +125,25 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
                 objectFit="cover"
                 bg="gray.100"
               />
+              {/* Video indicator badge */}
+              {profile.video_url && (
+                <Flex
+                  position="absolute"
+                  top={4}
+                  left={4}
+                  align="center"
+                  gap={1.5}
+                  px={3}
+                  py={1.5}
+                  borderRadius="full"
+                  bg="purple.500"
+                  shadow="lg"
+                  zIndex={2}
+                >
+                  <Play size={14} fill="white" color="white" />
+                  <Text fontSize="xs" fontWeight="bold" color="white">VIDEO</Text>
+                </Flex>
+              )}
               {/* Save button */}
               <IconButton
                 icon={<Star size={20} fill={isSaved ? "#FFD700" : "none"} color={isSaved ? "#FFD700" : "white"} strokeWidth={2.5} />}

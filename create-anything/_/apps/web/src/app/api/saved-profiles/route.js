@@ -16,14 +16,21 @@ export async function GET(request) {
         u.id,
         u.name,
         u.bio,
-        u.primary_photo_url as photo
+        u.primary_photo_url as photo,
+        (SELECT pm.url FROM profile_media pm WHERE pm.user_id = u.id AND pm.type = 'video' LIMIT 1) as video_url
       FROM saved_profiles sp
       JOIN auth_users u ON sp.saved_user_id = u.id
       WHERE sp.user_id = ${userId}
       ORDER BY sp.created_at DESC
     `;
+    
+    const transformedProfiles = (savedProfiles || []).map(p => ({
+      ...p,
+      photo: p.photo && p.photo.startsWith('/objects/') ? `/api${p.photo}` : p.photo,
+      video_url: p.video_url && p.video_url.startsWith('/objects/') ? `/api${p.video_url}` : p.video_url,
+    }));
 
-    return Response.json({ savedProfiles: savedProfiles || [] });
+    return Response.json({ savedProfiles: transformedProfiles });
   } catch (err) {
     console.error("GET /api/saved-profiles error", err);
     return Response.json({ error: "Internal Server Error" }, { status: 500 });

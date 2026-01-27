@@ -238,12 +238,24 @@ function MatchesContent() {
 
         {/* Top Picks Section - Always Visible */}
         <Box mb={8}>
-          <Flex align="center" gap={2} mb={4}>
-            <Star size={24} color="#FFD700" fill="#FFD700" />
-            <Heading size="md" color="gray.800">Top Picks</Heading>
-            <Badge colorScheme="purple" fontSize="xs" px={2} py={0.5} borderRadius="full">
-              {savedProfiles.length}/5
-            </Badge>
+          <Flex align="center" justify="space-between" mb={4}>
+            <Flex align="center" gap={2}>
+              <Star size={24} color="#FFD700" fill="#FFD700" />
+              <Heading size="md" color="gray.800">Top Picks</Heading>
+              <Badge colorScheme="purple" fontSize="xs" px={2} py={0.5} borderRadius="full">
+                {savedProfiles.length}/5
+              </Badge>
+            </Flex>
+            {savedProfiles.length > 0 && (
+              <Button
+                size="sm"
+                variant="ghost"
+                colorScheme="purple"
+                onClick={() => navigate("/matches/saved")}
+              >
+                View All
+              </Button>
+            )}
           </Flex>
           
           {savedProfiles.length > 0 ? (
