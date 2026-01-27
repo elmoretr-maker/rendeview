@@ -448,50 +448,6 @@ export function Layout({ children }: { children: ReactNode }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link rel="icon" href="/src/__create/favicon.png" />
-        <style dangerouslySetInnerHTML={{ __html: `
-          html, body {
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            color: #2C3E50;
-            -webkit-font-smoothing: antialiased;
-          }
-          /* Chakra fallback styles */
-          .chakra-button, button[class*="chakra"] {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.5rem 1rem;
-            font-weight: 600;
-            border-radius: 0.375rem;
-            border: none;
-            cursor: pointer;
-            background: #7c3aed;
-            color: white;
-          }
-          .chakra-heading, h1, h2, h3 {
-            font-family: 'Playfair Display', serif;
-            font-weight: 600;
-            color: #2C3E50;
-          }
-          .chakra-text {
-            font-family: 'Inter', sans-serif;
-          }
-          .chakra-card, [class*="chakra-card"] {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            padding: 1.5rem;
-          }
-          img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            object-fit: cover;
-          }
-        `}} />
       </head>
       <body suppressHydrationWarning>
         {children}

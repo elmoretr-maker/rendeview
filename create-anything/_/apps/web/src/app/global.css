@@ -4,6 +4,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Base page styling - purple gradient background */
+html {
+  min-height: 100vh;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #2C3E50;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Headings use Playfair Display */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+}
+
 @layer base {
   input, textarea, select, button {
     @apply outline-none focus:outline-none;
