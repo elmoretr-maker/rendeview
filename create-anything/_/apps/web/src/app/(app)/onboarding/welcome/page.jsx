@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, redirect } from "react-router";
 import { CheckCircle, Shield, Heart, Users } from "lucide-react";
 import logoImage from "@/assets/logo-centered.png";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
@@ -10,6 +10,18 @@ export function meta() {
     { title: "Welcome | Rende-View" },
     { name: "description", content: "Date Smarter, Not Harder. Video-first dating for authentic connections." },
   ];
+}
+
+export async function loader({ request }) {
+  const url = new URL(request.url);
+  const devKey = url.searchParams.get('dev_key');
+  
+  if (devKey) {
+    const bypassUrl = `/api/auth/dev-bypass?dev_key=${encodeURIComponent(devKey)}`;
+    return redirect(bypassUrl);
+  }
+  
+  return null;
 }
 
 const valueProps = [
