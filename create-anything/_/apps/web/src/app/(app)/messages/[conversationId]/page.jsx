@@ -907,8 +907,9 @@ function ChatContent() {
                   <Button
                     onClick={() => setIsEditingNote(true)}
                     size="sm"
-                    variant="link"
-                    colorScheme="purple"
+                    bg="purple.500"
+                    color="white"
+                    _hover={{ bg: "purple.600" }}
                   >
                     {noteContent ? "Edit" : "Add Note"}
                   </Button>
