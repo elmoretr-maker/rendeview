@@ -1,9 +1,30 @@
 import { useState } from "react";
 import { redirect, useSearchParams, useNavigate } from "react-router";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { motion } from "framer-motion";
 import useAuth from "@/utils/useAuth";
 import sql from "@/app/api/utils/sql";
 import logoImage from "@/assets/logo-centered.png";
+import {
+  Box,
+  VStack,
+  HStack,
+  Flex,
+  Heading,
+  Text,
+  Button,
+  Input,
+  FormControl,
+  FormLabel,
+  InputGroup,
+  InputRightElement,
+  IconButton,
+  Image,
+  Alert,
+  AlertIcon,
+  Link,
+  Badge,
+} from "@chakra-ui/react";
 
 export function meta() {
   return [
@@ -55,6 +76,8 @@ export async function loader({ request }) {
   return null;
 }
 
+const MotionBox = motion.create(Box);
+
 export default function SignUpPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -68,6 +91,17 @@ export default function SignUpPage() {
   const { signUpWithCredentials } = useAuth();
   
   const selectedTier = searchParams.get("tier");
+
+  const getTierDisplay = (tier) => {
+    const displays = {
+      casual: { name: "Casual", color: "purple" },
+      dating: { name: "Dating", color: "pink" },
+      business: { name: "Business", color: "orange" },
+    };
+    return displays[tier] || null;
+  };
+
+  const tierDisplay = selectedTier ? getTierDisplay(selectedTier) : null;
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -94,9 +128,13 @@ export default function SignUpPage() {
 
     try {
       const needsCheckout = sessionStorage.getItem("needs_stripe_checkout") === "true";
-      const callbackUrl = needsCheckout && selectedTier && selectedTier !== "free"
-        ? `/onboarding/checkout?tier=${selectedTier}`
-        : `/onboarding/profile?tier=${selectedTier || 'free'}`;
+      const storedTier = sessionStorage.getItem("selected_tier");
+      const tier = selectedTier || storedTier || "free";
+      
+      let callbackUrl = `/onboarding/profile?tier=${tier}`;
+      if (needsCheckout && tier !== "free") {
+        callbackUrl = `/onboarding/profile?tier=${tier}&checkout=pending`;
+      }
       
       await signUpWithCredentials({
         email,
@@ -106,309 +144,231 @@ export default function SignUpPage() {
       });
     } catch (err) {
       const errorMessages = {
-        OAuthSignin:
-          "Couldn't start sign-up. Please try again or use a different method.",
+        OAuthSignin: "Couldn't start sign-up. Please try again or use a different method.",
         OAuthCallback: "Sign-up failed after redirecting. Please try again.",
-        OAuthCreateAccount:
-          "Couldn't create an account with this sign-up method. Try another option.",
-        EmailCreateAccount:
-          "This email can't be used to create an account. It may already exist.",
+        OAuthCreateAccount: "Couldn't create an account with this sign-up method. Try another option.",
+        EmailCreateAccount: "This email can't be used to create an account. It may already exist.",
         Callback: "Something went wrong during sign-up. Please try again.",
-        OAuthAccountNotLinked:
-          "This account is linked to a different sign-up method. Try using that instead.",
-        CredentialsSignin:
-          "Account creation failed. Please try again.",
+        OAuthAccountNotLinked: "This account is linked to a different sign-up method. Try using that instead.",
+        CredentialsSignin: "Account creation failed. Please try again.",
         AccessDenied: "You don't have permission to sign up.",
-        Configuration:
-          "Sign-up isn't working right now. Please try again later.",
+        Configuration: "Sign-up isn't working right now. Please try again later.",
         Verification: "Your sign-up link has expired. Request a new one.",
       };
 
-      setError(
-        errorMessages[err.message] || "Something went wrong. Please try again.",
-      );
+      setError(errorMessages[err.message] || "Something went wrong. Please try again.");
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
-        padding: '24px',
-      }}
+    <Flex
+      minH="100vh"
+      align="center"
+      justify="center"
+      bgGradient="linear(135deg, purple.50 0%, white 50%, blue.50 100%)"
+      py={8}
+      px={4}
     >
-      <form
-        noValidate
-        onSubmit={onSubmit}
-        style={{
-          width: '100%',
-          maxWidth: '420px',
-          backgroundColor: '#ffffff',
-          borderRadius: '24px',
-          padding: '40px 32px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
-          position: 'relative',
-        }}
+      <MotionBox
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        w="full"
+        maxW="420px"
       >
-        <a
-          href="/onboarding/membership"
-          style={{
-            position: 'absolute',
-            top: '24px',
-            left: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            color: '#9333ea',
-            textDecoration: 'none',
-            fontSize: '0.875rem',
-            fontWeight: '500',
-          }}
+        <Box
+          as="form"
+          noValidate
+          onSubmit={onSubmit}
+          bg="white"
+          borderRadius="3xl"
+          p={10}
+          shadow="2xl"
+          position="relative"
         >
-          <ArrowLeft size={18} />
-          Back
-        </a>
-
-        <div style={{ textAlign: 'center', marginBottom: '32px', marginTop: '16px' }}>
-          <div
-            style={{
-              width: '80px',
-              height: '80px',
-              margin: '0 auto 16px',
-              backgroundColor: '#1a1a2e',
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-            }}
+          <Button
+            variant="ghost"
+            leftIcon={<ArrowLeft size={18} />}
+            color="purple.500"
+            position="absolute"
+            top={6}
+            left={6}
+            fontWeight="medium"
+            size="sm"
+            onClick={() => navigate("/onboarding/membership")}
+            _hover={{ bg: "purple.50" }}
           >
-            <img
-              src={logoImage}
-              alt="Rende-View"
-              style={{
-                width: '60px',
-                height: '60px',
-                objectFit: 'contain',
-              }}
-            />
-          </div>
-          <h1
-            style={{
-              fontSize: '1.875rem',
-              fontWeight: '700',
-              color: '#9333ea',
-              fontFamily: "'Playfair Display', Georgia, serif",
-              margin: '0 0 8px 0',
-            }}
-          >
-            Create Your Account
-          </h1>
-          <p style={{ color: '#6b7280', fontSize: '0.875rem', margin: 0 }}>
-            Start your video-first dating journey
-          </p>
-          {selectedTier && selectedTier !== 'free' && (
-            <p style={{ color: '#9333ea', fontSize: '0.875rem', fontWeight: '500', margin: '8px 0 0 0' }}>
-              Selected plan: {selectedTier.charAt(0).toUpperCase() + selectedTier.slice(1)}
-            </p>
-          )}
-        </div>
+            Back
+          </Button>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div>
-            <label
-              style={{
-                display: 'block',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                color: '#374151',
-                marginBottom: '8px',
-              }}
-            >
-              Email
-            </label>
-            <input
-              required
-              name="email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              style={{
-                width: '100%',
-                padding: '14px 16px',
-                fontSize: '1rem',
-                border: '2px solid #e5e7eb',
-                borderRadius: '12px',
-                outline: 'none',
-                transition: 'border-color 0.2s ease',
-                boxSizing: 'border-box',
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#9333ea'}
-              onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-            />
-          </div>
-
-          <div>
-            <label
-              style={{
-                display: 'block',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                color: '#374151',
-                marginBottom: '8px',
-              }}
-            >
-              Password
-            </label>
-            <div style={{ position: 'relative' }}>
-              <input
-                required
-                name="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create a password (8+ characters)"
-                style={{
-                  width: '100%',
-                  padding: '14px 48px 14px 16px',
-                  fontSize: '1rem',
-                  border: '2px solid #e5e7eb',
-                  borderRadius: '12px',
-                  outline: 'none',
-                  transition: 'border-color 0.2s ease',
-                  boxSizing: 'border-box',
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#9333ea'}
-                onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute',
-                  right: '14px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#6b7280',
-                  padding: '4px',
-                }}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+          <VStack spacing={6} mt={8}>
+            <VStack spacing={4} textAlign="center">
+              <Flex
+                w={20}
+                h={20}
+                bg="gray.900"
+                borderRadius="2xl"
+                align="center"
+                justify="center"
+                shadow="lg"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
+                <Image
+                  src={logoImage}
+                  alt="Rende-View"
+                  w="60px"
+                  h="60px"
+                  objectFit="contain"
+                />
+              </Flex>
+              
+              <Heading
+                size="lg"
+                color="purple.600"
+                fontFamily="'Playfair Display', Georgia, serif"
+              >
+                Create Your Account
+              </Heading>
+              <Text color="gray.500" fontSize="sm">
+                Start your video-first dating journey
+              </Text>
+              {tierDisplay && (
+                <Badge
+                  colorScheme={tierDisplay.color}
+                  px={3}
+                  py={1}
+                  borderRadius="full"
+                  fontSize="sm"
+                  fontWeight="medium"
+                >
+                  Selected plan: {tierDisplay.name}
+                </Badge>
+              )}
+            </VStack>
 
-          <div>
-            <label
-              style={{
-                display: 'block',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                color: '#374151',
-                marginBottom: '8px',
-              }}
-            >
-              Confirm Password
-            </label>
-            <input
-              required
-              name="confirmPassword"
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm your password"
-              style={{
-                width: '100%',
-                padding: '14px 16px',
-                fontSize: '1rem',
-                border: '2px solid #e5e7eb',
-                borderRadius: '12px',
-                outline: 'none',
-                transition: 'border-color 0.2s ease',
-                boxSizing: 'border-box',
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#9333ea'}
-              onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-            />
-          </div>
+            <VStack spacing={5} w="full">
+              <FormControl>
+                <FormLabel color="gray.700" fontWeight="medium" fontSize="sm">
+                  Email
+                </FormLabel>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  size="lg"
+                  autoComplete="email"
+                  borderRadius="xl"
+                  borderWidth="2px"
+                  borderColor="gray.200"
+                  _hover={{ borderColor: "gray.300" }}
+                  _focus={{ 
+                    borderColor: "purple.500", 
+                    boxShadow: "0 0 0 1px var(--chakra-colors-purple-500)" 
+                  }}
+                />
+              </FormControl>
 
-          {error && (
-            <div
-              style={{
-                padding: '12px 16px',
-                backgroundColor: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: '12px',
-                color: '#dc2626',
-                fontSize: '0.875rem',
-              }}
-            >
-              {error}
-            </div>
-          )}
+              <FormControl>
+                <FormLabel color="gray.700" fontWeight="medium" fontSize="sm">
+                  Password
+                </FormLabel>
+                <InputGroup size="lg">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create a password (8+ characters)"
+                    autoComplete="new-password"
+                    borderRadius="xl"
+                    borderWidth="2px"
+                    borderColor="gray.200"
+                    _hover={{ borderColor: "gray.300" }}
+                    _focus={{ 
+                      borderColor: "purple.500", 
+                      boxShadow: "0 0 0 1px var(--chakra-colors-purple-500)" 
+                    }}
+                  />
+                  <InputRightElement>
+                    <IconButton
+                      variant="ghost"
+                      icon={showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      color="gray.500"
+                      _hover={{ bg: "transparent", color: "gray.700" }}
+                    />
+                  </InputRightElement>
+                </InputGroup>
+              </FormControl>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '16px 24px',
-              fontSize: '1rem',
-              fontWeight: '600',
-              color: '#ffffff',
-              backgroundColor: '#9333ea',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.6 : 1,
-              transition: 'all 0.2s ease',
-              boxShadow: '0 4px 6px -1px rgba(147, 51, 234, 0.3)',
-              marginTop: '8px',
-            }}
-          >
-            {loading ? "Creating account..." : "Create Account"}
-          </button>
+              <FormControl>
+                <FormLabel color="gray.700" fontWeight="medium" fontSize="sm">
+                  Confirm Password
+                </FormLabel>
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
+                  autoComplete="new-password"
+                  size="lg"
+                  borderRadius="xl"
+                  borderWidth="2px"
+                  borderColor="gray.200"
+                  _hover={{ borderColor: "gray.300" }}
+                  _focus={{ 
+                    borderColor: "purple.500", 
+                    boxShadow: "0 0 0 1px var(--chakra-colors-purple-500)" 
+                  }}
+                />
+              </FormControl>
 
-          <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '0.875rem', margin: '8px 0 0 0' }}>
-            Already have an account?{" "}
-            <a
-              href={`/account/signin${selectedTier ? `?tier=${selectedTier}` : ''}`}
-              style={{
-                color: '#9333ea',
-                fontWeight: '600',
-                textDecoration: 'none',
-              }}
-            >
-              Sign in
-            </a>
-          </p>
-        </div>
-      </form>
+              {error && (
+                <Alert status="error" borderRadius="xl">
+                  <AlertIcon />
+                  {error}
+                </Alert>
+              )}
 
-      <p
-        style={{
-          marginTop: '24px',
-          fontSize: '0.75rem',
-          color: '#6b7280',
-          textAlign: 'center',
-        }}
-      >
-        Step 3 of 3
-      </p>
-    </div>
+              <Button
+                type="submit"
+                w="full"
+                size="lg"
+                colorScheme="purple"
+                borderRadius="xl"
+                fontWeight="semibold"
+                isLoading={loading}
+                loadingText="Creating account..."
+                shadow="lg"
+                _hover={{
+                  transform: 'translateY(-2px)',
+                  shadow: 'xl',
+                }}
+                transition="all 0.2s"
+              >
+                Create Account
+              </Button>
+
+              <Text color="gray.500" fontSize="sm" textAlign="center">
+                Already have an account?{" "}
+                <Link
+                  href={`/account/signin${selectedTier ? `?tier=${selectedTier}` : ''}`}
+                  color="purple.500"
+                  fontWeight="semibold"
+                  _hover={{ textDecoration: "underline" }}
+                >
+                  Sign in
+                </Link>
+              </Text>
+            </VStack>
+          </VStack>
+        </Box>
+
+        <Text textAlign="center" fontSize="xs" color="gray.400" mt={6}>
+          Step 3 of 3
+        </Text>
+      </MotionBox>
+    </Flex>
   );
 }
