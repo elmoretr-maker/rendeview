@@ -42,3 +42,52 @@ The application employs a client-server architecture. The frontend leverages Rea
 - **Backend Framework**: Hono (Node.js)
 - **Mobile UI Components**: @react-native-community/slider, @expo-google-fonts/inter, react-native-maps, expo-location
 - **Geocoding**: OpenStreetMap Nominatim API
+
+## Recent Changes
+
+### Video-First Feature Verification (Jan 27, 2026)
+**Status:** ✅ VERIFIED
+
+**Extension/Continuation Flow:**
+
+1. **2-Minute Warning Trigger:**
+   - Location: `apps/web/src/app/(app)/video/call/page.jsx` lines 562, 724-739
+   - Logic: `showExtendButton = remaining <= 120` displays "Extend Call" button
+   - Button shows at 2-minute mark with cost and duration info
+
+2. **Real-Time Acceptance Notification:**
+   - Location: `apps/web/src/app/(app)/video/call/page.jsx` lines 210-219
+   - Polling interval: 500ms during pending extensions for real-time updates
+   - Responder receives modal with Accept/Decline buttons
+
+3. **Instant Billing Integration:**
+   - Extension request: `/api/video/sessions/[id]/extensions/route.js`
+   - Accept triggers Stripe PaymentIntent: `/api/video/sessions/[id]/extensions/[extId]/route.js`
+   - Payment confirmation: `/api/video/sessions/[id]/extensions/[extId]/confirm/route.js`
+   - Timer updates in real-time without dropping call
+
+4. **Timer Control & Navigation:**
+   - Timer visible at top-right with Clock icon
+   - Color changes to red when `remaining <= 60` or in grace period
+   - End Call button updates session state and shows post-call note modal
+   - Navigation returns to `/messages/{matchId}` after call
+
+5. **High-Fidelity UI:**
+   - Uses Chakra UI Modal, Button, VStack, HStack components
+   - Purple gradients: `bgGradient="linear(to-b, blackAlpha.900, transparent)"`
+   - Stripe Elements integration with PaymentElement
+   - Orange extension button, green accept, red decline
+
+**Extension Pricing:**
+- Cost: $8.00 per extension (EXTENSION_COST = 8)
+- Duration: 10 minutes per extension (EXTENSION_MINUTES = 10)
+- Grace period: 20 seconds after timer expires
+
+### Saved Profiles Enhancement (Jan 27, 2026)
+**Status:** ✅ COMPLETE
+
+- Added Like/Pass buttons wired to backend APIs
+- Distance marker with live haversine calculation
+- Compatibility score from calculateCompatibility function
+- Video Call navigation to `/schedule/propose/:userId`
+- MatchBadge with real-time status via useIsMatched hook
