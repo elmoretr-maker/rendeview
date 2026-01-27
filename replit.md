@@ -155,3 +155,43 @@ The application uses a client-server architecture. The frontend is built with Re
 - `apps/web/src/app/(app)/index-redirect.jsx` - NEW: Redirect component for root
 - `apps/web/src/app/routes.ts` - Updated with canonical routing
 - `apps/mobile/src/app/_layout.jsx` - Added public routes for About, Safety, Success Stories
+
+### Core Feature Recovery & Backend Connection
+**Status:** ✅ COMPLETE (Jan 27, 2026)
+
+**Implemented Features:**
+
+1. **Distance Calculation (NEW):**
+   - Haversine formula implementation in Discovery API
+   - Returns `distance_miles` for each profile when user has location set
+   - Discovery cards display "X miles away" badge with MapPin icon
+   - Uses live database coordinates (latitude/longitude from auth_users)
+
+2. **Alerts System (NEW):**
+   - Created `utils/alerts.web.ts` with toast-based notifications
+   - `showMatchAlert()` - Displays match celebration with heart icon
+   - `showLikeAlert()` - Displays like confirmation
+   - `showPassAlert()` - Displays pass notification
+   - Integrated with sonner toast library
+
+3. **Haptics System (NEW):**
+   - Created `utils/haptics.web.ts` with vibration patterns
+   - `hapticLike()` - Success vibration on like
+   - `hapticPass()` - Light vibration on pass/skip
+   - `hapticMatch()` - Heavy double vibration on match
+   - Uses navigator.vibrate API with graceful fallback
+
+4. **Live Database Verification:**
+   - Stripe checkout uses pricing from `admin_settings` table (not hardcoded)
+   - Match check API queries `matches` table for reciprocal likes
+   - Profile views API queries `profile_views` table for "Who Viewed You"
+   - All APIs use PostgreSQL via DATABASE_URL environment variable
+
+**Files Created:**
+- `apps/web/src/utils/distance.js` - Distance calculation utilities
+- `apps/web/src/utils/alerts.web.ts` - Alert/toast notifications
+- `apps/web/src/utils/haptics.web.ts` - Haptic feedback utilities
+
+**Files Modified:**
+- `apps/web/src/app/api/discovery/list/route.js` - Added distance calculation, enabled location filtering
+- `apps/web/src/app/(app)/discovery/page.jsx` - Added distance badge, integrated haptics/alerts on like/pass/match
