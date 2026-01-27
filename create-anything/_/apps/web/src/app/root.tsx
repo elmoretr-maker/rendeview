@@ -479,6 +479,33 @@ const FontAwesomeLoader: FC = () => {
   return null;
 };
 
+export function HydrateFallback() {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      background: 'linear-gradient(180deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          border: '4px solid #e9d5ff',
+          borderTopColor: '#7c3aed',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          margin: '0 auto 16px',
+        }} />
+        <p style={{ color: '#7c3aed', fontWeight: 600 }}>Loading Rende-View...</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    </div>
+  );
+}
+
 export default function App({ loaderData }: Route.ComponentProps) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
