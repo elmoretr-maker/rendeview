@@ -70,7 +70,7 @@ The application employs a client-server architecture. The frontend leverages Rea
    - Timer visible at top-right with Clock icon
    - Color changes to red when `remaining <= 60` or in grace period
    - End Call button updates session state and shows post-call note modal
-   - Navigation returns to `/messages/{matchId}` after call
+   - All exit paths (End Call, Report, Block & End, Save/Skip Note) navigate to `/discovery`
 
 5. **High-Fidelity UI:**
    - Uses Chakra UI Modal, Button, VStack, HStack components
@@ -82,6 +82,28 @@ The application employs a client-server architecture. The frontend leverages Rea
 - Cost: $8.00 per extension (EXTENSION_COST = 8)
 - Duration: 10 minutes per extension (EXTENSION_MINUTES = 10)
 - Grace period: 20 seconds after timer expires
+
+### Video Call Feature Hardenings (Jan 27, 2026)
+**Status:** ✅ COMPLETE
+
+**One-Click Extension Billing:**
+- `default_payment_method_id` column added to auth_users
+- Accept API checks for saved payment method, charges off-session if available
+- Falls back to PaymentIntent flow with `oneClickFailed` flag if one-click fails
+- Confirm endpoint saves payment method after first successful manual payment for future one-click use
+- `setup_future_usage: "off_session"` on PaymentIntent enables card saving
+
+**Safety Reports System:**
+- Created `safety_reports` table with reporter_id, reported_user_id, reason, video_session_id, status
+- `/api/safety-reports` POST endpoint wired to Report button in video call
+- Increments `block_count` on reported user, sets `flagged_for_admin=true` when count >= 3
+- GET endpoint for admin dashboard with pending report filtering
+
+**Discovery Navigation Strategy:**
+- All video call exit paths now navigate to `/discovery` for continuous user engagement
+- Updated: handleEndCall, handleReport, handleBlockAndEnd, handleSaveNote, handleSkipNote
+- Updated: grace-period timeout, error page button
+- Keeps users actively searching instead of returning to messages
 
 ### Saved Profiles Enhancement (Jan 27, 2026)
 **Status:** ✅ COMPLETE
