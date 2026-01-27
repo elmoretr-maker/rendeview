@@ -1,6 +1,4 @@
 import {
-  Links,
-  Meta,
   Outlet,
   Scripts,
   useAsyncError,
@@ -443,15 +441,24 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head suppressHydrationWarning>
-        <meta charSet="utf-8" suppressHydrationWarning />
-        <meta name="viewport" content="width=device-width, initial-scale=1" suppressHydrationWarning />
-        <Meta />
-        <Links />
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Rende-VIEW</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link rel="icon" href="/src/__create/favicon.png" />
+        <style dangerouslySetInnerHTML={{ __html: `
+          html, body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #2C3E50;
+            -webkit-font-smoothing: antialiased;
+          }
+        `}} />
       </head>
       <body suppressHydrationWarning>
         {children}
