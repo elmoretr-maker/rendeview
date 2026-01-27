@@ -458,6 +458,39 @@ export function Layout({ children }: { children: ReactNode }) {
             color: #2C3E50;
             -webkit-font-smoothing: antialiased;
           }
+          /* Chakra fallback styles */
+          .chakra-button, button[class*="chakra"] {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            background: #7c3aed;
+            color: white;
+          }
+          .chakra-heading, h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            color: #2C3E50;
+          }
+          .chakra-text {
+            font-family: 'Inter', sans-serif;
+          }
+          .chakra-card, [class*="chakra-card"] {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+          }
+          img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+          }
         `}} />
       </head>
       <body suppressHydrationWarning>
