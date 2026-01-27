@@ -249,8 +249,9 @@ function MatchesContent() {
             {savedProfiles.length > 0 && (
               <Button
                 size="sm"
-                variant="ghost"
-                colorScheme="purple"
+                bg="purple.500"
+                color="white"
+                _hover={{ bg: "purple.600" }}
                 onClick={() => navigate("/matches/saved")}
               >
                 View All
