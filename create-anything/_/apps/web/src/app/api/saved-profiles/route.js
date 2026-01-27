@@ -1,5 +1,18 @@
 import sql from "@/app/api/utils/sql";
 import { auth } from "@/auth";
+import { calculateCompatibility } from "@/utils/calculateCompatibility";
+
+function calculateDistanceMiles(lat1, lon1, lat2, lon2) {
+  if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return null;
+  const R = 3959; // Earth radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
 
 export async function GET(request) {
   try {
@@ -9,6 +22,15 @@ export async function GET(request) {
     }
     const userId = session.user.id;
 
+    // Get current user's profile for distance and compatibility calculation
+    const [currentUser] = await sql`
+      SELECT latitude, longitude, interests, membership_tier, 
+             relationship_goals, smoking, drinking, exercise
+      FROM auth_users WHERE id = ${userId}
+    `;
+    const userLat = currentUser?.latitude != null ? parseFloat(currentUser.latitude) : null;
+    const userLng = currentUser?.longitude != null ? parseFloat(currentUser.longitude) : null;
+
     const savedProfiles = await sql`
       SELECT 
         sp.id as save_id,
@@ -17,6 +39,16 @@ export async function GET(request) {
         u.name,
         u.bio,
         u.primary_photo_url as photo,
+        u.immediate_available,
+        u.latitude,
+        u.longitude,
+        u.interests,
+        u.membership_tier,
+        u.relationship_goals,
+        u.smoking,
+        u.drinking,
+        u.exercise,
+        u.last_active,
         (SELECT pm.url FROM profile_media pm WHERE pm.user_id = u.id AND pm.type = 'video' LIMIT 1) as video_url
       FROM saved_profiles sp
       JOIN auth_users u ON sp.saved_user_id = u.id
@@ -24,11 +56,22 @@ export async function GET(request) {
       ORDER BY sp.created_at DESC
     `;
     
-    const transformedProfiles = (savedProfiles || []).map(p => ({
-      ...p,
-      photo: p.photo && p.photo.startsWith('/objects/') ? `/api${p.photo}` : p.photo,
-      video_url: p.video_url && p.video_url.startsWith('/objects/') ? `/api${p.video_url}` : p.video_url,
-    }));
+    const transformedProfiles = (savedProfiles || []).map(p => {
+      const profileLat = p.latitude != null ? parseFloat(p.latitude) : null;
+      const profileLng = p.longitude != null ? parseFloat(p.longitude) : null;
+      const distance_miles = calculateDistanceMiles(userLat, userLng, profileLat, profileLng);
+      
+      // Calculate compatibility score
+      const compatibility_score = calculateCompatibility(currentUser || {}, p);
+      
+      return {
+        ...p,
+        photo: p.photo && p.photo.startsWith('/objects/') ? `/api${p.photo}` : p.photo,
+        video_url: p.video_url && p.video_url.startsWith('/objects/') ? `/api${p.video_url}` : p.video_url,
+        distance_miles: distance_miles != null ? Math.round(distance_miles) : null,
+        compatibility_score,
+      };
+    });
 
     return Response.json({ savedProfiles: transformedProfiles });
   } catch (err) {
