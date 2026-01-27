@@ -1,5 +1,5 @@
-import React from "react";
-import { useNavigate, redirect } from "react-router";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 import { CheckCircle, Shield, Heart, Users } from "lucide-react";
 import logoImage from "@/assets/logo-centered.png";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
@@ -10,18 +10,6 @@ export function meta() {
     { title: "Welcome | Rende-View" },
     { name: "description", content: "Date Smarter, Not Harder. Video-first dating for authentic connections." },
   ];
-}
-
-export async function loader({ request }) {
-  const url = new URL(request.url);
-  const devKey = url.searchParams.get('dev_key');
-  
-  if (devKey) {
-    const bypassUrl = `/api/auth/dev-bypass?dev_key=${encodeURIComponent(devKey)}`;
-    return redirect(bypassUrl);
-  }
-  
-  return null;
 }
 
 const valueProps = [
@@ -49,6 +37,33 @@ const valueProps = [
 
 function WelcomeContent() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [isProcessingBypass, setIsProcessingBypass] = useState(false);
+
+  useEffect(() => {
+    const devKey = searchParams.get('dev_key');
+    if (devKey && !isProcessingBypass) {
+      setIsProcessingBypass(true);
+      window.location.href = `/api/auth/dev-bypass?dev_key=${encodeURIComponent(devKey)}`;
+    }
+  }, [searchParams, isProcessingBypass]);
+
+  if (isProcessingBypass) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
+        }}
+      >
+        <p style={{ color: '#9333ea', fontSize: '1.125rem' }}>Authenticating...</p>
+      </div>
+    );
+  }
 
   return (
     <div
