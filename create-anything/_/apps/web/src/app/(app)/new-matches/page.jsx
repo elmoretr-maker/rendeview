@@ -175,12 +175,10 @@ export default function NewMatches() {
                     p={6}
                     h="auto"
                     borderRadius="2xl"
-                    bg="white"
-                    borderWidth={2}
-                    borderColor="teal.500"
+                    bgGradient="linear(135deg, purple.500 0%, purple.600 100%)"
                     position="relative"
                     overflow="hidden"
-                    _hover={{ shadow: "xl", transform: "scale(1.02)" }}
+                    _hover={{ shadow: "xl", transform: "scale(1.02)", bgGradient: "linear(135deg, purple.600 0%, purple.700 100%)" }}
                     transition="all 0.2s"
                   >
                     <Badge
@@ -188,7 +186,8 @@ export default function NewMatches() {
                       top={0}
                       right={0}
                       borderRadius="0 xl 0 md"
-                      colorScheme="teal"
+                      bg="white"
+                      color="purple.600"
                       fontSize="xs"
                       fontWeight="bold"
                     >
@@ -203,7 +202,7 @@ export default function NewMatches() {
                           borderRadius="full"
                           overflow="hidden"
                           ring={4}
-                          ringColor="teal.500"
+                          ringColor="white"
                           bg="gray.200"
                         >
                           {item.user.photo ? (
@@ -216,7 +215,7 @@ export default function NewMatches() {
                               objectFit="cover"
                             />
                           ) : (
-                            <Flex w="full" h="full" align="center" justify="center" bg="teal.100" color="teal.700" fontWeight="bold">
+                            <Flex w="full" h="full" align="center" justify="center" bg="purple.200" color="purple.800" fontWeight="bold">
                               {(item.user.name || 'U').charAt(0).toUpperCase()}
                             </Flex>
                           )}
@@ -228,19 +227,19 @@ export default function NewMatches() {
                           w={8}
                           h={8}
                           borderRadius="full"
-                          bg="teal.500"
+                          bg="white"
                           align="center"
                           justify="center"
                           shadow="lg"
                         >
-                          <Heart size={16} fill="white" color="white" />
+                          <Heart size={16} fill="#7c3aed" color="#7c3aed" />
                         </Flex>
                       </Box>
                       <VStack align="start" flex={1} spacing={1}>
-                        <Text fontSize="2xl" fontWeight="bold" color="gray.800">
+                        <Text fontSize="2xl" fontWeight="bold" color="white">
                           {item.user.name || `User ${item.user.id}`}
                         </Text>
-                        <Text fontSize="sm" color="gray.600">
+                        <Text fontSize="sm" color="whiteAlpha.900">
                           Matched {new Date(item.created_at).toLocaleDateString('en-US', { 
                             month: 'short', 
                             day: 'numeric',
@@ -254,10 +253,10 @@ export default function NewMatches() {
                           px={3}
                           py={1.5}
                           borderRadius="full"
-                          bg="purple.50"
+                          bg="whiteAlpha.200"
                         >
-                          <MessageCircle size={16} color="#7c3aed" />
-                          <Text fontSize="sm" fontWeight="semibold" color="purple.600">
+                          <MessageCircle size={16} color="white" />
+                          <Text fontSize="sm" fontWeight="semibold" color="white">
                             Start Chatting
                           </Text>
                         </Flex>
