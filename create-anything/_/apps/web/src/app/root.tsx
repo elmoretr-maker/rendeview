@@ -447,6 +447,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="/brand.css" />
         <link rel="icon" href="/src/__create/favicon.png" />
       </head>
       <body suppressHydrationWarning>
