@@ -49,6 +49,11 @@ export async function clientLoader() {
 
 
 const chakraTheme = extendTheme({
+  config: {
+    initialColorMode: 'light',
+    useSystemColorMode: false,
+    cssVarPrefix: 'chakra',
+  },
   colors: {
     brand: {
       50: "#f5e6ff",
@@ -447,8 +452,31 @@ export function Layout({ children }: { children: ReactNode }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" href="/brand.css" />
         <link rel="icon" href="/src/__create/favicon.png" />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              try {
+                var colorMode = localStorage.getItem('chakra-ui-color-mode') || 'light';
+                document.documentElement.style.setProperty('--chakra-ui-color-mode', colorMode);
+                document.documentElement.classList.add('chakra-ui-' + colorMode);
+              } catch (e) {}
+            })();
+          `
+        }} />
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            html, body {
+              min-height: 100vh;
+              margin: 0;
+              padding: 0;
+              background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%) !important;
+              font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+              color: #2C3E50;
+              -webkit-font-smoothing: antialiased;
+            }
+          `
+        }} />
       </head>
       <body suppressHydrationWarning>
         {children}
@@ -517,7 +545,7 @@ function AppContent({ loaderData }: { loaderData: Route.ComponentProps['loaderDa
   }));
 
   return (
-    <ChakraProvider theme={chakraTheme}>
+    <ChakraProvider theme={chakraTheme} resetCSS={true}>
       <SessionProvider session={loaderData?.session || null}>
         <QueryClientProvider client={queryClient}>
           <ClientOnly loader={() => <SandboxBridge />} />
