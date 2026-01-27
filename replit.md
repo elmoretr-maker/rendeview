@@ -195,3 +195,40 @@ The application uses a client-server architecture. The frontend is built with Re
 **Files Modified:**
 - `apps/web/src/app/api/discovery/list/route.js` - Added distance calculation, enabled location filtering
 - `apps/web/src/app/(app)/discovery/page.jsx` - Added distance badge, integrated haptics/alerts on like/pass/match
+
+### Video Preview & Saved Profiles Enhancement
+**Status:** ✅ COMPLETE (Jan 27, 2026)
+
+**Implemented Features:**
+
+1. **Video URL in Discovery API:**
+   - Discovery API now queries `profile_media` table for video URLs
+   - Returns `video_url` field with proper `/api/objects/` transformation
+   - Discovery cards display VIDEO badge with Play icon when intro video exists
+
+2. **Saved Profiles Page (`/matches/saved`):**
+   - NEW dedicated page for viewing saved/favorited profiles
+   - High-fidelity card style matching Discovery aesthetics
+   - MatchBadge integration shows gold star for mutual matches
+   - VIDEO badge displays when profile has intro video
+   - "Schedule Video" CTA button for matched profiles
+   - Back navigation to /matches page
+   - Meta title: "Top Picks | Rende-View"
+
+3. **saved-profiles API Enhancement:**
+   - Added `video_url` from profile_media subquery
+   - URL transformation for both photo and video_url fields
+   - Maintains 5-profile server-side limit enforcement
+
+4. **Matches Page Integration:**
+   - Added "View All" link in Top Picks section
+   - Links to /matches/saved for full-page view
+
+**Files Created:**
+- `apps/web/src/app/(app)/matches/saved/page.jsx` - Top Picks dedicated page
+
+**Files Modified:**
+- `apps/web/src/app/api/discovery/list/route.js` - Added video_url from profile_media
+- `apps/web/src/app/(app)/discovery/page.jsx` - Added VIDEO badge display
+- `apps/web/src/app/api/saved-profiles/route.js` - Added video_url with URL transform
+- `apps/web/src/app/(app)/matches/page.jsx` - Added "View All" link to /matches/saved
