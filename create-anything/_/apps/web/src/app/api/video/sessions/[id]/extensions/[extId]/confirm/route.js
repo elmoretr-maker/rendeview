@@ -113,6 +113,15 @@ export async function POST(request, context) {
         SET status = 'completed', updated_at = NOW()
         WHERE id = ${extId}
       `;
+      
+      if (paymentIntent.payment_method) {
+        await tx`
+          UPDATE auth_users
+          SET default_payment_method_id = ${paymentIntent.payment_method}
+          WHERE id = ${extension.initiator_id}
+            AND default_payment_method_id IS NULL
+        `;
+      }
     });
 
     const [updatedSession] = await sql`

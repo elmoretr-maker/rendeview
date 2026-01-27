@@ -260,7 +260,7 @@ export default function VideoCall() {
               setOtherUserId(otherUser);
               setShowPostCallNoteModal(true);
             } else if (noteModalShown.current) {
-              navigate(`/messages/${matchId}`);
+              navigate("/discovery");
             }
             return 0;
           }
@@ -344,18 +344,14 @@ export default function VideoCall() {
           body: JSON.stringify({ state: "ended" }),
         });
         
-        // Wait for session polling to pick up the "ended" state and show the note modal
-        // The modal's save/skip handlers will navigate to messages
         queryClient.invalidateQueries({ queryKey: ["video-sessions"] });
         toast.success("Call ended");
       } catch (e) {
         console.error("Failed to update session state:", e);
-        // If update fails, navigate anyway
-        navigate(`/messages/${matchId}`);
+        navigate("/discovery");
       }
     } else {
-      // No session, navigate directly
-      navigate(`/messages/${matchId}`);
+      navigate("/discovery");
     }
   };
 
@@ -388,11 +384,11 @@ export default function VideoCall() {
       queryClient.invalidateQueries({ queryKey: ["video-sessions"] });
       queryClient.invalidateQueries({ queryKey: ["matches"] });
       toast.success("User blocked and call ended");
-      navigate(`/matches`);
+      navigate("/discovery");
     } catch (err) {
       console.error("Failed to block user:", err);
       toast.error(err.message || "Failed to block user. Call ended.");
-      navigate(`/messages/${matchId}`);
+      navigate("/discovery");
     } finally {
       setBlockingUser(false);
     }
@@ -404,15 +400,46 @@ export default function VideoCall() {
       return;
     }
 
-    toast.success("Report submitted. Thank you for keeping our community safe.");
-    setShowReportModal(false);
-    setReportReason("");
-    handleEndCall();
+    try {
+      const res = await fetch("/api/safety-reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reportedUserId: otherUserId,
+          reason: reportReason.trim(),
+          videoSessionId: sessionId,
+          context: "video_call",
+        }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.error || "Failed to submit report");
+      }
+
+      toast.success("Report submitted. Thank you for keeping our community safe.");
+      setShowReportModal(false);
+      setReportReason("");
+      
+      if (sessionId) {
+        await fetch(`/api/video/sessions/${sessionId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ state: "ended" }),
+        });
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ["video-sessions"] });
+      navigate("/discovery");
+    } catch (err) {
+      console.error("Report submission error:", err);
+      toast.error(err.message || "Failed to submit report");
+    }
   };
 
   const handleSaveNote = async () => {
     if (!otherUserId) {
-      navigate(`/messages/${matchId}`);
+      navigate("/discovery");
       return;
     }
 
@@ -434,7 +461,7 @@ export default function VideoCall() {
 
       toast.success("Note saved!");
       setShowPostCallNoteModal(false);
-      navigate(`/messages/${matchId}`);
+      navigate("/discovery");
     } catch (err) {
       console.error("Failed to save note:", err);
       toast.error(err.message || "Failed to save note");
@@ -445,7 +472,7 @@ export default function VideoCall() {
 
   const handleSkipNote = () => {
     setShowPostCallNoteModal(false);
-    navigate(`/messages/${matchId}`);
+    navigate("/discovery");
   };
 
   const handleInitiateExtension = async () => {
@@ -501,8 +528,16 @@ export default function VideoCall() {
         
         setTimeout(() => pollSession(), 100);
       } else if (action === "accept") {
-        toast.success("Extension accepted! Waiting for payment...");
         setShowExtendResponseModal(false);
+
+        if (data.extension.oneClickSuccess) {
+          toast.success(`${EXTENSION_MINUTES} minutes added! (One-Click)`);
+          setCurrentExtension(null);
+          pollSession();
+          return;
+        }
+
+        toast.success("Extension accepted! Waiting for payment...");
 
         if (data.extension.paymentIntentClientSecret) {
           setPaymentClientSecret(data.extension.paymentIntentClientSecret);
@@ -568,12 +603,12 @@ export default function VideoCall() {
           <Heading size="xl" color="gray.800">Video Call Error</Heading>
           <Text color="gray.600">{error}</Text>
           <Button
-            onClick={() => navigate(`/messages/${matchId}`)}
+            onClick={() => navigate("/discovery")}
             colorScheme="purple"
             shadow="lg"
             mt={4}
           >
-            Back to Chat
+            Continue Browsing
           </Button>
         </VStack>
       </Flex>

@@ -81,7 +81,7 @@ export async function PUT(request, context) {
     }
 
     const [user] = await sql`
-      SELECT email, stripe_id
+      SELECT email, stripe_id, default_payment_method_id
       FROM auth_users
       WHERE id = ${extension.initiator_id}
     `;
@@ -105,12 +105,64 @@ export async function PUT(request, context) {
       }
     }
 
+    if (user.default_payment_method_id && customerId) {
+      try {
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: extension.amount_cents,
+          currency: "usd",
+          customer: customerId,
+          payment_method: user.default_payment_method_id,
+          off_session: true,
+          confirm: true,
+          metadata: {
+            extensionId: extId,
+            videoSessionId: sessionId,
+            initiatorId: extension.initiator_id,
+            oneClick: "true",
+          },
+          description: `Video call extension - 10 minutes (One-Click)`,
+        });
+
+        if (paymentIntent.status === "succeeded") {
+          await sql.begin(async (tx) => {
+            await tx`
+              UPDATE video_sessions
+              SET extended_seconds_total = extended_seconds_total + ${extension.extension_seconds}
+              WHERE id = ${sessionId}
+            `;
+
+            await tx`
+              UPDATE video_session_extensions
+              SET 
+                status = 'completed',
+                stripe_payment_intent_id = ${paymentIntent.id},
+                updated_at = NOW()
+              WHERE id = ${extId}
+            `;
+          });
+
+          return Response.json({
+            extension: {
+              id: extId,
+              status: "completed",
+              oneClickSuccess: true,
+              extensionSeconds: extension.extension_seconds,
+            },
+          });
+        }
+      } catch (e) {
+        console.error("One-click payment failed, falling back to manual:", e.message);
+      }
+    }
+
+    const oneClickFailed = user.default_payment_method_id && customerId;
     let paymentIntent;
     try {
       paymentIntent = await stripe.paymentIntents.create({
         amount: extension.amount_cents,
         currency: "usd",
         customer: customerId || undefined,
+        setup_future_usage: "off_session",
         metadata: {
           extensionId: extId,
           videoSessionId: sessionId,
@@ -133,6 +185,7 @@ export async function PUT(request, context) {
           id: extId,
           status: "awaiting_payment",
           paymentIntentClientSecret: paymentIntent.client_secret,
+          oneClickFailed: oneClickFailed || false,
         },
       });
     } catch (e) {
