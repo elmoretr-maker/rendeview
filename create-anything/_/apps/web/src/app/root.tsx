@@ -442,9 +442,17 @@ export function Layout({ children }: { children: ReactNode }) {
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <script type="module" src="/src/__create/dev-error-overlay.js"></script>
         <link rel="icon" href="/src/__create/favicon.png" />
+        <style dangerouslySetInnerHTML={{ __html: `
+          *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+          html, body { min-height: 100vh; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+          body { background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%); }
+          img { max-width: 100%; height: auto; display: block; }
+        `}} />
       </head>
       <body>
-        {children}
+        <ChakraProvider theme={chakraTheme}>
+          {children}
+        </ChakraProvider>
         <Scripts />
       </body>
     </html>
@@ -511,16 +519,14 @@ function AppContent({ loaderData }: { loaderData: Route.ComponentProps['loaderDa
 
   return (
     <SessionProvider session={loaderData?.session || null}>
-      <ChakraProvider theme={chakraTheme}>
-        <QueryClientProvider client={queryClient}>
-          <ClientOnly loader={() => <SandboxBridge />} />
-          <ClientOnly loader={() => <SessionTimeoutMonitor />} />
-          <ClientOnly loader={() => <HotReloadIndicator />} />
-          <ClientOnly loader={() => <Toaster position="bottom-right" />} />
-          <ClientOnly loader={() => <FontAwesomeLoader />} />
-          <Outlet />
-        </QueryClientProvider>
-      </ChakraProvider>
+      <QueryClientProvider client={queryClient}>
+        <ClientOnly loader={() => <SandboxBridge />} />
+        <ClientOnly loader={() => <SessionTimeoutMonitor />} />
+        <ClientOnly loader={() => <HotReloadIndicator />} />
+        <ClientOnly loader={() => <Toaster position="bottom-right" />} />
+        <ClientOnly loader={() => <FontAwesomeLoader />} />
+        <Outlet />
+      </QueryClientProvider>
     </SessionProvider>
   );
 }
