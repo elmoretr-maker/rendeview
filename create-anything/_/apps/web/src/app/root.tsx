@@ -450,9 +450,7 @@ export function Layout({ children }: { children: ReactNode }) {
         `}} />
       </head>
       <body>
-        <ChakraProvider theme={chakraTheme}>
-          {children}
-        </ChakraProvider>
+        {children}
         <Scripts />
       </body>
     </html>
@@ -518,16 +516,18 @@ function AppContent({ loaderData }: { loaderData: Route.ComponentProps['loaderDa
   }));
 
   return (
-    <SessionProvider session={loaderData?.session || null}>
-      <QueryClientProvider client={queryClient}>
-        <ClientOnly loader={() => <SandboxBridge />} />
-        <ClientOnly loader={() => <SessionTimeoutMonitor />} />
-        <ClientOnly loader={() => <HotReloadIndicator />} />
-        <ClientOnly loader={() => <Toaster position="bottom-right" />} />
-        <ClientOnly loader={() => <FontAwesomeLoader />} />
-        <Outlet />
-      </QueryClientProvider>
-    </SessionProvider>
+    <ChakraProvider theme={chakraTheme}>
+      <SessionProvider session={loaderData?.session || null}>
+        <QueryClientProvider client={queryClient}>
+          <ClientOnly loader={() => <SandboxBridge />} />
+          <ClientOnly loader={() => <SessionTimeoutMonitor />} />
+          <ClientOnly loader={() => <HotReloadIndicator />} />
+          <ClientOnly loader={() => <Toaster position="bottom-right" />} />
+          <ClientOnly loader={() => <FontAwesomeLoader />} />
+          <Outlet />
+        </QueryClientProvider>
+      </SessionProvider>
+    </ChakraProvider>
   );
 }
 
