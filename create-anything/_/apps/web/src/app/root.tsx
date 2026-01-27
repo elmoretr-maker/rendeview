@@ -453,30 +453,6 @@ export function Layout({ children }: { children: ReactNode }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link rel="icon" href="/src/__create/favicon.png" />
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            (function() {
-              try {
-                var colorMode = localStorage.getItem('chakra-ui-color-mode') || 'light';
-                document.documentElement.style.setProperty('--chakra-ui-color-mode', colorMode);
-                document.documentElement.classList.add('chakra-ui-' + colorMode);
-              } catch (e) {}
-            })();
-          `
-        }} />
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            html, body {
-              min-height: 100vh;
-              margin: 0;
-              padding: 0;
-              background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%) !important;
-              font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-              color: #2C3E50;
-              -webkit-font-smoothing: antialiased;
-            }
-          `
-        }} />
       </head>
       <body suppressHydrationWarning>
         {children}
@@ -535,6 +511,7 @@ const FontAwesomeLoader: FC = () => {
 };
 
 function AppContent({ loaderData }: { loaderData: Route.ComponentProps['loaderData'] }) {
+  const [mounted, setMounted] = useState(false);
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
@@ -543,6 +520,39 @@ function AppContent({ loaderData }: { loaderData: Route.ComponentProps['loaderDa
       },
     },
   }));
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ 
+            width: 60, 
+            height: 60, 
+            borderRadius: 12, 
+            background: '#9333ea',
+            margin: '0 auto 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: 24
+          }}>R</div>
+          <p style={{ color: '#9333ea', fontWeight: 500 }}>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ChakraProvider theme={chakraTheme} resetCSS={true}>
