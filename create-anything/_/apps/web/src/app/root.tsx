@@ -1,4 +1,6 @@
 import {
+  Links,
+  Meta,
   Outlet,
   Scripts,
   useAsyncError,
@@ -433,8 +435,10 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head suppressHydrationWarning>
-        <meta charSet="utf-8" suppressHydrationWarning />
-        <meta name="viewport" content="width=device-width, initial-scale=1" suppressHydrationWarning />
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
         <title>Rende-VIEW</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
