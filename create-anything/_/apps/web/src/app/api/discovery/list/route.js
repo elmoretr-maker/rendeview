@@ -33,10 +33,10 @@ export async function GET(request) {
     // 3. Everyone else
     
     // Prepare distance filter if user has location set (explicit null checks for 0° coordinates)
-    // DISABLED: Allow discovery without location for testing/onboarding
-    const hasUserLocation = false; // currentUser?.latitude != null && currentUser?.longitude != null;
-    const userLat = currentUser?.latitude;
-    const userLng = currentUser?.longitude;
+    // Enable location-based distance calculation when user has coordinates
+    const userLat = currentUser?.latitude != null ? parseFloat(currentUser.latitude) : null;
+    const userLng = currentUser?.longitude != null ? parseFloat(currentUser.longitude) : null;
+    const hasUserLocation = userLat !== null && userLng !== null;
     const maxDistance = currentUser?.max_distance ?? 100; // Default to 100km if not set
     
     const q = `
@@ -142,6 +142,22 @@ export async function GET(request) {
       const candidateInterests = c.interests || [];
       const mutualInterests = userInterests.filter(i => candidateInterests.includes(i));
       
+      // Calculate distance if both users have coordinates
+      let distance_miles = null;
+      if (hasUserLocation && c.latitude != null && c.longitude != null) {
+        const candidateLat = parseFloat(c.latitude);
+        const candidateLng = parseFloat(c.longitude);
+        // Haversine formula for distance calculation
+        const R = 3959; // Earth's radius in miles
+        const dLat = (candidateLat - userLat) * Math.PI / 180;
+        const dLng = (candidateLng - userLng) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(userLat * Math.PI / 180) * Math.cos(candidateLat * Math.PI / 180) *
+                  Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c_dist = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        distance_miles = Math.round(R * c_dist);
+      }
+      
       result.push({
         id: c.id,
         name: c.name,
@@ -157,6 +173,9 @@ export async function GET(request) {
         compatibility_score: compatibilityScore,
         relationship_goals: c.relationship_goals,
         last_active: c.last_active,
+        distance_miles,
+        latitude: c.latitude != null ? parseFloat(c.latitude) : null,
+        longitude: c.longitude != null ? parseFloat(c.longitude) : null,
       });
     }
 

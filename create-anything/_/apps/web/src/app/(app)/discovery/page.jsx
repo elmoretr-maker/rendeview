@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { X, Heart, RotateCcw, Video, ChevronLeft, ChevronRight, Star, AlertTriangle, Sparkles } from "lucide-react";
+import { X, Heart, RotateCcw, Video, ChevronLeft, ChevronRight, Star, AlertTriangle, Sparkles, MapPin } from "lucide-react";
 import { useNavigate } from "react-router";
 import useUser from "@/utils/useUser";
 import { toast } from "sonner";
@@ -14,6 +14,9 @@ import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-mo
 import { ErrorBoundary } from "@/app/components/ErrorBoundary";
 import { DiscoveryCardSkeleton } from "@/app/components/SkeletonLoader";
 import { getAbsoluteUrl } from "@/utils/urlHelpers";
+import { formatDistance } from "@/utils/distance";
+import { hapticLike, hapticPass, hapticMatch } from "@/utils/haptics.web";
+import { showMatchAlert, showLikeAlert } from "@/utils/alerts.web";
 import {
   Box,
   Button,
@@ -255,6 +258,23 @@ function SwipeableCard({ profile, onSwipeLeft, onSwipeRight, onTap, index, total
                   📅 Availability Set
                 </Badge>
               )}
+              {profile.distance_miles != null && (
+                <Badge 
+                  bg="whiteAlpha.300"
+                  color="white"
+                  display="inline-flex"
+                  alignItems="center"
+                  gap={1}
+                  px={2.5}
+                  py={1}
+                  borderRadius="full"
+                  fontSize="xs"
+                  fontWeight="semibold"
+                >
+                  <MapPin size={12} />
+                  {formatDistance(profile.distance_miles)}
+                </Badge>
+              )}
             </Flex>
             
             {/* Show mutual interests details */}
@@ -401,15 +421,18 @@ function DiscoveryContent() {
       queryClient.invalidateQueries({ queryKey: ["newMatches"] });
       queryClient.invalidateQueries({ queryKey: ["discovery"] });
       
+      const matchedProfile = profiles.find(p => p.id === likedId);
       if (data?.matched) {
-        const matchedProfile = profiles.find(p => p.id === likedId);
+        hapticMatch();
         setMatchedUser({
           name: matchedProfile?.name,
           photo: matchedProfile?.photo,
         });
         setShowCelebration(true);
+        showMatchAlert(matchedProfile?.name || 'someone special');
       } else {
-        toast.success("Profile liked!");
+        hapticLike();
+        showLikeAlert(matchedProfile?.name || 'this person');
       }
     },
     onError: (e, likedId, context) => {
@@ -430,6 +453,7 @@ function DiscoveryContent() {
 
   // Skip to next profile without blocking (swipe left)
   const handleSkip = () => {
+    hapticPass();
     setConfirmDismiss(false);
     setCurrentIndex((i) => {
       const maxIndex = Math.max(0, visibleProfiles.length - 1);
