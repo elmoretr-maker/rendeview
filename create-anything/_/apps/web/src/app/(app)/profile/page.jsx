@@ -521,8 +521,9 @@ function ProfileContent() {
               as={Link}
               to="/profile/preview"
               size="sm"
-              variant="outline"
-              colorScheme="purple"
+              bg="purple.500"
+              color="white"
+              _hover={{ bg: "purple.600" }}
             >
               Preview
             </Button>

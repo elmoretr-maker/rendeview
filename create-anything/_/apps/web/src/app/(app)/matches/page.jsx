@@ -227,9 +227,9 @@ function MatchesContent() {
           <Heading size="xl" color="gray.800">Matches</Heading>
           <Button
             onClick={() => navigate("/matches/likers")}
-            colorScheme="purple"
-            variant="outline"
-            bg="purple.50"
+            bg="purple.500"
+            color="white"
+            _hover={{ bg: "purple.600" }}
             shadow="md"
           >
             View Likers
