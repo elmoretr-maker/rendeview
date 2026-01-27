@@ -43,8 +43,9 @@ export default function AdminPage() {
   const [error, setError] = useState(null);
   const [clearFlagError, setClearFlagError] = useState(null);
 
-  // Check if user has admin access (email contains 'staff' OR specific email)
-  const isAdmin = user?.email?.toLowerCase().includes('staff') || 
+  // Check if user has admin access (role=admin OR email contains 'staff' OR specific email)
+  const isAdmin = user?.role === 'admin' ||
+                 user?.email?.toLowerCase().includes('staff') || 
                  user?.email?.toLowerCase() === 'trelmore.staff@gmail.com';
 
   // Fetch admin settings
@@ -83,6 +84,18 @@ export default function AdminPage() {
   });
   const stats = revenueResp?.stats || null;
 
+  // Fetch safety reports
+  const { data: reportsResp, isLoading: reportsLoading, error: reportsError } = useQuery({
+    queryKey: ["admin-safety-reports"],
+    queryFn: async () => {
+      const res = await fetch("/api/safety-reports?status=pending");
+      if (!res.ok) throw new Error("Failed to load safety reports");
+      return res.json();
+    },
+    enabled: !!user && isAdmin,
+  });
+  const safetyReports = reportsResp?.reports || [];
+
   // Mutation to clear flag
   const clearFlagMutation = useMutation({
     mutationFn: async (userId) => {
@@ -100,6 +113,39 @@ export default function AdminPage() {
     },
     onError: (err) => {
       setClearFlagError(err.message || "Failed to clear flag");
+    },
+  });
+
+  // Mutation to resolve report
+  const resolveReportMutation = useMutation({
+    mutationFn: async (reportId) => {
+      const res = await fetch(`/api/safety-reports/${reportId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "resolve" }),
+      });
+      if (!res.ok) throw new Error("Failed to resolve report");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-safety-reports"] });
+    },
+  });
+
+  // Mutation to ban user from report
+  const banUserMutation = useMutation({
+    mutationFn: async (reportId) => {
+      const res = await fetch(`/api/safety-reports/${reportId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "ban" }),
+      });
+      if (!res.ok) throw new Error("Failed to ban user");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-safety-reports"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-flagged-users"] });
     },
   });
 
@@ -306,6 +352,111 @@ export default function AdminPage() {
                           >
                             Clear Flag
                           </Button>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </Box>
+            )}
+          </CardBody>
+        </Card>
+
+        {/* Safety Reports Section */}
+        <Card>
+          <CardHeader>
+            <Heading size="lg">Safety Reports</Heading>
+            <Text fontSize="sm" color="gray.600" mt={1}>
+              User-submitted reports from video calls requiring review
+            </Text>
+          </CardHeader>
+          <CardBody>
+            {reportsLoading ? (
+              <Box textAlign="center" py={8}>
+                <Spinner color="purple.500" />
+              </Box>
+            ) : reportsError ? (
+              <Alert status="error" borderRadius="lg">
+                <AlertIcon />
+                <Box flex="1">
+                  <Text fontWeight="medium">Failed to load safety reports</Text>
+                  <Text fontSize="sm">{reportsError.message}</Text>
+                </Box>
+              </Alert>
+            ) : safetyReports.length === 0 ? (
+              <Box textAlign="center" py={8}>
+                <Text color="gray.500">No pending reports at this time</Text>
+              </Box>
+            ) : (
+              <Box overflowX="auto">
+                <Table variant="simple">
+                  <Thead>
+                    <Tr>
+                      <Th>Date</Th>
+                      <Th>Reporter</Th>
+                      <Th>Reported User</Th>
+                      <Th>Reason</Th>
+                      <Th>Block Count</Th>
+                      <Th>Actions</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {safetyReports.map((report) => (
+                      <Tr key={report.id} _hover={{ bg: "gray.50" }}>
+                        <Td fontSize="sm">
+                          {new Date(report.created_at).toLocaleDateString()}
+                        </Td>
+                        <Td>
+                          <VStack align="start" spacing={0}>
+                            <Text fontWeight="medium" fontSize="sm">{report.reporter_name || 'N/A'}</Text>
+                            <Text fontSize="xs" color="gray.500">{report.reporter_email}</Text>
+                          </VStack>
+                        </Td>
+                        <Td>
+                          <VStack align="start" spacing={0}>
+                            <Text fontWeight="medium" fontSize="sm">{report.reported_name || 'N/A'}</Text>
+                            <Text fontSize="xs" color="gray.500">{report.reported_email}</Text>
+                          </VStack>
+                        </Td>
+                        <Td>
+                          <Tooltip label={report.reason}>
+                            <Text fontSize="sm" isTruncated maxW="200px">
+                              {report.reason}
+                            </Text>
+                          </Tooltip>
+                        </Td>
+                        <Td>
+                          <Badge colorScheme={report.reported_block_count >= 3 ? "red" : "yellow"}>
+                            {report.reported_block_count || 0} blocks
+                          </Badge>
+                        </Td>
+                        <Td>
+                          <HStack spacing={2}>
+                            <Button
+                              size="sm"
+                              colorScheme="green"
+                              onClick={() => {
+                                if (window.confirm("Mark this report as resolved?")) {
+                                  resolveReportMutation.mutate(report.id);
+                                }
+                              }}
+                              isLoading={resolveReportMutation.isLoading}
+                            >
+                              Resolve
+                            </Button>
+                            <Button
+                              size="sm"
+                              colorScheme="red"
+                              onClick={() => {
+                                if (window.confirm(`Ban user "${report.reported_name || report.reported_email}"? This action cannot be undone.`)) {
+                                  banUserMutation.mutate(report.id);
+                                }
+                              }}
+                              isLoading={banUserMutation.isLoading}
+                            >
+                              Ban User
+                            </Button>
+                          </HStack>
                         </Td>
                       </Tr>
                     ))}
