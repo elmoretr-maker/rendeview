@@ -34,20 +34,19 @@ import type { Route } from './+types/root';
 import { useDevServerHeartbeat } from '../__create/useDevServerHeartbeat';
 import { SessionTimeoutMonitor } from './components/SessionTimeoutMonitor';
 
-export async function loader() {
-  const { auth } = await import('@/auth');
-  const session = await auth();
-  return { session };
+export async function clientLoader() {
+  try {
+    const response = await fetch('/api/auth/session');
+    if (response.ok) {
+      const session = await response.json();
+      return { session };
+    }
+  } catch (e) {
+    console.error('Failed to fetch session:', e);
+  }
+  return { session: null };
 }
 
-export const meta = () => [
-  { title: "Rende-VIEW - Find Your Perfect Match" },
-  { name: "description", content: "Rende-VIEW is a modern dating platform featuring video calling, real-time messaging, smart matching, and tiered membership options. Find meaningful connections today." },
-  { name: "keywords", content: "dating app, video dating, online dating, match, relationships, video calls" },
-  { property: "og:title", content: "Rende-VIEW - Find Your Perfect Match" },
-  { property: "og:description", content: "Modern dating platform with video calling, messaging, and smart matching" },
-  { property: "og:type", content: "website" },
-];
 
 const chakraTheme = extendTheme({
   colors: {
@@ -432,27 +431,52 @@ const SandboxBridge: FC = () => {
 
 export function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head suppressHydrationWarning>
-        <meta charSet="utf-8" suppressHydrationWarning />
-        <meta name="viewport" content="width=device-width, initial-scale=1" suppressHydrationWarning />
-        <meta name="description" content="Rende-VIEW is a modern dating platform featuring video calling, real-time messaging, smart matching, and tiered membership options." suppressHydrationWarning />
-        <title suppressHydrationWarning>Rende-VIEW - Find Your Perfect Match</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com" suppressHydrationWarning />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" suppressHydrationWarning />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" suppressHydrationWarning />
-        <script type="module" src="/src/__create/dev-error-overlay.js" suppressHydrationWarning></script>
-        <link rel="icon" href="/src/__create/favicon.png" suppressHydrationWarning />
-        <style suppressHydrationWarning dangerouslySetInnerHTML={{ __html: `
-          html, body { margin: 0; padding: 0; }
-          body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
-        `}} />
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Rende-VIEW is a modern dating platform featuring video calling, real-time messaging, smart matching, and tiered membership options." />
+        <title>Rende-VIEW - Find Your Perfect Match</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <script type="module" src="/src/__create/dev-error-overlay.js"></script>
+        <link rel="icon" href="/src/__create/favicon.png" />
       </head>
-      <body suppressHydrationWarning>
+      <body>
         {children}
         <Scripts />
       </body>
     </html>
+  );
+}
+
+export function HydrateFallback() {
+  return (
+    <div style={{ 
+      minHeight: '100vh', 
+      background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ 
+          width: 60, 
+          height: 60, 
+          borderRadius: 12, 
+          background: '#9333ea',
+          margin: '0 auto 16px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: 24
+        }}>R</div>
+        <p style={{ color: '#9333ea', fontWeight: 500 }}>Loading...</p>
+      </div>
+    </div>
   );
 }
 
@@ -502,40 +526,5 @@ function AppContent({ loaderData }: { loaderData: Route.ComponentProps['loaderDa
 }
 
 export default function App({ loaderData }: Route.ComponentProps) {
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
-
-  if (!isHydrated) {
-    return (
-      <div style={{ 
-        minHeight: '100vh', 
-        background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ 
-            width: 60, 
-            height: 60, 
-            borderRadius: 12, 
-            background: '#9333ea',
-            margin: '0 auto 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: 24
-          }}>R</div>
-          <p style={{ color: '#9333ea', fontWeight: 500 }}>Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return <AppContent loaderData={loaderData} />;
 }
