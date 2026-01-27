@@ -435,8 +435,8 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head suppressHydrationWarning>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta charSet="utf-8" suppressHydrationWarning />
+        <meta name="viewport" content="width=device-width, initial-scale=1" suppressHydrationWarning />
         <Meta />
         <Links />
         <title>Rende-VIEW</title>
@@ -444,6 +444,18 @@ export function Layout({ children }: { children: ReactNode }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link rel="icon" href="/src/__create/favicon.png" />
+        <style dangerouslySetInnerHTML={{ __html: `
+          *, *::before, *::after { box-sizing: border-box; }
+          html, body { 
+            margin: 0; 
+            padding: 0; 
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%);
+            -webkit-font-smoothing: antialiased;
+          }
+          img { max-width: 100%; height: auto; display: block; }
+        `}} />
       </head>
       <body suppressHydrationWarning>
         {children}
