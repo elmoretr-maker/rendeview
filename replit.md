@@ -83,6 +83,32 @@ The application employs a client-server architecture. The frontend leverages Rea
 - Duration: 10 minutes per extension (EXTENSION_MINUTES = 10)
 - Grace period: 20 seconds after timer expires
 
+### Authentication Setup - Console Provider & Dev Bypass (Jan 27, 2026)
+**Status:** ✅ COMPLETE
+
+**Console Email Provider:**
+- Magic link API at `/api/auth/magic-link/send` generates verification tokens
+- Token stored in `auth_verification_token` table with 15-minute expiry
+- Magic link URL printed to server console logs for development testing
+- Verification API at `/api/auth/magic-link/verify` validates token, creates session, sets cookie
+
+**Developer URL Bypass:**
+- Welcome page loader checks for `?dev_key=...` query parameter
+- Redirects to `/api/auth/dev-bypass` with the key
+- If key matches `DEV_BYPASS_KEY` secret, auto-signs in as `trelmore.staff@gmail.com` with admin role
+- Creates or updates user with profile_completed and data_consent_given flags
+- All error cases redirect to appropriate pages (no JSON responses)
+
+**Magic Link UI:**
+- Signin page uses magic link as primary authentication flow
+- Password signin available as fallback option
+- Shows confirmation screen after sending magic link
+- Handles URL error params: InvalidLink, ExpiredLink, VerificationFailed, AccessDenied
+
+**Redirect Strategy:**
+- Successful auth redirects to `/discovery` (or `/onboarding/profile` if incomplete)
+- All auth error cases redirect with error params to `/account/signin`
+
 ### Admin Dashboard Integration (Jan 27, 2026)
 **Status:** ✅ COMPLETE
 
