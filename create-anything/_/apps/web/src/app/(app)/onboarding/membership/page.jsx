@@ -154,17 +154,18 @@ function TierCard({ tier, isSelected, isLoading, onChoose, tierColor, TierIcon }
         <Button
           w="full"
           size="lg"
-          variant={tier.key === 'free' ? 'outline' : 'solid'}
-          colorScheme="purple"
+          bg="purple.500"
+          color="white"
           borderRadius="xl"
           fontWeight="semibold"
           isLoading={isLoading && isSelected}
           loadingText="Processing..."
           onClick={() => onChoose(tier.key)}
-          shadow={tier.key === 'free' ? 'none' : 'lg'}
+          shadow="lg"
           _hover={{
             transform: 'translateY(-2px)',
             shadow: 'xl',
+            bg: 'purple.600',
           }}
           transition="all 0.2s"
         >
