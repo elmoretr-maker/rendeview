@@ -1,6 +1,9 @@
 import {
+  Links,
+  Meta,
   Outlet,
   Scripts,
+  ScrollRestoration,
   useAsyncError,
   useLocation,
   useRouteError,
@@ -34,26 +37,22 @@ import type { Route } from './+types/root';
 import { useDevServerHeartbeat } from '../__create/useDevServerHeartbeat';
 import { SessionTimeoutMonitor } from './components/SessionTimeoutMonitor';
 
-export async function clientLoader() {
-  try {
-    const response = await fetch('/api/auth/session');
-    if (response.ok) {
-      const session = await response.json();
-      return { session };
-    }
-  } catch (e) {
-    console.error('Failed to fetch session:', e);
-  }
-  return { session: null };
+export async function loader() {
+  const { auth } = await import('@/auth');
+  const session = await auth();
+  return { session };
 }
 
+export const meta = () => [
+  { title: "Rende-VIEW - Find Your Perfect Match" },
+  { name: "description", content: "Rende-VIEW is a modern dating platform featuring video calling, real-time messaging, smart matching, and tiered membership options. Find meaningful connections today." },
+  { name: "keywords", content: "dating app, video dating, online dating, match, relationships, video calls" },
+  { property: "og:title", content: "Rende-VIEW - Find Your Perfect Match" },
+  { property: "og:description", content: "Modern dating platform with video calling, messaging, and smart matching" },
+  { property: "og:type", content: "website" },
+];
 
 const chakraTheme = extendTheme({
-  config: {
-    initialColorMode: 'light',
-    useSystemColorMode: false,
-    cssVarPrefix: 'chakra',
-  },
   colors: {
     brand: {
       50: "#f5e6ff",
@@ -69,28 +68,25 @@ const chakraTheme = extendTheme({
     },
   },
   fonts: {
-    heading: `'Playfair Display', serif`,
+    heading: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`,
     body: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`,
   },
   styles: {
     global: {
-      'html, body': {
-        minHeight: '100vh',
-        margin: 0,
-        padding: 0,
-        background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
-        fontFamily: `'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`,
-        color: '#2C3E50',
-        WebkitFontSmoothing: 'antialiased',
-      },
-      '#root': {
-        minHeight: '100vh',
+      body: {
+        bg: "#F9F9F9",
+        color: "#2C3E50",
       },
     },
   },
 });
 
-export const links = () => [];
+export const links = () => [
+  { rel: "preconnect", href: "https://fonts.googleapis.com" },
+  { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+  { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" },
+  { rel: "icon", href: "/src/__create/favicon.png" },
+];
 
 if (globalThis.window && globalThis.window !== undefined) {
   globalThis.window.fetch = fetch;
@@ -445,49 +441,18 @@ const SandboxBridge: FC = () => {
 export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head suppressHydrationWarning>
+      <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Rende-VIEW</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <link rel="icon" href="/src/__create/favicon.png" />
+        <Meta />
+        <Links />
       </head>
       <body suppressHydrationWarning>
         {children}
+        <ScrollRestoration />
         <Scripts />
       </body>
     </html>
-  );
-}
-
-export function HydrateFallback() {
-  return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ 
-          width: 60, 
-          height: 60, 
-          borderRadius: 12, 
-          background: '#9333ea',
-          margin: '0 auto 16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: 24
-        }}>R</div>
-        <p style={{ color: '#9333ea', fontWeight: 500 }}>Loading...</p>
-      </div>
-    </div>
   );
 }
 
@@ -510,8 +475,7 @@ const FontAwesomeLoader: FC = () => {
   return null;
 };
 
-function AppContent({ loaderData }: { loaderData: Route.ComponentProps['loaderData'] }) {
-  const [mounted, setMounted] = useState(false);
+export default function App({ loaderData }: Route.ComponentProps) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
@@ -521,42 +485,9 @@ function AppContent({ loaderData }: { loaderData: Route.ComponentProps['loaderDa
     },
   }));
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <div style={{ 
-        minHeight: '100vh', 
-        background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ 
-            width: 60, 
-            height: 60, 
-            borderRadius: 12, 
-            background: '#9333ea',
-            margin: '0 auto 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontWeight: 'bold',
-            fontSize: 24
-          }}>R</div>
-          <p style={{ color: '#9333ea', fontWeight: 500 }}>Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <ChakraProvider theme={chakraTheme} resetCSS={true}>
-      <SessionProvider session={loaderData?.session || null}>
+    <SessionProvider session={loaderData?.session || null}>
+      <ChakraProvider theme={chakraTheme}>
         <QueryClientProvider client={queryClient}>
           <ClientOnly loader={() => <SandboxBridge />} />
           <ClientOnly loader={() => <SessionTimeoutMonitor />} />
@@ -565,11 +496,7 @@ function AppContent({ loaderData }: { loaderData: Route.ComponentProps['loaderDa
           <ClientOnly loader={() => <FontAwesomeLoader />} />
           <Outlet />
         </QueryClientProvider>
-      </SessionProvider>
-    </ChakraProvider>
+      </ChakraProvider>
+    </SessionProvider>
   );
-}
-
-export default function App({ loaderData }: Route.ComponentProps) {
-  return <AppContent loaderData={loaderData} />;
 }

@@ -342,7 +342,7 @@ function DiscoveryContent() {
   const { data: user, loading: userLoading } = useUser();
   const [videoMeetingsCount, setVideoMeetingsCount] = useState(0);
 
-  const { data, isLoading, isFetching, error, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["discovery"],
     queryFn: async () => {
       const res = await fetch("/api/discovery/list");
@@ -358,9 +358,6 @@ function DiscoveryContent() {
       if (err?.code === 401 || err?.message === "AUTH_401") return false;
       return count < 2;
     },
-    staleTime: 30000,
-    refetchOnWindowFocus: false,
-    placeholderData: (previousData) => previousData,
   });
 
   useEffect(() => {
@@ -601,9 +598,7 @@ function DiscoveryContent() {
   const isFirstProfile = safeCurrentIndex === 0;
   const isLastProfile = safeCurrentIndex >= visibleProfiles.length - 1;
 
-  const showSkeleton = (userLoading || isLoading) && !data;
-  
-  if (showSkeleton) {
+  if (userLoading || isLoading) {
     return (
       <Box minH="100vh" bg="gray.50">
         <AppHeader />
