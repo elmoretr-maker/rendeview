@@ -391,7 +391,9 @@ function SavedProfilesContent() {
         <HStack mb={6} spacing={4}>
           <IconButton
             icon={<ArrowLeft size={20} />}
-            variant="ghost"
+            bg="purple.500"
+            color="white"
+            _hover={{ bg: "purple.600" }}
             onClick={() => navigate("/matches")}
             aria-label="Back to Matches"
           />

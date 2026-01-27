@@ -351,7 +351,9 @@ function ConsolidatedProfileOnboardingContent() {
           <Flex alignItems="center" gap={4} mb={2}>
             <IconButton
               icon={<ArrowLeft />}
-              variant="ghost"
+              bg="purple.500"
+              color="white"
+              _hover={{ bg: "purple.600" }}
               onClick={() => navigate("/onboarding/membership")}
               aria-label="Back to membership"
             />

@@ -663,11 +663,11 @@ function ChatContent() {
           <IconButton
             icon={<ArrowLeft size={20} />}
             onClick={() => navigate('/messages')}
-            variant="ghost"
-            colorScheme="gray"
+            bg="purple.500"
+            color="white"
             aria-label="Back to Messages"
             size="md"
-            _hover={{ bg: "gray.100" }}
+            _hover={{ bg: "purple.600" }}
           />
           <Box
             onClick={() => otherUser?.id && navigate(`/profile/${otherUser.id}`)}

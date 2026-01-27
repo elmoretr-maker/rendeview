@@ -132,7 +132,9 @@ export default function ScheduleProposal() {
           <IconButton
             icon={<ArrowLeft size={24} />}
             onClick={() => navigate("/messages")}
-            variant="ghost"
+            bg="purple.500"
+            color="white"
+            _hover={{ bg: "purple.600" }}
             aria-label="Back to messages"
           />
           <Heading size="2xl" color="gray.800">

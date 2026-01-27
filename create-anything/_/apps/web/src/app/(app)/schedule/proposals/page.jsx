@@ -519,7 +519,9 @@ export default function ScheduleProposals() {
           <IconButton
             icon={<ArrowLeft size={24} />}
             onClick={handleBack}
-            variant="ghost"
+            bg="purple.500"
+            color="white"
+            _hover={{ bg: "purple.600" }}
             aria-label="Back"
           />
           <Heading size="2xl" color="gray.800">
