@@ -23,7 +23,7 @@ The following features are production-ready and require no immediate work:
 | **Navbar Navigation** | About, Safety, Success Stories links functional on web and mobile |
 | **Inline Style Architecture** | SSR-reliable styles that persist without CSS dependencies |
 | **Data Consent Page** | Step 1 of 3, purple gradient, 60px logo, navigates directly to membership |
-| **Membership Page** | Step 2 of 3, tier cards functional, navigates to signin with tier param |
+| **Membership Page** | High-fidelity UI with purple gradient, 60px logo, Playfair headers, tier cards with icons, Stripe integration for paid tiers |
 | **Sign In Page** | Step 3 of 3, purple gradient, 60px logo, Rende-View branded styling |
 
 ### YELLOW (Functional - Content Complete)
@@ -42,7 +42,7 @@ These areas require end-to-end functional testing before production deployment:
 
 | Area | Risk | Testing Required |
 |------|------|------------------|
-| **Join Now → Discovery Flow** | Critical path verified for guest users | Consent → Membership → Sign In works without auth wall; post-signin flows need testing |
+| **Join Now → Discovery Flow** | Critical path fully wired | Consent → Membership → Sign Up/Sign In → Stripe (paid tiers) or Profile (free) |
 | **Sign In Authentication** | Session persistence untested | Verify `/account/signin` creates valid session and redirects to `/discovery` |
 | **Video Call Session Validation** | Real-time features | Test Daily.co integration, tier-based duration limits, and meeting caps |
 | **Stripe Payment Integration** | Revenue-critical | Verify membership upgrades and video call extensions process correctly |

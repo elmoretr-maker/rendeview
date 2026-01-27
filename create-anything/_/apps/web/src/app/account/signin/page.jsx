@@ -79,9 +79,12 @@ export default function SignInPage() {
     }
 
     try {
-      const callbackUrl = selectedTier 
-        ? `/onboarding/profile?tier=${selectedTier}`
-        : "/";
+      const needsCheckout = sessionStorage.getItem("needs_stripe_checkout") === "true";
+      const callbackUrl = needsCheckout && selectedTier && selectedTier !== "free"
+        ? `/onboarding/checkout?tier=${selectedTier}`
+        : selectedTier
+          ? `/onboarding/profile?tier=${selectedTier}`
+          : "/";
       
       await signInWithCredentials({
         email,

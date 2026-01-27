@@ -1,7 +1,16 @@
 import { useState } from "react";
-import { redirect } from "react-router";
+import { redirect, useSearchParams, useNavigate } from "react-router";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import useAuth from "@/utils/useAuth";
 import sql from "@/app/api/utils/sql";
+import logoImage from "@/assets/logo-centered.png";
+
+export function meta() {
+  return [
+    { title: "Sign Up | Rende-View" },
+    { name: "description", content: "Create your Rende-View account" },
+  ];
+}
 
 export async function loader({ request }) {
   const { auth } = await import("@/auth");
@@ -47,13 +56,18 @@ export async function loader({ request }) {
 }
 
 export default function SignUpPage() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const { signUpWithCredentials } = useAuth();
+  
+  const selectedTier = searchParams.get("tier");
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -66,30 +80,47 @@ export default function SignUpPage() {
       return;
     }
 
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      setLoading(false);
+      return;
+    }
+
     try {
+      const needsCheckout = sessionStorage.getItem("needs_stripe_checkout") === "true";
+      const callbackUrl = needsCheckout && selectedTier && selectedTier !== "free"
+        ? `/onboarding/checkout?tier=${selectedTier}`
+        : `/onboarding/profile?tier=${selectedTier || 'free'}`;
+      
       await signUpWithCredentials({
         email,
         password,
-        callbackUrl: "/",
+        callbackUrl,
         redirect: true,
       });
     } catch (err) {
       const errorMessages = {
         OAuthSignin:
-          "Couldn’t start sign-up. Please try again or use a different method.",
+          "Couldn't start sign-up. Please try again or use a different method.",
         OAuthCallback: "Sign-up failed after redirecting. Please try again.",
         OAuthCreateAccount:
-          "Couldn’t create an account with this sign-up option. Try another one.",
+          "Couldn't create an account with this sign-up method. Try another option.",
         EmailCreateAccount:
-          "This email can’t be used. It may already be registered.",
+          "This email can't be used to create an account. It may already exist.",
         Callback: "Something went wrong during sign-up. Please try again.",
         OAuthAccountNotLinked:
-          "This account is linked to a different sign-in method. Try using that instead.",
+          "This account is linked to a different sign-up method. Try using that instead.",
         CredentialsSignin:
-          "Invalid email or password. If you already have an account, try signing in instead.",
-        AccessDenied: "You don’t have permission to sign up.",
+          "Account creation failed. Please try again.",
+        AccessDenied: "You don't have permission to sign up.",
         Configuration:
-          "Sign-up isn’t working right now. Please try again later.",
+          "Sign-up isn't working right now. Please try again later.",
         Verification: "Your sign-up link has expired. Request a new one.",
       };
 
@@ -101,86 +132,231 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
+        padding: '24px',
+      }}
+    >
       <form
         noValidate
         onSubmit={onSubmit}
-        className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl relative"
+        style={{
+          width: '100%',
+          maxWidth: '420px',
+          backgroundColor: '#ffffff',
+          borderRadius: '24px',
+          padding: '40px 32px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
+          position: 'relative',
+        }}
       >
         <a
-          href="/welcome"
-          className="absolute top-6 left-6 flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors group"
+          href="/onboarding/membership"
+          style={{
+            position: 'absolute',
+            top: '24px',
+            left: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#9333ea',
+            textDecoration: 'none',
+            fontSize: '0.875rem',
+            fontWeight: '500',
+          }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 group-hover:-translate-x-1 transition-transform">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-          </svg>
-          <span className="text-sm font-medium">Back</span>
+          <ArrowLeft size={18} />
+          Back
         </a>
-        <div className="mb-8 text-center mt-8">
-          <img
-            src="/src/assets/logo-centered.png"
-            alt="Rende-View Logo"
-            className="w-16 h-16 mx-auto mb-2 object-contain logo-image"
-            style={{ width: '48px', height: '48px' }}
-          />
-          <h1 className="text-3xl font-playfair font-bold text-gray-800">
-            Create Account
+
+        <div style={{ textAlign: 'center', marginBottom: '32px', marginTop: '16px' }}>
+          <div
+            style={{
+              width: '80px',
+              height: '80px',
+              margin: '0 auto 16px',
+              backgroundColor: '#1a1a2e',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            <img
+              src={logoImage}
+              alt="Rende-View"
+              style={{
+                width: '60px',
+                height: '60px',
+                objectFit: 'contain',
+              }}
+            />
+          </div>
+          <h1
+            style={{
+              fontSize: '1.875rem',
+              fontWeight: '700',
+              color: '#9333ea',
+              fontFamily: "'Playfair Display', Georgia, serif",
+              margin: '0 0 8px 0',
+            }}
+          >
+            Create Your Account
           </h1>
+          <p style={{ color: '#6b7280', fontSize: '0.875rem', margin: 0 }}>
+            Start your video-first dating journey
+          </p>
+          {selectedTier && selectedTier !== 'free' && (
+            <p style={{ color: '#9333ea', fontSize: '0.875rem', fontWeight: '500', margin: '8px 0 0 0' }}>
+              Selected plan: {selectedTier.charAt(0).toUpperCase() + selectedTier.slice(1)}
+            </p>
+          )}
         </div>
 
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                color: '#374151',
+                marginBottom: '8px',
+              }}
+            >
               Email
             </label>
-            <div className="overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 focus-within:border-[#357AFF] focus-within:ring-1 focus-within:ring-[#357AFF]">
-              <input
-                required
-                name="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="w-full bg-transparent text-lg outline-none"
-              />
-            </div>
+            <input
+              required
+              name="email"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                fontSize: '1rem',
+                border: '2px solid #e5e7eb',
+                borderRadius: '12px',
+                outline: 'none',
+                transition: 'border-color 0.2s ease',
+                boxSizing: 'border-box',
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#9333ea'}
+              onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+            />
           </div>
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+
+          <div>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                color: '#374151',
+                marginBottom: '8px',
+              }}
+            >
               Password
             </label>
-            <div className="relative overflow-hidden rounded-lg border border-gray-200 bg-white px-4 py-3 focus-within:border-[#357AFF] focus-within:ring-1 focus-within:ring-[#357AFF]">
+            <div style={{ position: 'relative' }}>
               <input
                 required
                 name="password"
                 type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg bg-transparent text-lg outline-none pr-10"
-                placeholder="Enter your password"
+                placeholder="Create a password (8+ characters)"
+                style={{
+                  width: '100%',
+                  padding: '14px 48px 14px 16px',
+                  fontSize: '1rem',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '12px',
+                  outline: 'none',
+                  transition: 'border-color 0.2s ease',
+                  boxSizing: 'border-box',
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#9333ea'}
+                onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                style={{
+                  position: 'absolute',
+                  right: '14px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#6b7280',
+                  padding: '4px',
+                }}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                )}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
           </div>
 
+          <div>
+            <label
+              style={{
+                display: 'block',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                color: '#374151',
+                marginBottom: '8px',
+              }}
+            >
+              Confirm Password
+            </label>
+            <input
+              required
+              name="confirmPassword"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm your password"
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                fontSize: '1rem',
+                border: '2px solid #e5e7eb',
+                borderRadius: '12px',
+                outline: 'none',
+                transition: 'border-color 0.2s ease',
+                boxSizing: 'border-box',
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#9333ea'}
+              onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+            />
+          </div>
+
           {error && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-500">
+            <div
+              style={{
+                padding: '12px 16px',
+                backgroundColor: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: '12px',
+                color: '#dc2626',
+                fontSize: '0.875rem',
+              }}
+            >
               {error}
             </div>
           )}
@@ -188,23 +364,51 @@ export default function SignUpPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-[#357AFF] px-4 py-3 text-base font-medium text-white transition-colors hover:bg-[#2E69DE] focus:outline-none focus:ring-2 focus:ring-[#357AFF] focus:ring-offset-2 disabled:opacity-50"
+            style={{
+              width: '100%',
+              padding: '16px 24px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              color: '#ffffff',
+              backgroundColor: '#9333ea',
+              border: 'none',
+              borderRadius: '12px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.6 : 1,
+              transition: 'all 0.2s ease',
+              boxShadow: '0 4px 6px -1px rgba(147, 51, 234, 0.3)',
+              marginTop: '8px',
+            }}
           >
-            {loading ? "Loading..." : "Sign Up"}
+            {loading ? "Creating account..." : "Create Account"}
           </button>
-          <p className="text-center text-sm text-gray-600">
+
+          <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '0.875rem', margin: '8px 0 0 0' }}>
             Already have an account?{" "}
             <a
-              href={`/account/signin${
-                typeof window !== "undefined" ? window.location.search : ""
-              }`}
-              className="text-[#357AFF] hover:text-[#2E69DE]"
+              href={`/account/signin${selectedTier ? `?tier=${selectedTier}` : ''}`}
+              style={{
+                color: '#9333ea',
+                fontWeight: '600',
+                textDecoration: 'none',
+              }}
             >
               Sign in
             </a>
           </p>
         </div>
       </form>
+
+      <p
+        style={{
+          marginTop: '24px',
+          fontSize: '0.75rem',
+          color: '#6b7280',
+          textAlign: 'center',
+        }}
+      >
+        Step 3 of 3
+      </p>
     </div>
   );
 }
