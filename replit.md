@@ -83,6 +83,19 @@ The application employs a client-server architecture. The frontend leverages Rea
 - Duration: 10 minutes per extension (EXTENSION_MINUTES = 10)
 - Grace period: 20 seconds after timer expires
 
+### Admin Dashboard Integration (Jan 27, 2026)
+**Status:** ✅ COMPLETE
+
+**Safety Reports UI:**
+- New "Safety Reports" section in Admin Dashboard with pending report table
+- Displays reporter, reported user, reason, block count, and creation date
+- Action buttons: Resolve (marks report reviewed) and Ban User (bans reported user)
+- Consistent admin authorization: role=admin OR staff email across UI and APIs
+
+**Database Performance:**
+- Added indexes on safety_reports: status, reported_user_id, created_at DESC
+- Optimized query performance for admin pending report retrieval
+
 ### Video Call Feature Hardenings (Jan 27, 2026)
 **Status:** ✅ COMPLETE
 
