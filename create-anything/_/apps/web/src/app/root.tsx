@@ -491,7 +491,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
 
   return (
     <SessionProvider session={loaderData?.session || null}>
-      <ChakraProvider theme={chakraTheme}>
+      <ChakraProvider theme={chakraTheme} resetCSS={true}>
         <QueryClientProvider client={queryClient}>
           <ClientOnly loader={() => <SandboxBridge />} />
           <ClientOnly loader={() => <SessionTimeoutMonitor />} />
