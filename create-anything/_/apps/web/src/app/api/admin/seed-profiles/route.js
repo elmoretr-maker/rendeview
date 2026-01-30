@@ -129,7 +129,7 @@ export async function POST(request) {
       },
     ];
 
-    const password = "testpass123";
+    const password = process.env.SEED_USER_PASSWORD || "testpass123";
     const hashedPassword = await argon2.hash(password);
 
     const createdUsers = [];
