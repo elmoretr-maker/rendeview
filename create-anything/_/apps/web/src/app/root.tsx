@@ -442,14 +442,10 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head suppressHydrationWarning>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Rende-VIEW - Find Your Perfect Match</title>
-        <meta name="description" content="Rende-VIEW is a modern dating platform featuring video calling, real-time messaging, smart matching, and tiered membership options." />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <link rel="icon" href="/src/__create/favicon.png" />
+        <meta charSet="utf-8" suppressHydrationWarning />
+        <meta name="viewport" content="width=device-width, initial-scale=1" suppressHydrationWarning />
+        <Meta />
+        <Links />
       </head>
       <body suppressHydrationWarning>
         {children}
