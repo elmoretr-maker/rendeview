@@ -66,32 +66,45 @@ function WelcomeContent() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        background: 'linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%)',
-        padding: '24px',
-        position: 'relative',
-      }}
-    >
-      <WelcomeNavbar />
-      
-      <h1
-        style={{
-          fontSize: '1.75rem',
-          fontWeight: 'bold',
-          color: '#9333ea',
-          fontFamily: "'Playfair Display', serif",
-          textAlign: 'center',
-          marginTop: '24px',
-          marginBottom: '8px',
-        }}
-      >
-        Welcome to Rende-View
-      </h1>
+    <>
+      <style>{`
+        .welcome-container {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 50%, #dbeafe 100%);
+          padding: 24px;
+          padding-top: 80px;
+          position: relative;
+        }
+        @media (min-width: 768px) {
+          .welcome-container {
+            padding-top: 100px;
+          }
+        }
+        .welcome-title {
+          font-size: 1.5rem;
+          font-weight: bold;
+          color: #9333ea;
+          font-family: 'Playfair Display', serif;
+          text-align: center;
+          margin-top: 16px;
+          margin-bottom: 8px;
+        }
+        @media (min-width: 768px) {
+          .welcome-title {
+            font-size: 1.75rem;
+            margin-top: 24px;
+          }
+        }
+      `}</style>
+      <div className="welcome-container">
+        <WelcomeNavbar />
+        
+        <h1 className="welcome-title">
+          Welcome to Rende-View
+        </h1>
       
       <div
         style={{
@@ -323,7 +336,8 @@ function WelcomeContent() {
           Clear session
         </button>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
