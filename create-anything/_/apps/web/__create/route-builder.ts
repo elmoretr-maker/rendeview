@@ -1,4 +1,5 @@
 import { readdir, stat } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Hono } from 'hono';
@@ -8,8 +9,9 @@ import updatedFetch from '../src/__create/fetch';
 const API_BASENAME = '/api';
 const api = new Hono();
 
-// Get current directory
+// Get current directory - in production this path won't exist but routes are pre-bundled
 const __dirname = join(fileURLToPath(new URL('.', import.meta.url)), '../src/app/api');
+const isProduction = !import.meta.env.DEV;
 if (globalThis.fetch) {
   globalThis.fetch = updatedFetch;
 }
@@ -63,8 +65,71 @@ function getHonoPath(routeFile: string): { name: string; pattern: string }[] {
   return transformedParts;
 }
 
+// Static route imports for production - these are bundled at build time
+const staticRouteModules = import.meta.glob('../src/app/api/**/route.js', { eager: true }) as Record<string, Record<string, Handler>>;
+
+// Register a single route module
+function registerRouteModule(routePath: string, route: Record<string, Handler>) {
+  const relativePath = routePath.replace('../src/app/api', '').replace('/route.js', '');
+  const parts = relativePath.split('/').filter(Boolean);
+  
+  const transformedParts = parts.map((segment) => {
+    const match = segment.match(/^\[(\.{3})?([^\]]+)\]$/);
+    if (match) {
+      const [_, dots, param] = match;
+      return dots === '...' ? `:${param}{.+}` : `:${param}`;
+    }
+    return segment;
+  });
+  
+  const honoPath = '/' + transformedParts.join('/');
+  const methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+  
+  for (const method of methods) {
+    if (route[method]) {
+      const handler: Handler = async (c) => {
+        const params = c.req.param();
+        return await route[method](c.req.raw, { params });
+      };
+      const methodLowercase = method.toLowerCase();
+      switch (methodLowercase) {
+        case 'get':
+          api.get(honoPath, handler);
+          break;
+        case 'post':
+          api.post(honoPath, handler);
+          break;
+        case 'put':
+          api.put(honoPath, handler);
+          break;
+        case 'delete':
+          api.delete(honoPath, handler);
+          break;
+        case 'patch':
+          api.patch(honoPath, handler);
+          break;
+      }
+    }
+  }
+}
+
 // Import and register all routes
 async function registerRoutes() {
+  // In production, use statically imported routes
+  if (isProduction) {
+    api.routes = [];
+    const sortedPaths = Object.keys(staticRouteModules).sort((a, b) => b.length - a.length);
+    for (const routePath of sortedPaths) {
+      try {
+        registerRouteModule(routePath, staticRouteModules[routePath]);
+      } catch (error) {
+        console.error(`Error registering static route ${routePath}:`, error);
+      }
+    }
+    return;
+  }
+
+  // In development, dynamically scan for routes
   const routeFiles = (
     await findRouteFiles(__dirname).catch((error) => {
       console.error('Error finding route files:', error);
