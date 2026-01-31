@@ -63,7 +63,8 @@ externalPort = 3003
 
 [deployment]
 deploymentTarget = "vm"
-run = ["sh", "-c", "bash -c \"cd create-anything/_/apps/web && npm run build && npm run start"]
+run = ["sh", "-c", "cd create-anything/_/apps/web && npm run start"]
+build = ["sh", "-c", "cd create-anything/_/apps/web && npm run build"]
 
 [objectStorage]
 defaultBucketID = "replit-objstore-3e3f68d4-5dba-4114-a29a-a3e190c369fe"

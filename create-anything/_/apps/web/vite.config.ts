@@ -78,6 +78,16 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
   },
   clearScreen: false,
+  ssr: {
+    external: ['hono/context-storage', 'node:async_hooks'],
+    noExternal: ['react-router-hono-server'],
+  },
+  build: {
+    target: 'esnext',
+    rollupOptions: {
+      external: ['node:async_hooks'],
+    },
+  },
   server: {
     allowedHosts: true,
     host: '0.0.0.0',
