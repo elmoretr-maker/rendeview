@@ -250,7 +250,12 @@ app.all('/integrations/:path{.+}', async (c, next) => {
 // });
 app.route(API_BASENAME, api);
 
-export default await createHonoServer({
-  app,
-  defaultLogger: false,
-});
+async function startServer() {
+  const server = await createHonoServer({
+    app,
+    defaultLogger: false,
+  });
+  return server;
+}
+
+export default startServer();

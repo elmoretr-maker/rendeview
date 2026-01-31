@@ -113,19 +113,24 @@ function registerRouteModule(routePath: string, route: Record<string, Handler>) 
   }
 }
 
-// Import and register all routes
-async function registerRoutes() {
-  // In production, use statically imported routes
-  if (isProduction) {
-    api.routes = [];
-    const sortedPaths = Object.keys(staticRouteModules).sort((a, b) => b.length - a.length);
-    for (const routePath of sortedPaths) {
-      try {
-        registerRouteModule(routePath, staticRouteModules[routePath]);
-      } catch (error) {
-        console.error(`Error registering static route ${routePath}:`, error);
-      }
+// Synchronous route registration for production (uses static imports)
+function registerRoutesSync() {
+  api.routes = [];
+  const sortedPaths = Object.keys(staticRouteModules).sort((a, b) => b.length - a.length);
+  for (const routePath of sortedPaths) {
+    try {
+      registerRouteModule(routePath, staticRouteModules[routePath]);
+    } catch (error) {
+      console.error(`Error registering static route ${routePath}:`, error);
     }
+  }
+}
+
+// Async route registration for development (uses dynamic imports)
+async function registerRoutes() {
+  // In production, use synchronous registration
+  if (isProduction) {
+    registerRoutesSync();
     return;
   }
 
@@ -196,11 +201,13 @@ async function registerRoutes() {
   }
 }
 
-// Initial route registration
-await registerRoutes();
-
-// Hot reload routes in development
-if (import.meta.env.DEV) {
+// Initial route registration - sync for production, async for development
+if (isProduction) {
+  registerRoutesSync();
+} else {
+  await registerRoutes();
+  
+  // Hot reload routes in development
   import.meta.glob('../src/app/api/**/route.js', {
     eager: true,
   });

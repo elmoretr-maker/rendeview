@@ -46,6 +46,10 @@ task = "shell.exec"
 args = "cd create-anything/_/apps/mobile && npx --yes expo@latest start --tunnel --clear"
 
 [[ports]]
+localPort = 3000
+externalPort = 3000
+
+[[ports]]
 localPort = 5000
 externalPort = 80
 
