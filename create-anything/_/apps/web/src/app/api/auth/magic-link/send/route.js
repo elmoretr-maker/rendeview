@@ -37,28 +37,13 @@ export async function POST(request) {
       from: process.env.RESEND_FROM_EMAIL || 'Rende-View <onboarding@resend.dev>',
       to: normalizedEmail,
       subject: 'Sign in to Rende-View',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #7C3AED; text-align: center;">Rende-View</h1>
-          <h2 style="text-align: center;">Sign in to your account</h2>
-          <p style="text-align: center; color: #666;">Click the button below to sign in. This link expires in 15 minutes.</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${magicLink}" 
-               style="background: linear-gradient(135deg, #7C3AED, #9333EA); 
-                      color: white; 
-                      padding: 14px 28px; 
-                      text-decoration: none; 
-                      border-radius: 8px; 
-                      font-weight: bold;
-                      display: inline-block;">
-              Sign In
-            </a>
-          </div>
-          <p style="text-align: center; color: #999; font-size: 12px;">
-            If you didn't request this email, you can safely ignore it.
-          </p>
-        </div>
-      `,
+      react: undefined,
+      html: undefined,
+      template_id: 'rende-view-sign-in',
+      template_data: {
+        magic_link: magicLink,
+        email: normalizedEmail,
+      },
     });
 
     if (error) {
