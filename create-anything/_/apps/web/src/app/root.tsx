@@ -50,6 +50,9 @@ export const meta = () => [
   { property: "og:title", content: "Rende-VIEW - Find Your Perfect Match" },
   { property: "og:description", content: "Modern dating platform with video calling, messaging, and smart matching" },
   { property: "og:type", content: "website" },
+  { property: "og:image", content: "/icon.png" },
+  { name: "twitter:card", content: "summary" },
+  { name: "twitter:image", content: "/icon.png" },
 ];
 
 const chakraTheme = extendTheme({
@@ -85,7 +88,8 @@ export const links = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
   { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" },
-  { rel: "icon", href: "/src/__create/favicon.png" },
+  { rel: "icon", type: "image/png", href: "/icon.png" },
+  { rel: "apple-touch-icon", href: "/icon.png" },
 ];
 
 if (globalThis.window && globalThis.window !== undefined) {
@@ -449,7 +453,8 @@ export function Layout({ children }: { children: ReactNode }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <link rel="icon" href="/src/__create/favicon.png" />
+        <link rel="icon" type="image/png" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
       </head>
       <body suppressHydrationWarning>
         {children}
