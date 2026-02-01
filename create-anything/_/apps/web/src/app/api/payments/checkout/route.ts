@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import sql from "@/app/api/utils/sql";
 import { checkFeatureFlag, FeatureFlag } from "@/utils/featureFlags";
 import { logger, BusinessEvent } from "@/utils/logger";
+import { STRIPE_PRICE_IDS, PRICING } from "@/config/constants";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -131,43 +132,25 @@ export async function POST(request: Request): Promise<Response> {
     let lineItem: Stripe.Checkout.SessionCreateParams.LineItem;
     
     if (kind === "subscription") {
-      const minutes = pricing?.tiers?.[tier!]?.minutes ?? null;
-      const amount = pricing?.tiers?.[tier!]?.price_cents ?? null;
+      const tierUpper = tier?.toUpperCase() as keyof typeof STRIPE_PRICE_IDS;
+      const priceId = STRIPE_PRICE_IDS[tierUpper];
       
-      if (!minutes || amount == null) {
+      if (!priceId) {
         logger.error('Invalid subscription tier', { userId: uid, tier });
         return Response.json({ error: "Invalid tier" }, { status: 400 });
       }
       
       lineItem = {
-        price_data: {
-          currency: "usd",
-          product_data: { name: `Rende-View ${tier} plan (${minutes} min)` },
-          recurring: { interval: "month" },
-          unit_amount: amount,
-        },
+        price: priceId,
         quantity: 1,
       };
     } else if (kind === "extension") {
-      const allowed = [800];
-      if (!allowed.includes(Number(cents))) {
-        logger.error('Invalid extension amount', { userId: uid, cents });
-        return Response.json(
-          { error: "Invalid extension amount" },
-          { status: 400 },
-        );
-      }
-      
       lineItem = {
-        price_data: {
-          currency: "usd",
-          product_data: { name: `Call Extension (10 minutes)` },
-          unit_amount: Number(cents),
-        },
+        price: STRIPE_PRICE_IDS.EXTRA_MINUTES,
         quantity: 1,
       };
     } else if (kind === "second-date") {
-      const amount = pricing?.second_date_cents ?? 1000;
+      const amount = pricing?.second_date_cents ?? PRICING.SECOND_DATE_FEE;
       lineItem = {
         price_data: {
           currency: "usd",
@@ -214,7 +197,7 @@ export async function POST(request: Request): Promise<Response> {
       logger.info('Stripe checkout session created', {
         userId: uid,
         sessionId: checkout.id,
-        amount: lineItem.price_data?.unit_amount,
+        priceId: 'price' in lineItem ? lineItem.price : lineItem.price_data?.unit_amount,
       });
     } catch (e: any) {
       const msg = e?.message || String(e);

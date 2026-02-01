@@ -75,6 +75,19 @@ export const PRICING = {
 };
 
 // ============================================================================
+// STRIPE PRICE IDS (Live Product Catalog)
+// ============================================================================
+
+export const STRIPE_PRICE_IDS = {
+  CASUAL: 'price_1Svqwg6N7q4vb3pWtbWrojHC',
+  DATING: 'price_1Svqxt6N7q4vb3pWf5u2Foxf',
+  BUSINESS: 'price_1Svqz36N7q4vb3pWyDqdWYmU',
+  EXTRA_MINUTES: 'price_1Svr0O6N7q4vb3pWzZitHzb6',
+} as const;
+
+export type StripePriceTier = keyof typeof STRIPE_PRICE_IDS;
+
+// ============================================================================
 // VIDEO CALL CONFIGURATION
 // ============================================================================
 

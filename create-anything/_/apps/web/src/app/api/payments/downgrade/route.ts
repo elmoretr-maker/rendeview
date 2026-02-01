@@ -3,6 +3,7 @@ import sql from "@/app/api/utils/sql";
 import Stripe from "stripe";
 import { checkFeatureFlag, FeatureFlag } from "@/utils/featureFlags";
 import { logger, BusinessEvent } from "@/utils/logger";
+import { STRIPE_PRICE_IDS } from "@/config/constants";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -14,12 +15,6 @@ interface UserRecord {
   membership_tier: string;
   stripe_id: string | null;
   email: string;
-}
-
-interface AdminSettings {
-  pricing: {
-    tiers?: Record<string, { price_cents: number; minutes: number }>;
-  };
 }
 
 interface DowngradeResponse {
@@ -121,9 +116,6 @@ export async function POST(request: Request): Promise<Response> {
           }, { status: 400 });
         }
 
-        const [settings] = await sql<AdminSettings[]>`SELECT pricing FROM admin_settings WHERE id = 1`;
-        const pricing = settings?.pricing || {};
-        
         for (const sub of subscriptions.data) {
           periodEndDate = new Date((sub.current_period_end as number) * 1000);
           
@@ -138,10 +130,10 @@ export async function POST(request: Request): Promise<Response> {
               userId: uid,
             });
           } else {
-            const newAmount = pricing?.tiers?.[tierLower]?.price_cents;
-            const newMinutes = pricing?.tiers?.[tierLower]?.minutes;
+            const tierUpper = tierLower.toUpperCase() as keyof typeof STRIPE_PRICE_IDS;
+            const newPriceId = STRIPE_PRICE_IDS[tierUpper];
             
-            if (!newAmount || !newMinutes) {
+            if (!newPriceId) {
               logger.error('Invalid tier configuration', {
                 tier: tierLower,
                 userId: uid,
@@ -167,12 +159,7 @@ export async function POST(request: Request): Promise<Response> {
                 },
                 {
                   items: [{
-                    price_data: {
-                      currency: 'usd',
-                      product: sub.items.data[0].price.product as string,
-                      recurring: { interval: 'month' },
-                      unit_amount: newAmount
-                    },
+                    price: newPriceId,
                     quantity: 1
                   }],
                   start_date: (sub.current_period_end as number),
@@ -186,7 +173,7 @@ export async function POST(request: Request): Promise<Response> {
               subscriptionId: sub.id,
               toTier: tierLower,
               periodEnd: periodEndDate.toISOString(),
-              newAmount,
+              newPriceId,
               userId: uid,
             });
           }
