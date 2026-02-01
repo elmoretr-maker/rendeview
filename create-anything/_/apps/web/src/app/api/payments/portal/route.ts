@@ -63,12 +63,20 @@ export async function POST(request: Request): Promise<Response> {
       });
     }
 
-    const returnUrl = redirectURL || (process.env.APP_URL ? `${process.env.APP_URL}/account/billing` : "https://example.com");
+    const returnUrl = redirectURL || (process.env.APP_URL ? `${process.env.APP_URL}/account/settings` : "https://rendeview.live/account/settings");
 
-    const portal = await stripe.billingPortal.sessions.create({
+    const portalConfigId = process.env.STRIPE_PORTAL_CONFIG_ID;
+    
+    const portalParams: Stripe.BillingPortal.SessionCreateParams = {
       customer: stripeCustomerId,
       return_url: returnUrl,
-    });
+    };
+    
+    if (portalConfigId) {
+      portalParams.configuration = portalConfigId;
+    }
+    
+    const portal = await stripe.billingPortal.sessions.create(portalParams);
 
     logger.info('Billing portal session created', {
       userId: uid,
