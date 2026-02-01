@@ -1,12 +1,20 @@
 import Stripe from "stripe";
 import sql from "@/app/api/utils/sql";
 import { logger, BusinessEvent } from "@/utils/logger";
+import { STRIPE_PRICE_IDS } from "@/config/constants";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+const PRICE_ID_TO_TIER: Record<string, string> = {
+  [STRIPE_PRICE_IDS.CASUAL]: 'casual',
+  [STRIPE_PRICE_IDS.DATING]: 'dating',
+  [STRIPE_PRICE_IDS.BUSINESS]: 'business',
+};
 
 interface UserRecord {
   scheduled_tier: string | null;
   tier_change_at: string | null;
+  membership_tier: string;
 }
 
 interface WebhookEventLog {
@@ -289,9 +297,39 @@ export async function POST(request: Request): Promise<Response> {
         const scheduledTier = subscription.metadata?.scheduled_tier;
         
         if (customerId && subscription.status === 'active') {
-          const [user] = await sql<UserRecord[]>`SELECT scheduled_tier FROM auth_users WHERE stripe_id = ${customerId}`;
+          const currentPriceId = subscription.items.data[0]?.price?.id;
+          const tierFromPrice = currentPriceId ? PRICE_ID_TO_TIER[currentPriceId] : null;
           
-          if (user?.scheduled_tier && scheduledTier && scheduledTier !== 'free') {
+          const [user] = await sql<UserRecord[]>`SELECT scheduled_tier, membership_tier FROM auth_users WHERE stripe_id = ${customerId}`;
+          
+          if (tierFromPrice && user && user.membership_tier !== tierFromPrice) {
+            await sql.transaction([
+              sql`
+                UPDATE auth_users 
+                SET membership_tier = ${tierFromPrice},
+                    scheduled_tier = NULL,
+                    tier_change_at = NULL,
+                    subscription_status = 'active',
+                    last_check_subscription_status_at = now()
+                WHERE stripe_id = ${customerId}
+              `
+            ]);
+            
+            logger.business(BusinessEvent.SUBSCRIPTION_UPDATED, {
+              stripeCustomerId: customerId,
+              action: 'plan_changed_via_portal',
+              fromTier: user.membership_tier,
+              toTier: tierFromPrice,
+              priceId: currentPriceId,
+            });
+            
+            logger.info('Plan updated from Customer Portal', {
+              fromTier: user.membership_tier,
+              toTier: tierFromPrice,
+              customerId,
+              priceId: currentPriceId,
+            });
+          } else if (user?.scheduled_tier && scheduledTier && scheduledTier !== 'free') {
             const tierName = scheduledTier.toLowerCase();
             if (['casual', 'dating', 'business'].includes(tierName)) {
               await sql.transaction([
